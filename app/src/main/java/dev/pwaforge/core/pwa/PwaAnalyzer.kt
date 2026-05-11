@@ -23,7 +23,7 @@ class PwaAnalyzer(private val client: OkHttpClient) {
         val manifestUrl = extractManifestUrl(html, url)
         val manifest = if (manifestUrl != null) fetchManifest(manifestUrl, url) else PwaManifest()
 
-        // Supplement missing fields from <meta> tags
+        // Supplement missing fields from <meta> / <link> tags
         return@withContext manifest.copy(
             name = manifest.name ?: extractMeta(html, "application-name")
                 ?: extractMeta(html, "og:title")
@@ -31,6 +31,23 @@ class PwaAnalyzer(private val client: OkHttpClient) {
             description = manifest.description ?: extractMeta(html, "description")
                 ?: extractMeta(html, "og:description"),
             themeColor = manifest.themeColor ?: extractMeta(html, "theme-color"),
+            // When the manifest had no icons, harvest from HTML link/meta tags
+            icons = manifest.icons.ifEmpty {
+                buildList {
+                    // <link rel="apple-touch-icon"> — highest quality fallback
+                    extractLinkHref(html, "apple-touch-icon", url)?.let {
+                        add(PwaIcon(src = it, sizes = "180x180"))
+                    }
+                    extractLinkHref(html, "apple-touch-icon-precomposed", url)?.let {
+                        add(PwaIcon(src = it, sizes = "180x180"))
+                    }
+                    // og:image — Open Graph image used by most modern sites
+                    extractMeta(html, "og:image")?.let { raw ->
+                        val absolute = resolveUrl(raw, url)
+                        add(PwaIcon(src = absolute))
+                    }
+                }
+            },
         )
     }
 
@@ -86,6 +103,23 @@ class PwaAnalyzer(private val client: OkHttpClient) {
             display = json.optString("display").takeIf { it.isNotBlank() },
             icons = icons,
         )
+    }
+
+    /** Extracts href from `<link rel="[rel]" href="...">`, handles both attribute orderings. */
+    private fun extractLinkHref(html: String, rel: String, baseUrl: String): String? {
+        val patterns = listOf(
+            Regex("""<link[^>]+rel=["']${Regex.escape(rel)}["'][^>]+href=["']([^"']+)["']""", RegexOption.IGNORE_CASE),
+            Regex("""<link[^>]+href=["']([^"']+)["'][^>]+rel=["']${Regex.escape(rel)}["']""", RegexOption.IGNORE_CASE),
+        )
+        val href = patterns.firstNotNullOfOrNull { it.find(html)?.groupValues?.get(1) } ?: return null
+        return resolveUrl(href, baseUrl)
+    }
+
+    private fun resolveUrl(href: String, baseUrl: String): String = when {
+        href.startsWith("http") -> href
+        href.startsWith("//") -> "https:$href"
+        href.startsWith("/") -> "${extractOrigin(baseUrl)}$href"
+        else -> "$baseUrl/$href"
     }
 
     private fun extractMeta(html: String, name: String): String? {
