@@ -65,7 +65,7 @@ class WebViewActivity : ComponentActivity() {
                 ?: run { finish(); return@launch }
             currentApp = pwaApp
             setupWebView(pwaApp)
-            applyWindowMode(pwaApp.isFullscreen)
+            applyWindowMode(pwaApp)
             // Apply isolation BEFORE loading the URL
             isolationManager.applyTo(webView, pwaApp.isolationId, pwaApp.url)
             webView.loadUrl(pwaApp.url)
@@ -111,25 +111,39 @@ class WebViewActivity : ComponentActivity() {
                 customView = view
                 webView.visibility = View.GONE
                 (webView.parent as? FrameLayout)?.addView(view)
-                applyWindowMode(fullscreen = true)
+                applyWindowMode(app.copy(isFullscreen = true))
             }
 
             override fun onHideCustomView() {
                 (customView?.parent as? FrameLayout)?.removeView(customView)
                 customView = null
                 webView.visibility = View.VISIBLE
-                applyWindowMode(fullscreen = app.isFullscreen)
+                applyWindowMode(app)
             }
         }
     }
 
-    private fun applyWindowMode(fullscreen: Boolean) {
+    private fun applyWindowMode(app: WebApp) {
+        val fullscreen = app.isFullscreen
         WindowCompat.setDecorFitsSystemWindows(window, !fullscreen)
         val controller = WindowInsetsControllerCompat(window, window.decorView)
         if (fullscreen) {
-            controller.hide(WindowInsetsCompat.Type.systemBars())
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
             window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            // Selectively restore bars based on user preferences
+            val showStatus = app.fullscreenShowStatusBar
+            val showNav = app.fullscreenShowNavBar
+            if (showStatus && showNav) {
+                controller.show(WindowInsetsCompat.Type.systemBars())
+            } else if (showStatus) {
+                controller.hide(WindowInsetsCompat.Type.navigationBars())
+                controller.show(WindowInsetsCompat.Type.statusBars())
+            } else if (showNav) {
+                controller.hide(WindowInsetsCompat.Type.statusBars())
+                controller.show(WindowInsetsCompat.Type.navigationBars())
+            } else {
+                controller.hide(WindowInsetsCompat.Type.systemBars())
+            }
         } else {
             controller.show(WindowInsetsCompat.Type.systemBars())
             window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)

@@ -13,16 +13,34 @@ data class WebApp(
     val categoryId: Long? = null,
     /** Stable UUID used as the WebView profile name and isolation key. Never changes after creation. */
     val isolationId: String = UUID.randomUUID().toString(),
+    // Fullscreen
     val isFullscreen: Boolean = false,
+    val fullscreenShowStatusBar: Boolean = false,
+    val fullscreenShowNavBar: Boolean = false,
+    val fullscreenShowTopToolbar: Boolean = false,
+    // Ad blocking
     val adBlockEnabled: Boolean = true,
+    val adBlockAllowUserToggle: Boolean = false,
+    val adBlockCustomRules: List<String> = emptyList(),
+    // Translation
     val translateEnabled: Boolean = false,
     val translateTarget: TranslateLanguage = TranslateLanguage.ENGLISH,
+    val translateEngine: TranslateEngine = TranslateEngine.AUTO,
     val showTranslateButton: Boolean = true,
     val autoTranslateOnLoad: Boolean = false,
+    // Browser
     val uaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
 )
+
+enum class TranslateEngine(val displayName: String) {
+    AUTO("Auto"),
+    GOOGLE("Google"),
+    MY_MEMORY("MyMemory"),
+    LIBRE_TRANSLATE("LibreTranslate"),
+    LINGVA("Lingva"),
+}
 
 enum class UserAgentMode(val label: String, val uaString: String?) {
     DEFAULT("System default", null),
