@@ -12,11 +12,13 @@ object PwaShortcutManager {
 
     const val EXTRA_APP_ID = "app_id"
 
-    fun createShortcut(context: Context, app: WebApp): Boolean = runCatching {
+    private fun shortcutId(app: WebApp) = "pwa_${app.isolationId}"
+
+    private fun buildInfo(context: Context, app: WebApp, label: String): ShortcutInfoCompat {
         val icon = ShortcutIconBuilder.build(context, app)
-        val info = ShortcutInfoCompat.Builder(context, "pwa_${app.isolationId}")
-            .setShortLabel(app.name.take(12))
-            .setLongLabel(app.name)
+        return ShortcutInfoCompat.Builder(context, shortcutId(app))
+            .setShortLabel(label.take(12))
+            .setLongLabel(label)
             .setIcon(IconCompat.createWithBitmap(icon))
             .setIntent(
                 Intent(context, ShortcutActivity::class.java).apply {
@@ -25,6 +27,27 @@ object PwaShortcutManager {
                 }
             )
             .build()
-        ShortcutManagerCompat.requestPinShortcut(context, info, null)
+    }
+
+    fun getPinnedShortcuts(context: Context): List<ShortcutInfoCompat> = runCatching {
+        ShortcutManagerCompat.getShortcuts(context, ShortcutManagerCompat.FLAG_MATCH_PINNED)
+    }.getOrDefault(emptyList())
+
+    fun removeShortcut(context: Context, app: WebApp) {
+        val id = shortcutId(app)
+        runCatching { ShortcutManagerCompat.disableShortcuts(context, listOf(id), "This app has been removed") }
+        runCatching { ShortcutManagerCompat.removeDynamicShortcuts(context, listOf(id)) }
+    }
+
+    fun createShortcut(context: Context, app: WebApp): Boolean = runCatching {
+        ShortcutManagerCompat.requestPinShortcut(context, buildInfo(context, app, app.name), null)
+    }.getOrDefault(false)
+
+    fun rename(context: Context, app: WebApp, newLabel: String): Boolean = runCatching {
+        ShortcutManagerCompat.updateShortcuts(context, listOf(buildInfo(context, app, newLabel)))
+    }.getOrDefault(false)
+
+    fun refreshIcon(context: Context, app: WebApp, currentLabel: String): Boolean = runCatching {
+        ShortcutManagerCompat.updateShortcuts(context, listOf(buildInfo(context, app, currentLabel)))
     }.getOrDefault(false)
 }

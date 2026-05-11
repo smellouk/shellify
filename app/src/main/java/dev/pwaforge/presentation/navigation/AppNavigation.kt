@@ -3,6 +3,7 @@ package dev.pwaforge.presentation.navigation
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Shortcut
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Settings
@@ -31,12 +32,15 @@ import dev.pwaforge.presentation.settings.AppSettingsScreen
 import dev.pwaforge.presentation.settings.AppSettingsViewModel
 import dev.pwaforge.presentation.settings.GlobalSettingsScreen
 import dev.pwaforge.presentation.settings.GlobalSettingsViewModel
+import dev.pwaforge.presentation.shortcuts.ShortcutsScreen
+import dev.pwaforge.presentation.shortcuts.ShortcutsViewModel
 import dev.pwaforge.presentation.translate.TranslateConfigScreen
 import dev.pwaforge.presentation.translate.TranslateConfigViewModel
 
 private val topLevelRoutes = setOf(
     Screen.Home.route,
     Screen.Categories.route,
+    Screen.Shortcuts.route,
     Screen.GlobalSettings.route,
 )
 
@@ -63,6 +67,12 @@ fun AppNavigation(
                         onClick = { navController.navigateToTab(Screen.Categories.route) },
                         icon = { Icon(Icons.Default.Category, null) },
                         label = { Text("Categories") },
+                    )
+                    NavigationBarItem(
+                        selected = currentRoute == Screen.Shortcuts.route,
+                        onClick = { navController.navigateToTab(Screen.Shortcuts.route) },
+                        icon = { Icon(Icons.AutoMirrored.Filled.Shortcut, null) },
+                        label = { Text("Shortcuts") },
                     )
                     NavigationBarItem(
                         selected = currentRoute == Screen.GlobalSettings.route,
@@ -132,6 +142,12 @@ fun AppNavigation(
                 TranslateConfigScreen(
                     viewModel = TranslateConfigViewModel(appId, app.webAppRepository, app.saveWebApp),
                     onBack = { navController.popBackStack() },
+                )
+            }
+
+            composable(Screen.Shortcuts.route) {
+                ShortcutsScreen(
+                    viewModel = ShortcutsViewModel(context = app, repo = app.webAppRepository),
                 )
             }
 

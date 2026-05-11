@@ -13,4 +13,5 @@ sealed class Screen(val route: String) {
         fun createRoute(appId: Long) = "translate/$appId"
     }
     object GlobalSettings : Screen("global_settings")
+    object Shortcuts : Screen("shortcuts")
 }
