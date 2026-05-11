@@ -17,7 +17,7 @@ object PwaShortcutManager {
         val info = ShortcutInfoCompat.Builder(context, "pwa_${app.isolationId}")
             .setShortLabel(app.name.take(12))
             .setLongLabel(app.name)
-            .setIcon(IconCompat.createWithAdaptiveBitmap(icon))
+            .setIcon(IconCompat.createWithBitmap(icon))
             .setIntent(
                 Intent(context, ShortcutActivity::class.java).apply {
                     action = Intent.ACTION_VIEW

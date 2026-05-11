@@ -18,7 +18,11 @@ object ShortcutIconBuilder {
     fun build(context: Context, app: WebApp): Bitmap {
         val iconBitmap = app.iconPath?.let { loadFile(it) }
         if (iconBitmap != null) return scaleCentered(iconBitmap)
-        return launcherIconBitmap(context) ?: generateLetterAvatar(app.name, app.themeColor)
+        // Fallback 1: PWAForge launcher icon (already polished)
+        val launcherBitmap = launcherIconBitmap(context)
+        if (launcherBitmap != null) return launcherBitmap
+        // Fallback 2: generated letter avatar
+        return generateLetterAvatar(app.name, app.themeColor)
     }
 
     private fun loadFile(path: String): Bitmap? = runCatching {
