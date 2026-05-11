@@ -201,11 +201,12 @@ fun AddScreen(
                                 },
                             contentAlignment = Alignment.Center,
                         ) {
-                            if (state.iconPath != null || state.name.isNotBlank()) {
+                            val previewIconPath = state.iconPath ?: state.pendingIconPath
+                            if (previewIconPath != null || state.name.isNotBlank()) {
                                 AppIcon(
                                     app = WebApp(
                                         name = state.name, url = state.url,
-                                        iconPath = state.iconPath, themeColor = state.themeColor,
+                                        iconPath = previewIconPath, themeColor = state.themeColor,
                                     ),
                                     modifier = Modifier.fillMaxSize(),
                                 )
