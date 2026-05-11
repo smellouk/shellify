@@ -62,7 +62,7 @@ fun TranslateConfigScreen(
                     readOnly = true,
                     label = { Text("Target language") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                    modifier = Modifier.menuAnchor().padding(bottom = 16.dp),
+                    modifier = Modifier.menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable).padding(bottom = 16.dp),
                 )
                 ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     TranslateLanguage.entries.forEach { lang ->

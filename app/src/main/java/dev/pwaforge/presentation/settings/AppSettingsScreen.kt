@@ -13,7 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Shortcut
+import androidx.compose.material.icons.automirrored.filled.Shortcut
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -99,7 +99,7 @@ fun AppSettingsScreen(
                     supportingContent = { Text("Creates a shortcut on your launcher") },
                     trailingContent = {
                         IconButton(onClick = { PwaShortcutManager.createShortcut(context, app) }) {
-                            Icon(Icons.Default.Shortcut, "Create shortcut")
+                            Icon(Icons.AutoMirrored.Filled.Shortcut, "Create shortcut")
                         }
                     },
                 )

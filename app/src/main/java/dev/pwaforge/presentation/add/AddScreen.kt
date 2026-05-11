@@ -176,7 +176,7 @@ private fun UaModeSelector(selected: UserAgentMode, onSelect: (UserAgentMode) ->
             readOnly = true,
             label = { Text("Browser identity") },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            modifier = Modifier.fillMaxWidth().menuAnchor(),
+            modifier = Modifier.fillMaxWidth().menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable),
         )
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             UserAgentMode.entries.forEach { mode ->

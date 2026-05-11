@@ -17,8 +17,8 @@ object WebViewProfileManager {
         runCatching {
             val store = ProfileStore.getInstance()
             val profileName = "pwa_$isolationId"
-            val profile = store.getOrCreateProfile(profileName)
-            WebViewCompat.setProfile(webView, profile)
+            store.getOrCreateProfile(profileName)
+            WebViewCompat.setProfile(webView, profileName)
         }
         // If ProfileStore is unavailable on this build (shouldn't happen on API 33+),
         // we silently fall back — CookieJarManager handles the API < 33 path.

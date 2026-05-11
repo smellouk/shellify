@@ -18,7 +18,6 @@ object WebViewManager {
         with(webView.settings) {
             javaScriptEnabled = true
             domStorageEnabled = true
-            databaseEnabled = true
             allowFileAccess = false
             allowContentAccess = true
             useWideViewPort = true
@@ -30,7 +29,9 @@ object WebViewManager {
             cacheMode = WebSettings.LOAD_DEFAULT
             mediaPlaybackRequiresUserGesture = false
             // Explicitly deny cross-origin file access
+            @Suppress("DEPRECATION")
             allowFileAccessFromFileURLs = false
+            @Suppress("DEPRECATION")
             allowUniversalAccessFromFileURLs = false
             userAgentString = resolveUserAgent(this, app.uaMode)
         }
