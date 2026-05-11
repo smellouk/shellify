@@ -45,11 +45,12 @@
             </intent-filter>
         </activity>
 
-        <!-- Full-screen WebView container -->
+        <!-- Full-screen WebView container — each PWA runs in its own task (document) -->
         <activity
             android:name=".presentation.webview.WebViewActivity"
             android:exported="false"
             android:hardwareAccelerated="true"
+            android:documentLaunchMode="intoExisting"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout"
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.PWAForge.WebView" />

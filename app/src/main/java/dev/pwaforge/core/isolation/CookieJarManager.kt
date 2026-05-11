@@ -30,20 +30,28 @@ class CookieJarManager(
         clearAll()
         val decrypted = loadDecrypted(isolationId) ?: return@withContext
         decrypted.split("\n").filter { it.isNotBlank() }.forEach { line ->
-            val (url, cookie) = line.split("|", limit = 2).takeIf { it.size == 2 } ?: return@forEach
-            cookieManager.setCookie(url, cookie)
+            val parts = line.split("|", limit = 2).takeIf { it.size == 2 } ?: return@forEach
+            val (url, cookieHeader) = parts
+            // Each individual cookie is a separate name=value pair; set them one at a time
+            cookieHeader.split(";").map { it.trim() }.filter { it.isNotBlank() }.forEach { single ->
+                cookieManager.setCookie(url, single)
+            }
         }
         cookieManager.flush()
     }
 
-    /** Call when the user closes the WebView — saves (encrypted) then clears. */
-    suspend fun saveAndClearFor(isolationId: String, currentUrl: String) = withContext(Dispatchers.IO) {
-        val cookies = cookieManager.getCookie(currentUrl)
-        if (!cookies.isNullOrBlank()) {
-            val existing = loadDecrypted(isolationId) ?: ""
-            val merged = mergeCookieLines(existing, "$currentUrl|$cookies")
-            saveEncrypted(isolationId, merged)
+    /** Call when the user closes the WebView — saves (encrypted) cookies for every visited URL, then clears. */
+    suspend fun saveAndClearFor(isolationId: String, visitedUrls: Set<String>) = withContext(Dispatchers.IO) {
+        // Flush pending writes before reading so no cookie is missed
+        cookieManager.flush()
+        var merged = loadDecrypted(isolationId) ?: ""
+        for (url in visitedUrls) {
+            val cookies = cookieManager.getCookie(url)
+            if (!cookies.isNullOrBlank()) {
+                merged = mergeCookieLines(merged, "$url|$cookies")
+            }
         }
+        if (merged.isNotBlank()) saveEncrypted(isolationId, merged)
         clearAll()
     }
 

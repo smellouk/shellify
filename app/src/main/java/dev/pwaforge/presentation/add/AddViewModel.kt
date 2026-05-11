@@ -53,7 +53,11 @@ data class AddUiState(
     val uaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,
     val analyzeError: String? = null,
     val urlError: String? = null,
+    val nameError: String? = null,
+    val duplicateError: String? = null,
     val saved: Boolean = false,
+    // Non-null after save-and-run — signals screen to launch WebViewActivity
+    val launchAppId: Long? = null,
 )
 
 class AddViewModel(
@@ -104,8 +108,8 @@ class AddViewModel(
     }
 
     // Basic info
-    fun setName(v: String) = _state.update { it.copy(name = v) }
-    fun setUrl(v: String) = _state.update { it.copy(url = v, urlError = null) }
+    fun setName(v: String) = _state.update { it.copy(name = v, nameError = null) }
+    fun setUrl(v: String) = _state.update { it.copy(url = v, urlError = null, duplicateError = null) }
     fun setThemeColor(v: String?) = _state.update { it.copy(themeColor = v) }
     fun setIconPath(v: String) = _state.update { it.copy(iconPath = v) }
 
@@ -145,7 +149,9 @@ class AddViewModel(
         _state.update { it.copy(isFetchingIcon = true) }
         viewModelScope.launch {
             val path = runCatching {
-                faviconFetcher.fetch(null, url, _state.value.isolationId)
+                val manifest = analyzer.analyze(url)
+                val iconUrl = manifest.bestIconUrl(url)
+                faviconFetcher.fetch(iconUrl, url, _state.value.isolationId)
             }.getOrNull()
             _state.update { it.copy(isFetchingIcon = false, iconPath = path ?: it.iconPath) }
         }
@@ -186,41 +192,90 @@ class AddViewModel(
 
     fun dismissManifest() = _state.update { it.copy(pendingManifest = null, pendingIconPath = null) }
 
+    // ── Validation ────────────────────────────────────────────────────────────
+
+    private fun validate(): String? {
+        val s = _state.value
+        val url = s.url.trim()
+        if (url.isBlank()) {
+            _state.update { it.copy(urlError = "Please enter a URL") }
+            return null
+        }
+        if (s.name.isBlank()) {
+            _state.update { it.copy(nameError = "Please enter a name") }
+            return null
+        }
+        return if (url.startsWith("http")) url else "https://$url"
+    }
+
     // ── Save ──────────────────────────────────────────────────────────────────
 
     fun save(onCreateShortcut: ((WebApp) -> Unit)? = null) {
-        val s = _state.value
-        val url = s.url.trim().let { if (!it.startsWith("http")) "https://$it" else it }
-        if (url.isBlank()) { _state.update { it.copy(urlError = "Please enter a URL") }; return }
-        if (s.name.isBlank()) return
+        val url = validate() ?: return
         _state.update { it.copy(isSaving = true) }
         viewModelScope.launch {
-            val app = (originalApp ?: WebApp(name = "", url = "", isolationId = s.isolationId)).copy(
-                id = appId,
-                name = s.name.trim(),
-                url = url,
-                iconPath = s.iconPath,
-                themeColor = s.themeColor,
-                categoryId = s.categoryId,
-                isolationId = s.isolationId,
-                isFullscreen = s.isFullscreen,
-                fullscreenShowStatusBar = s.fullscreenShowStatusBar,
-                fullscreenShowNavBar = s.fullscreenShowNavBar,
-                fullscreenShowTopToolbar = s.fullscreenShowTopToolbar,
-                adBlockEnabled = s.adBlockEnabled,
-                adBlockAllowUserToggle = s.adBlockAllowUserToggle,
-                adBlockCustomRules = s.adBlockCustomRules,
-                translateEnabled = s.translateEnabled,
-                translateTarget = s.translateTarget,
-                translateEngine = s.translateEngine,
-                showTranslateButton = s.showTranslateButton,
-                autoTranslateOnLoad = s.autoTranslateOnLoad,
-                uaMode = s.uaMode,
-            )
-            val savedId = saveWebApp(app)
-            val savedApp = repo.getById(savedId) ?: app.copy(id = savedId)
-            onCreateShortcut?.invoke(savedApp)
+            if (isDuplicate(url)) return@launch
+            val savedId = persistApp(url)
+            val savedApp = repo.getById(savedId) ?: buildApp(url).copy(id = savedId)
+            if (appId == 0L) onCreateShortcut?.invoke(savedApp)
             _state.update { it.copy(isSaving = false, saved = true) }
         }
+    }
+
+    /** Validates, saves (or updates) the app, then signals the screen to launch it. */
+    fun run() {
+        val url = validate() ?: return
+        _state.update { it.copy(isSaving = true) }
+        viewModelScope.launch {
+            if (isDuplicate(url)) return@launch
+            val savedId = persistApp(url)
+            _state.update { it.copy(isSaving = false, launchAppId = savedId) }
+        }
+    }
+
+    /** Returns true and sets duplicateError if this URL already belongs to another app. */
+    private suspend fun isDuplicate(url: String): Boolean {
+        if (appId != 0L) return false  // editing — allow same URL
+        val existing = repo.getByUrl(url) ?: return false
+        _state.update {
+            it.copy(
+                isSaving = false,
+                duplicateError = "\"${existing.name}\" already uses this URL",
+            )
+        }
+        return true
+    }
+
+    fun onLaunched() = _state.update { it.copy(launchAppId = null) }
+
+    private suspend fun persistApp(url: String): Long {
+        val app = buildApp(url)
+        return saveWebApp(app)
+    }
+
+    private fun buildApp(url: String): WebApp {
+        val s = _state.value
+        return (originalApp ?: WebApp(name = "", url = "", isolationId = s.isolationId)).copy(
+            id = appId,
+            name = s.name.trim(),
+            url = url,
+            iconPath = s.iconPath,
+            themeColor = s.themeColor,
+            categoryId = s.categoryId,
+            isolationId = s.isolationId,
+            isFullscreen = s.isFullscreen,
+            fullscreenShowStatusBar = s.fullscreenShowStatusBar,
+            fullscreenShowNavBar = s.fullscreenShowNavBar,
+            fullscreenShowTopToolbar = s.fullscreenShowTopToolbar,
+            adBlockEnabled = s.adBlockEnabled,
+            adBlockAllowUserToggle = s.adBlockAllowUserToggle,
+            adBlockCustomRules = s.adBlockCustomRules,
+            translateEnabled = s.translateEnabled,
+            translateTarget = s.translateTarget,
+            translateEngine = s.translateEngine,
+            showTranslateButton = s.showTranslateButton,
+            autoTranslateOnLoad = s.autoTranslateOnLoad,
+            uaMode = s.uaMode,
+        )
     }
 }

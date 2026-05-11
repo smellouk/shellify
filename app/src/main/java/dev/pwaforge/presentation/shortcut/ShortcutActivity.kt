@@ -16,11 +16,7 @@ class ShortcutActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val appId = intent.getLongExtra(PwaShortcutManager.EXTRA_APP_ID, -1L)
         if (appId != -1L) {
-            startActivity(
-                Intent(this, WebViewActivity::class.java)
-                    .putExtra(WebViewActivity.EXTRA_APP_ID, appId)
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            )
+            startActivity(WebViewActivity.launchIntent(this, appId))
         }
         finish()
     }

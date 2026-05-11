@@ -1,12 +1,16 @@
 package dev.pwaforge.presentation.home
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dev.pwaforge.core.isolation.IsolationManager
+import dev.pwaforge.core.shortcut.PwaShortcutManager
 import dev.pwaforge.domain.model.Category
 import dev.pwaforge.domain.model.WebApp
 import dev.pwaforge.domain.usecase.DeleteWebAppUseCase
 import dev.pwaforge.domain.usecase.GetCategoriesUseCase
 import dev.pwaforge.domain.usecase.GetWebAppsUseCase
+import dev.pwaforge.domain.usecase.SaveWebAppUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,6 +31,9 @@ class HomeViewModel(
     getWebApps: GetWebAppsUseCase,
     private val deleteWebApp: DeleteWebAppUseCase,
     getCategories: GetCategoriesUseCase,
+    private val saveWebApp: SaveWebAppUseCase,
+    private val isolationManager: IsolationManager,
+    private val context: Context,
 ) : ViewModel() {
 
     private val _extra = MutableStateFlow(Pair<Long?, String>(null, ""))
@@ -51,5 +58,16 @@ class HomeViewModel(
     fun selectCategory(id: Long?) = _extra.update { it.copy(first = id) }
     fun setSearch(query: String) = _extra.update { it.copy(second = query) }
 
-    fun delete(app: WebApp) = viewModelScope.launch { deleteWebApp(app) }
+    fun delete(app: WebApp) = viewModelScope.launch {
+        PwaShortcutManager.removeShortcut(context, app)
+        deleteWebApp(app)
+    }
+
+    fun assignCategory(app: WebApp, categoryId: Long?) = viewModelScope.launch {
+        saveWebApp(app.copy(categoryId = categoryId))
+    }
+
+    fun clearData(app: WebApp) = viewModelScope.launch {
+        isolationManager.clearData(app.isolationId)
+    }
 }

@@ -1,8 +1,10 @@
 package dev.pwaforge.presentation.settings
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.pwaforge.core.isolation.IsolationManager
+import dev.pwaforge.core.shortcut.PwaShortcutManager
 import dev.pwaforge.domain.model.WebApp
 import dev.pwaforge.domain.repository.WebAppRepository
 import dev.pwaforge.domain.usecase.DeleteWebAppUseCase
@@ -25,6 +27,7 @@ class AppSettingsViewModel(
     private val saveWebApp: SaveWebAppUseCase,
     private val deleteWebApp: DeleteWebAppUseCase,
     private val isolationManager: IsolationManager,
+    private val context: Context,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AppSettingsUiState())
@@ -54,6 +57,7 @@ class AppSettingsViewModel(
     fun deleteApp() {
         val app = _state.value.app ?: return
         viewModelScope.launch {
+            PwaShortcutManager.removeShortcut(context, app)
             isolationManager.clearData(app.isolationId)
             deleteWebApp(app)
             _state.update { it.copy(deleted = true) }

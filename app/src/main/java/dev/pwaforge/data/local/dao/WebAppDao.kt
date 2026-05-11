@@ -20,6 +20,9 @@ interface WebAppDao {
     @Query("SELECT * FROM web_apps WHERE id = :id LIMIT 1")
     suspend fun getById(id: Long): WebAppEntity?
 
+    @Query("SELECT * FROM web_apps WHERE url = :url LIMIT 1")
+    suspend fun getByUrl(url: String): WebAppEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(entity: WebAppEntity): Long
 

@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.GTranslate
 import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.PhoneAndroid
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.TravelExplore
@@ -92,6 +93,7 @@ import dev.pwaforge.domain.model.TranslateEngine
 import dev.pwaforge.domain.model.TranslateLanguage
 import dev.pwaforge.domain.model.WebApp
 import dev.pwaforge.presentation.home.AppIcon
+import dev.pwaforge.presentation.webview.WebViewActivity
 import kotlinx.coroutines.launch
 
 // ── Preset colors for the color picker ──────────────────────────────────────
@@ -116,6 +118,12 @@ fun AddScreen(
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(state.saved) { if (state.saved) onSaved() }
+
+    LaunchedEffect(state.launchAppId) {
+        val id = state.launchAppId ?: return@LaunchedEffect
+        context.startActivity(WebViewActivity.launchIntent(context, id))
+        viewModel.onLaunched()
+    }
 
     // Image picker for custom icon
     val imagePicker = rememberLauncherForActivityResult(
@@ -155,6 +163,22 @@ fun AddScreen(
                     }
                 },
                 actions = {
+                    val canRun = state.url.isNotBlank() && state.name.isNotBlank() && !state.isSaving
+                    IconButton(
+                        onClick = { viewModel.run() },
+                        enabled = canRun,
+                    ) {
+                        if (state.isSaving && state.launchAppId == null) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        } else {
+                            Icon(
+                                Icons.Default.PlayArrow,
+                                contentDescription = "Run app",
+                                tint = if (canRun) MaterialTheme.colorScheme.primary
+                                       else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                            )
+                        }
+                    }
                     TextButton(
                         onClick = {
                             viewModel.save { savedApp ->
@@ -163,7 +187,7 @@ fun AddScreen(
                         },
                         enabled = state.name.isNotBlank() && state.url.isNotBlank() && !state.isSaving,
                     ) {
-                        if (state.isSaving) {
+                        if (state.isSaving && state.launchAppId != null) {
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
                         } else {
                             Text("Save", fontWeight = FontWeight.SemiBold)
@@ -186,15 +210,82 @@ fun AddScreen(
                 Text("Basic Info", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                 Spacer(Modifier.height(16.dp))
 
-                Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    // Tappable icon preview
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                // 1. URL + inline Analyze
+                OutlinedTextField(
+                    value = state.url,
+                    onValueChange = viewModel::setUrl,
+                    label = { Text("Website URL") },
+                    leadingIcon = { Icon(Icons.Default.Link, null, modifier = Modifier.size(20.dp)) },
+                    placeholder = { Text("https://example.com") },
+                    isError = state.urlError != null || state.duplicateError != null,
+                    supportingText = {
+                        when {
+                            state.urlError != null -> Text(state.urlError!!)
+                            state.duplicateError != null -> Text(state.duplicateError!!)
+                            state.analyzeError != null -> Text(
+                                state.analyzeError!!,
+                                color = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                    },
+                    trailingIcon = {
+                        IconButton(
+                            onClick = viewModel::analyze,
+                            enabled = state.url.isNotBlank() && !state.isAnalyzing,
+                        ) {
+                            if (state.isAnalyzing) {
+                                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                            } else {
+                                Icon(
+                                    Icons.Default.TravelExplore,
+                                    contentDescription = "Analyze site",
+                                    tint = if (state.url.isNotBlank()) MaterialTheme.colorScheme.primary
+                                           else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                                )
+                            }
+                        }
+                    },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                // 2. App Name
+                OutlinedTextField(
+                    value = state.name,
+                    onValueChange = viewModel::setName,
+                    label = { Text("App Name") },
+                    leadingIcon = { Icon(Icons.Default.PhoneAndroid, null, modifier = Modifier.size(20.dp)) },
+                    isError = state.nameError != null,
+                    supportingText = { if (state.nameError != null) Text(state.nameError!!) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                // 3. Icon (left) + Theme Color (right)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    // Icon box + action buttons below
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        val previewIconPath = state.iconPath ?: state.pendingIconPath
                         Box(
                             modifier = Modifier
-                                .size(72.dp)
-                                .clip(RoundedCornerShape(16.dp))
+                                .size(56.dp)
+                                .clip(RoundedCornerShape(14.dp))
                                 .background(MaterialTheme.colorScheme.primaryContainer)
-                                .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), RoundedCornerShape(16.dp))
+                                .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), RoundedCornerShape(14.dp))
                                 .clickable {
                                     imagePicker.launch(
                                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
@@ -202,7 +293,6 @@ fun AddScreen(
                                 },
                             contentAlignment = Alignment.Center,
                         ) {
-                            val previewIconPath = state.iconPath ?: state.pendingIconPath
                             if (previewIconPath != null || state.name.isNotBlank()) {
                                 AppIcon(
                                     app = WebApp(
@@ -215,149 +305,75 @@ fun AddScreen(
                                 Icon(
                                     Icons.Default.PhoneAndroid, null,
                                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    modifier = Modifier.size(32.dp),
+                                    modifier = Modifier.size(28.dp),
                                 )
                             }
                         }
-                        Spacer(Modifier.height(4.dp))
-                        Text("Tap to change", style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-
-                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("App Icon", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
-                        Text("Click to select or use button below",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(Modifier.height(6.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            AssistChip(
-                                onClick = { viewModel.fetchIcon() },
+                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                            // Fetch from URL
+                            FilledIconButton(
+                                onClick = viewModel::fetchIcon,
                                 enabled = state.url.isNotBlank() && !state.isFetchingIcon,
-                                label = {
-                                    if (state.isFetchingIcon)
-                                        CircularProgressIndicator(modifier = Modifier.size(14.dp), strokeWidth = 2.dp)
-                                    else Text("Fetch Icon")
-                                },
-                                leadingIcon = {
-                                    if (!state.isFetchingIcon)
-                                        Icon(Icons.Default.Language, null, modifier = Modifier.size(16.dp))
-                                },
-                                colors = AssistChipDefaults.assistChipColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    labelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    leadingIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(28.dp),
+                                colors = IconButtonDefaults.filledIconButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                 ),
-                                border = null,
-                            )
-                            AssistChip(
+                            ) {
+                                if (state.isFetchingIcon) {
+                                    CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 1.5.dp)
+                                } else {
+                                    Icon(Icons.Default.Language, "Fetch icon", modifier = Modifier.size(14.dp))
+                                }
+                            }
+                            // Pick from gallery
+                            FilledIconButton(
                                 onClick = {
                                     imagePicker.launch(
                                         PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                                     )
                                 },
-                                label = { Text("Choose Image") },
-                                leadingIcon = { Icon(Icons.Default.PhoneAndroid, null, modifier = Modifier.size(16.dp)) },
-                                colors = AssistChipDefaults.assistChipColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                    labelColor = MaterialTheme.colorScheme.onPrimaryContainer,
-                                    leadingIconContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.size(28.dp),
+                                colors = IconButtonDefaults.filledIconButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
                                 ),
-                                border = null,
+                            ) {
+                                Icon(Icons.Default.AutoAwesome, "Choose image", modifier = Modifier.size(14.dp))
+                            }
+                        }
+                    }
+
+                    // Theme color (takes remaining width)
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                            .clickable { showColorPicker = true }
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(
+                                    if (state.themeColor != null)
+                                        runCatching { Color(android.graphics.Color.parseColor(state.themeColor)) }
+                                            .getOrDefault(MaterialTheme.colorScheme.primaryContainer)
+                                    else MaterialTheme.colorScheme.primaryContainer
+                                ),
+                        )
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Theme Color", style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
+                            Text(
+                                state.themeColor ?: "Not set",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
                 }
-
-                Spacer(Modifier.height(16.dp))
-
-                // App name
-                OutlinedTextField(
-                    value = state.name,
-                    onValueChange = viewModel::setName,
-                    label = { Text("App Name") },
-                    leadingIcon = { Icon(Icons.Default.PhoneAndroid, null, modifier = Modifier.size(20.dp)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
-                )
-
-                Spacer(Modifier.height(12.dp))
-
-                // Website URL
-                OutlinedTextField(
-                    value = state.url,
-                    onValueChange = viewModel::setUrl,
-                    label = { Text("Website URL") },
-                    leadingIcon = { Icon(Icons.Default.Link, null, modifier = Modifier.size(20.dp)) },
-                    placeholder = { Text("https://example.com") },
-                    isError = state.urlError != null,
-                    supportingText = { if (state.urlError != null) Text(state.urlError!!) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                )
-
-                Spacer(Modifier.height(12.dp))
-
-                // Theme color picker row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(
-                                if (state.themeColor != null)
-                                    runCatching { Color(android.graphics.Color.parseColor(state.themeColor)) }.getOrDefault(MaterialTheme.colorScheme.primaryContainer)
-                                else MaterialTheme.colorScheme.primaryContainer
-                            )
-                            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(10.dp))
-                            .clickable { showColorPicker = true },
-                    )
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("Theme Color", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
-                        Text(
-                            state.themeColor ?: "Not set — tap to pick",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    TextButton(onClick = { showColorPicker = true }) { Text("Pick") }
-                }
-            }
-
-            // Analyze button
-            Button(
-                onClick = viewModel::analyze,
-                enabled = state.url.isNotBlank() && !state.isAnalyzing,
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-                ),
-            ) {
-                if (state.isAnalyzing) {
-                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp,
-                        color = Color.White)
-                    Spacer(Modifier.width(8.dp))
-                    Text("Analyzing…")
-                } else {
-                    Icon(Icons.Default.TravelExplore, null, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text("Analyze Site")
-                }
-            }
-
-            if (state.analyzeError != null) {
-                Text(state.analyzeError!!, color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(horizontal = 4.dp))
             }
 
             // ── Feature cards ────────────────────────────────────────────────

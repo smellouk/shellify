@@ -1,6 +1,7 @@
 package dev.pwaforge.core.webview
 
 import android.annotation.SuppressLint
+import android.webkit.CookieManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import dev.pwaforge.domain.model.UserAgentMode
@@ -18,6 +19,7 @@ object WebViewManager {
         with(webView.settings) {
             javaScriptEnabled = true
             domStorageEnabled = true
+            databaseEnabled = true
             allowFileAccess = false
             allowContentAccess = true
             useWideViewPort = true
@@ -28,12 +30,16 @@ object WebViewManager {
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
             cacheMode = WebSettings.LOAD_DEFAULT
             mediaPlaybackRequiresUserGesture = false
-            // Explicitly deny cross-origin file access
             @Suppress("DEPRECATION")
             allowFileAccessFromFileURLs = false
             @Suppress("DEPRECATION")
             allowUniversalAccessFromFileURLs = false
             userAgentString = resolveUserAgent(this, app.uaMode)
+        }
+        // Cookies must be explicitly enabled; third-party cookies needed for OAuth / SSO flows
+        CookieManager.getInstance().apply {
+            setAcceptCookie(true)
+            setAcceptThirdPartyCookies(webView, true)
         }
     }
 

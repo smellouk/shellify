@@ -19,6 +19,9 @@ class WebAppRepositoryImpl(private val dao: WebAppDao) : WebAppRepository {
     override suspend fun getById(id: Long): WebApp? =
         dao.getById(id)?.toDomain()
 
+    override suspend fun getByUrl(url: String): WebApp? =
+        dao.getByUrl(url)?.toDomain()
+
     override suspend fun save(app: WebApp): Long {
         val entity = app.toEntity()
         return if (entity.id == 0L) dao.insert(entity)
