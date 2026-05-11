@@ -90,6 +90,7 @@ class PwaAnalyzer(private val client: OkHttpClient) {
                     src = absoluteSrc,
                     sizes = obj.optString("sizes").takeIf { it.isNotBlank() },
                     type = obj.optString("type").takeIf { it.isNotBlank() },
+                    purpose = obj.optString("purpose").takeIf { it.isNotBlank() },
                 )
             }
         }
