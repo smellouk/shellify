@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<network-security-config>
-    <!-- Allow cleartext only for localhost (isolation proxy) -->
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">localhost</domain>
-        <domain includeSubdomains="true">127.0.0.1</domain>
-    </domain-config>
-    <base-config cleartextTrafficPermitted="false" />
-</network-security-config>
