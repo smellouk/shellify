@@ -599,6 +599,7 @@ private fun AppCard(
                     )
                 }
             }
+            Spacer(Modifier.height(Dimens.spaceXxs))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 FeatureTags(app)
                 Spacer(Modifier.weight(1f))

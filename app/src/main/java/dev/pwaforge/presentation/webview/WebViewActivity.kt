@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -59,6 +60,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.pwaforge.presentation.theme.Dimens
 import kotlinx.coroutines.flow.MutableStateFlow
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -102,6 +104,7 @@ class WebViewActivity : FragmentActivity() {
     private lateinit var progressBar: ProgressBar
     private lateinit var container: FrameLayout
     private lateinit var isolationManager: IsolationManager
+    private var statusBarScrim: View? = null
     private val currentAppFlow = MutableStateFlow<WebApp?>(null)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val visitedUrls = mutableSetOf<String>()
@@ -518,9 +521,27 @@ class WebViewActivity : FragmentActivity() {
 
     private fun applyStatusBarColor(themeColor: String?) {
         val color = themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() } ?: return
-        window.statusBarColor = color
         val isLight = (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255 > 0.5
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = isLight
+
+        if (Build.VERSION.SDK_INT >= 35) {
+            // Android 15+: window.statusBarColor is a no-op under forced edge-to-edge.
+            // Draw a scrim view at the top of the container sized to the status bar inset.
+            val scrim = statusBarScrim ?: View(this).also { v ->
+                statusBarScrim = v
+                container.addView(v, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 0, Gravity.TOP))
+            }
+            scrim.setBackgroundColor(color)
+            ViewCompat.setOnApplyWindowInsetsListener(container) { _, insets ->
+                val h = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+                scrim.layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, h, Gravity.TOP)
+                insets
+            }
+            ViewCompat.requestApplyInsets(container)
+        } else {
+            @Suppress("DEPRECATION")
+            window.statusBarColor = color
+        }
     }
 
     @Suppress("DEPRECATION")
