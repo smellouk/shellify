@@ -7,7 +7,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -524,24 +523,19 @@ class WebViewActivity : FragmentActivity() {
         val isLight = (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255 > 0.5
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = isLight
 
-        if (Build.VERSION.SDK_INT >= 35) {
-            // Android 15+: window.statusBarColor is a no-op under forced edge-to-edge.
-            // Draw a scrim view at the top of the container sized to the status bar inset.
-            val scrim = statusBarScrim ?: View(this).also { v ->
-                statusBarScrim = v
-                container.addView(v, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 0, Gravity.TOP))
-            }
-            scrim.setBackgroundColor(color)
-            ViewCompat.setOnApplyWindowInsetsListener(container) { _, insets ->
-                val h = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-                scrim.layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, h, Gravity.TOP)
-                insets
-            }
-            ViewCompat.requestApplyInsets(container)
-        } else {
-            @Suppress("DEPRECATION")
-            window.statusBarColor = color
+        // Use a scrim view on all API levels — window.statusBarColor is unreliable when
+        // a ComposeView overlay (PWAForgeTheme in light mode) resets the appearance afterward.
+        val scrim = statusBarScrim ?: View(this).also { v ->
+            statusBarScrim = v
+            container.addView(v, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 0, Gravity.TOP))
         }
+        scrim.setBackgroundColor(color)
+        ViewCompat.setOnApplyWindowInsetsListener(container) { _, insets ->
+            val h = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
+            scrim.layoutParams = FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, h, Gravity.TOP)
+            insets
+        }
+        ViewCompat.requestApplyInsets(container)
     }
 
     @Suppress("DEPRECATION")
