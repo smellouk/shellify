@@ -54,6 +54,8 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 
 import dev.pwaforge.R
@@ -522,9 +524,10 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
                         ) {
                             Icon(icon, null, modifier = Modifier.size(Dimens.sizeXs), tint = p40)
                         }
+                        val noFontPadding = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(name, fontSize = Dimens.textSizeBody, lineHeight = Dimens.textSizeBody, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                            Text(host, fontSize = Dimens.textSizeCaption, lineHeight = Dimens.textSizeCaption, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(name, fontSize = Dimens.textSizeBody, lineHeight = Dimens.textSizeBody, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, style = noFontPadding)
+                            Text(host, fontSize = Dimens.textSizeCaption, lineHeight = Dimens.textSizeCaption, color = MaterialTheme.colorScheme.onSurfaceVariant, style = noFontPadding)
                         }
                         Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeXs), tint = p40)
                     }
