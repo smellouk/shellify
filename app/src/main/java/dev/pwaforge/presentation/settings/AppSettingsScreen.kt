@@ -57,6 +57,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.pwaforge.R
+import dev.pwaforge.presentation.theme.Dimens
 import dev.pwaforge.core.shortcut.PwaShortcutManager
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -90,8 +91,8 @@ fun AppSettingsScreen(
         if (app == null) return@Scaffold
 
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(Dimens.spaceLg),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
         ) {
             SectionLabel(stringResource(R.string.settings_display))
             SettingsCard {
@@ -162,15 +163,15 @@ fun AppSettingsScreen(
                         Row(
                             modifier = Modifier.fillMaxWidth()
                                 .clickable { viewModel.setLockType(type) }
-                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                                .padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceSm),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
                         ) {
                             CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
                                 androidx.compose.material3.RadioButton(
                                     selected = app.lockType == type,
                                     onClick = { viewModel.setLockType(type) },
-                                    modifier = Modifier.size(20.dp),
+                                    modifier = Modifier.size(Dimens.sizeMd),
                                 )
                             }
                             Text(label, style = MaterialTheme.typography.bodyMedium)
@@ -179,7 +180,7 @@ fun AppSettingsScreen(
                 }
             }
 
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(Dimens.spaceLg))
             SectionLabel(stringResource(R.string.settings_danger_zone))
 
             Button(
@@ -212,13 +213,13 @@ fun AppSettingsScreen(
 @Composable
 private fun SectionLabel(text: String) =
     Text(text, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(horizontal = 4.dp))
+        modifier = Modifier.padding(horizontal = Dimens.spaceXxs))
 
 @Composable
 private fun SettingsCard(content: @Composable () -> Unit) =
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(Dimens.cornerXl),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) { content() }

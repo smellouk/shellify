@@ -77,6 +77,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.pwaforge.R
+import dev.pwaforge.presentation.theme.Dimens
 
 val CATEGORY_ICON_KEYS = listOf(
     "folder", "folder_open", "phone_android", "laptop",
@@ -158,13 +159,13 @@ fun CategoryScreen(
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.padding(horizontal = 48.dp),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
+                    modifier = Modifier.padding(horizontal = Dimens.spaceXxl),
                 ) {
                     Icon(
                         imageVector = Icons.Default.Category,
                         contentDescription = null,
-                        modifier = Modifier.size(96.dp),
+                        modifier = Modifier.size(Dimens.sizeEmptyIconLg),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                     )
                     Text(
@@ -184,15 +185,15 @@ fun CategoryScreen(
         } else {
         LazyColumn(
             modifier = Modifier.padding(padding),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(Dimens.spaceLg),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
         ) {
             items(categories!!, key = { it.id }) { cat ->
                 val catColor = runCatching { Color(android.graphics.Color.parseColor(cat.color)) }
                     .getOrDefault(MaterialTheme.colorScheme.primary)
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(Dimens.cornerXl),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                 ) {
@@ -203,7 +204,7 @@ fun CategoryScreen(
                         leadingContent = {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
+                                    .size(Dimens.size5xl)
                                     .clip(CircleShape)
                                     .background(catColor),
                                 contentAlignment = Alignment.Center,
@@ -212,7 +213,7 @@ fun CategoryScreen(
                                     imageVector = categoryIconVector(cat.icon),
                                     contentDescription = null,
                                     tint = Color.White,
-                                    modifier = Modifier.size(20.dp),
+                                    modifier = Modifier.size(Dimens.sizeMd),
                                 )
                             }
                         },
@@ -256,7 +257,7 @@ private fun AddCategoryDialog(
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
             ) {
                 OutlinedTextField(
                     value = state.newName,
@@ -267,25 +268,25 @@ private fun AddCategoryDialog(
                 )
 
                 Text(stringResource(R.string.categories_icon_label), style = MaterialTheme.typography.labelLarge)
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs)) {
                     CATEGORY_ICON_KEYS.chunked(6).forEach { rowKeys ->
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
                         ) {
                             rowKeys.forEach { key ->
                                 val isSelected = key == state.selectedIcon
                                 Box(
                                     modifier = Modifier
-                                        .size(40.dp)
-                                        .clip(RoundedCornerShape(8.dp))
+                                        .size(Dimens.sizeCard)
+                                        .clip(RoundedCornerShape(Dimens.cornerSm))
                                         .background(
                                             if (isSelected) MaterialTheme.colorScheme.primaryContainer
                                             else Color.Transparent
                                         )
                                         .border(
-                                            width = if (isSelected) 2.dp else 0.dp,
+                                            width = if (isSelected) Dimens.borderSelected else 0.dp,
                                             color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent,
-                                            shape = RoundedCornerShape(8.dp),
+                                            shape = RoundedCornerShape(Dimens.cornerSm),
                                         )
                                         .clickable { onIconSelect(key) },
                                     contentAlignment = Alignment.Center,
@@ -293,7 +294,7 @@ private fun AddCategoryDialog(
                                     Icon(
                                         imageVector = categoryIconVector(key),
                                         contentDescription = key,
-                                        modifier = Modifier.size(22.dp),
+                                        modifier = Modifier.size(Dimens.sizeLg),
                                         tint = if (isSelected) MaterialTheme.colorScheme.primary
                                                else MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
@@ -305,20 +306,20 @@ private fun AddCategoryDialog(
 
                 Spacer(Modifier.height(0.dp))
                 Text(stringResource(R.string.categories_color_label), style = MaterialTheme.typography.labelLarge)
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
                     CATEGORY_COLORS.chunked(8).forEach { rowColors ->
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
                             rowColors.forEach { hex ->
                                 val color = runCatching { Color(android.graphics.Color.parseColor(hex)) }
                                     .getOrDefault(MaterialTheme.colorScheme.primary)
                                 val isSelected = hex == state.selectedColor
                                 Box(
                                     modifier = Modifier
-                                        .size(28.dp)
+                                        .size(Dimens.size3xl)
                                         .clip(CircleShape)
                                         .background(color)
                                         .then(
-                                            if (isSelected) Modifier.border(2.dp, Color.White, CircleShape)
+                                            if (isSelected) Modifier.border(Dimens.borderSelected, Color.White, CircleShape)
                                             else Modifier
                                         )
                                         .clickable { onColorSelect(hex) },

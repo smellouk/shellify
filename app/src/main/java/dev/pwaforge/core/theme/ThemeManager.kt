@@ -35,6 +35,27 @@ class ThemeManager(private val context: Context) {
         runCatching { EngineType.valueOf(prefs[keyDefaultEngine] ?: "") }.getOrDefault(EngineType.SYSTEM_WEBVIEW)
     }
 
+    private val keyAccentColor = stringPreferencesKey("accent_color")
+
+    val accentColor: Flow<Int?> = context.themeStore.data.map { prefs ->
+        val raw = prefs[keyAccentColor]?.toIntOrNull() ?: -1
+        if (raw == -1) null else raw
+    }
+
+    suspend fun setAccentColor(color: Int?) {
+        context.themeStore.edit { it[keyAccentColor] = (color ?: -1).toString() }
+    }
+
+    private val keyLanguageCode = stringPreferencesKey("language_code")
+
+    val languageCode: Flow<String> = context.themeStore.data.map { prefs ->
+        prefs[keyLanguageCode] ?: "en"
+    }
+
+    suspend fun setLanguageCode(code: String) {
+        context.themeStore.edit { it[keyLanguageCode] = code }
+    }
+
     suspend fun setThemeMode(mode: ThemeMode) {
         context.themeStore.edit { it[keyThemeMode] = mode.name }
     }

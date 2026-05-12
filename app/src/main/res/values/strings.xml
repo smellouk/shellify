@@ -175,6 +175,7 @@
     <string name="global_settings_theme_dark">Dark</string>
     <string name="global_settings_dynamic_colors">Dynamic colors</string>
     <string name="global_settings_dynamic_colors_desc">Follow wallpaper accent colors (Material You)</string>
+    <string name="global_settings_accent_color">Theme color</string>
     <string name="global_settings_section_browser">Browser</string>
     <string name="global_settings_default_ua">Default user agent</string>
     <string name="global_settings_default_engine_label">Default engine for new apps</string>
@@ -295,6 +296,16 @@
     <string name="ua_chrome_mobile">Chrome (mobile)</string>
     <string name="ua_chrome_desktop">Chrome (desktop)</string>
     <string name="ua_safari_mobile">Safari (mobile)</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_apps">Apps</string>
+    <string name="nav_categories">Categories</string>
+    <string name="nav_shortcuts">Shortcuts</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Language -->
+    <string name="language_dialog_title">Language</string>
+<string name="language_change_cd">Change language</string>
 
     <!-- Errors -->
     <string name="error_invalid_url">Please enter a valid URL</string>

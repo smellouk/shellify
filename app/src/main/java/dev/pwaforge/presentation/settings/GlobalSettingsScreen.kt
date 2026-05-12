@@ -5,10 +5,17 @@ import android.text.format.DateFormat
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,6 +27,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -44,6 +52,7 @@ import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.NoPhotography
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Schedule
@@ -71,6 +80,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -87,6 +97,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import dev.pwaforge.core.backup.BackupSchedule
+import dev.pwaforge.presentation.theme.Dimens
 import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.core.engine.GeckoInstallState
 import dev.pwaforge.core.theme.ThemeMode
@@ -144,21 +155,24 @@ fun GlobalSettingsScreen(
         containerColor = screenBg,
         topBar = { TopAppBar(title = { Text(stringResource(R.string.global_settings_title)) }) },
     ) { padding ->
-        Column(
+        AnimatedVisibility(
+            visible = state.isLoaded,
+            enter = fadeIn(animationSpec = tween(160)),
+        ) { Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(Dimens.spaceLg),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
         ) {
 
             // ── Appearance ────────────────────────────────────────────────────
             SectionLabel(stringResource(R.string.global_settings_section_appearance))
             SettingsCard {
                 Column(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceMd),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.space10),
                 ) {
                     Text(stringResource(R.string.global_settings_theme_label), style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -217,10 +231,15 @@ fun GlobalSettingsScreen(
                         },
                     )
                 }
+                HorizontalDivider()
+                AccentColorRow(
+                    current = state.accentColor,
+                    onSelect = viewModel::setAccentColor,
+                )
             }
 
             // ── Browser ───────────────────────────────────────────────────────
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Dimens.spaceSm))
             SectionLabel(stringResource(R.string.global_settings_section_browser))
             SettingsCard {
                 ListItem(
@@ -232,14 +251,14 @@ fun GlobalSettingsScreen(
                     },
                 )
             }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Dimens.spaceSm))
             SettingsCard {
-                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceMd),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs)) {
                     Text(stringResource(R.string.global_settings_default_engine_label),
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.height(4.dp))
+                    Spacer(Modifier.height(Dimens.spaceXxs))
 
                     // ── System WebView option ─────────────────────────────────
                     EngineOptionRow(
@@ -249,7 +268,7 @@ fun GlobalSettingsScreen(
                         hint = stringResource(R.string.global_settings_engine_webview_desc),
                     )
 
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.spaceXxs))
 
                     // ── GeckoView option ──────────────────────────────────────
                     val geckoInstalled = geckoInstallState is GeckoInstallState.Installed
@@ -264,13 +283,13 @@ fun GlobalSettingsScreen(
                     )
 
                     // Download / status row — always visible
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(Dimens.spaceSm))
                     when (val gs = geckoInstallState) {
                             is GeckoInstallState.NotInstalled ->
                                 Row(verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm)) {
                                     Icon(Icons.Default.Language, null,
-                                        modifier = Modifier.size(16.dp),
+                                        modifier = Modifier.size(Dimens.sizeXs),
                                         tint = MaterialTheme.colorScheme.onSurfaceVariant)
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(stringResource(R.string.global_settings_gecko_not_installed),
@@ -286,10 +305,10 @@ fun GlobalSettingsScreen(
                                     }
                                 }
                             is GeckoInstallState.Downloading ->
-                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
                                     Row(verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm)) {
+                                        CircularProgressIndicator(modifier = Modifier.size(Dimens.sizeXs), strokeWidth = Dimens.strokeMd)
                                         Text("${gs.message}  ${(gs.progress * 100).toInt()}%",
                                             style = MaterialTheme.typography.bodySmall,
                                             modifier = Modifier.weight(1f))
@@ -302,8 +321,8 @@ fun GlobalSettingsScreen(
                                 }
                             is GeckoInstallState.Installing ->
                                 Row(verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm)) {
+                                    CircularProgressIndicator(modifier = Modifier.size(Dimens.sizeXs), strokeWidth = Dimens.strokeMd)
                                     Text(stringResource(R.string.global_settings_gecko_installing),
                                         style = MaterialTheme.typography.bodySmall,
                                         modifier = Modifier.weight(1f))
@@ -312,11 +331,11 @@ fun GlobalSettingsScreen(
                                 val installedVer = viewModel.geckoEngineManager.getInstalledVersion() ?: "—"
                                 val sizeMb = viewModel.geckoEngineManager.getInstalledSizeMb()
                                 val hasUpdate = viewModel.geckoEngineManager.updateAvailable
-                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
                                     Row(verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm)) {
                                         Icon(Icons.Default.CheckCircle, null,
-                                            modifier = Modifier.size(16.dp),
+                                            modifier = Modifier.size(Dimens.sizeXs),
                                             tint = MaterialTheme.colorScheme.primary)
                                         Column(modifier = Modifier.weight(1f)) {
                                             Text(stringResource(R.string.global_settings_gecko_version, installedVer, sizeMb),
@@ -327,10 +346,9 @@ fun GlobalSettingsScreen(
                                                 color = MaterialTheme.colorScheme.primary)
                                         }
                                     }
-                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
                                         modifier = Modifier.fillMaxWidth()) {
-                                        if (hasUpdate) Button(onClick = viewModel::updateGeckoEngine,
-                                            modifier = Modifier.height(36.dp)) { Text(stringResource(R.string.common_update)) }
+                                        if (hasUpdate) Button(onClick = viewModel::updateGeckoEngine) { Text(stringResource(R.string.common_update)) }
                                         TextButton(
                                             onClick = viewModel::uninstallGeckoEngine,
                                             colors = ButtonDefaults.textButtonColors(
@@ -340,9 +358,9 @@ fun GlobalSettingsScreen(
                             }
                             is GeckoInstallState.Error ->
                                 Row(verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm)) {
                                     Icon(Icons.Default.Language, null,
-                                        modifier = Modifier.size(16.dp),
+                                        modifier = Modifier.size(Dimens.sizeXs),
                                         tint = MaterialTheme.colorScheme.error)
                                     Text(stringResource(R.string.global_settings_gecko_download_failed, gs.message),
                                         style = MaterialTheme.typography.bodySmall,
@@ -355,7 +373,7 @@ fun GlobalSettingsScreen(
             }
 
             // ── Security ──────────────────────────────────────────────────────
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Dimens.spaceSm))
             SectionLabel(stringResource(R.string.global_settings_section_security))
             SettingsCard {
                 if (state.hasPassword) {
@@ -397,7 +415,7 @@ fun GlobalSettingsScreen(
                 }
             }
 
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Dimens.spaceSm))
             SettingsCard {
                 ListItem(
                     leadingContent = { Icon(Icons.Default.NoPhotography, null) },
@@ -413,7 +431,7 @@ fun GlobalSettingsScreen(
             }
 
             // ── Backup ────────────────────────────────────────────────────────
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Dimens.spaceSm))
             SectionLabel(stringResource(R.string.global_settings_section_backup))
             SettingsCard {
                 ListItem(
@@ -499,8 +517,8 @@ fun GlobalSettingsScreen(
 
                         // Actions
                         Column(
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceMd),
+                            verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
                         ) {
                             Button(
                                 onClick = viewModel::backupNow,
@@ -508,12 +526,12 @@ fun GlobalSettingsScreen(
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
                                 if (state.backupRunning) {
-                                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp,
+                                    CircularProgressIndicator(modifier = Modifier.size(Dimens.sizeSm), strokeWidth = Dimens.strokeMd,
                                         color = MaterialTheme.colorScheme.onPrimary)
-                                    Spacer(Modifier.width(8.dp))
+                                    Spacer(Modifier.width(Dimens.spaceSm))
                                 }
-                                Icon(Icons.Default.Backup, null, modifier = Modifier.size(18.dp))
-                                Spacer(Modifier.width(8.dp))
+                                Icon(Icons.Default.Backup, null, modifier = Modifier.size(Dimens.sizeSm))
+                                Spacer(Modifier.width(Dimens.spaceSm))
                                 Text(stringResource(R.string.global_settings_backup_now))
                             }
                             Button(
@@ -525,8 +543,8 @@ fun GlobalSettingsScreen(
                                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                                 ),
                             ) {
-                                Icon(Icons.Default.Restore, null, modifier = Modifier.size(18.dp))
-                                Spacer(Modifier.width(8.dp))
+                                Icon(Icons.Default.Restore, null, modifier = Modifier.size(Dimens.sizeSm))
+                                Spacer(Modifier.width(Dimens.spaceSm))
                                 Text(stringResource(R.string.global_settings_import_backup))
                             }
                         }
@@ -535,7 +553,7 @@ fun GlobalSettingsScreen(
             }
 
             // ── Data ──────────────────────────────────────────────────────────
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Dimens.spaceSm))
             SectionLabel(stringResource(R.string.global_settings_section_data))
             SettingsCard {
                 ListItem(
@@ -585,7 +603,7 @@ fun GlobalSettingsScreen(
             }
 
             // ── About ─────────────────────────────────────────────────────────
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Dimens.spaceSm))
             SectionLabel(stringResource(R.string.global_settings_section_about))
             SettingsCard {
                 ListItem(
@@ -597,7 +615,7 @@ fun GlobalSettingsScreen(
                     },
                 )
             }
-        }
+        } }
     }
 
     // ── Dialogs ───────────────────────────────────────────────────────────────
@@ -613,12 +631,12 @@ fun GlobalSettingsScreen(
                         Row(
                             modifier = Modifier.fillMaxWidth()
                                 .clickable { viewModel.setDefaultUaMode(mode); showUaDialog = false }
-                                .padding(vertical = 4.dp),
+                                .padding(vertical = Dimens.spaceXxs),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             RadioButton(selected = state.defaultUaMode == mode,
                                 onClick = { viewModel.setDefaultUaMode(mode); showUaDialog = false })
-                            Spacer(Modifier.width(8.dp))
+                            Spacer(Modifier.width(Dimens.spaceSm))
                             Text(mode.label, style = MaterialTheme.typography.bodyLarge)
                         }
                     }
@@ -643,12 +661,12 @@ fun GlobalSettingsScreen(
                         Row(
                             modifier = Modifier.fillMaxWidth()
                                 .clickable { viewModel.setBackupSchedule(schedule); showScheduleDialog = false }
-                                .padding(vertical = 4.dp),
+                                .padding(vertical = Dimens.spaceXxs),
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             RadioButton(selected = state.backupSchedule == schedule,
                                 onClick = { viewModel.setBackupSchedule(schedule); showScheduleDialog = false })
-                            Spacer(Modifier.width(8.dp))
+                            Spacer(Modifier.width(Dimens.spaceSm))
                             Text(label, style = MaterialTheme.typography.bodyLarge)
                         }
                     }
@@ -801,7 +819,7 @@ private fun SinglePasswordDialog(
         icon = { Icon(Icons.Default.Lock, null) },
         title = { Text(title) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm)) {
                 Text(description, style = MaterialTheme.typography.bodyMedium)
                 OutlinedTextField(
                     value = password,
@@ -888,7 +906,7 @@ private fun PasswordDialog(
         icon = { Icon(Icons.Default.Lock, null) },
         title = { Text(titleStr) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm)) {
                 if (mode == PasswordDialogMode.CHANGE || mode == PasswordDialogMode.REMOVE) {
                     OutlinedTextField(
                         value = currentPassword, onValueChange = { currentPassword = it; currentError = null },
@@ -974,7 +992,7 @@ private fun EngineOptionRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(vertical = 4.dp),
+            .padding(vertical = Dimens.spaceXxs),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             androidx.compose.runtime.CompositionLocalProvider(
@@ -984,10 +1002,10 @@ private fun EngineOptionRow(
                     selected = selected,
                     onClick = if (enabled) onClick else null,
                     enabled = enabled,
-                    modifier = Modifier.size(20.dp),
+                    modifier = Modifier.size(Dimens.sizeMd),
                 )
             }
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(Dimens.spaceMd))
             Text(
                 title,
                 style = MaterialTheme.typography.bodyLarge,
@@ -1000,21 +1018,94 @@ private fun EngineOptionRow(
             hint,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = contentAlpha),
-            modifier = Modifier.padding(start = 32.dp),
+            modifier = Modifier.padding(start = Dimens.size4xl),
         )
+    }
+}
+
+private val ACCENT_COLORS = listOf(
+    0xFFEF5350.toInt(), // Red
+    0xFFEC407A.toInt(), // Pink
+    0xFF7E57C2.toInt(), // Purple
+    0xFF5C6BC0.toInt(), // Indigo
+    0xFF42A5F5.toInt(), // Blue
+    0xFF26A69A.toInt(), // Teal
+    0xFF66BB6A.toInt(), // Green
+    0xFFFFA726.toInt(), // Orange
+    0xFFFF7043.toInt(), // Deep Orange
+    0xFF8D6E63.toInt(), // Brown
+    0xFF78909C.toInt(), // Blue Grey
+)
+
+@Composable
+private fun AccentColorRow(current: Int?, onSelect: (Int?) -> Unit) {
+    Column(modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceMd)) {
+        Text(
+            stringResource(R.string.global_settings_accent_color),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(Dimens.spaceSm))
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+        ) {
+            // "None" circle — uses current primary
+            Box(
+                modifier = Modifier
+                    .size(Dimens.sizeCard)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .border(
+                        width = if (current == null) Dimens.borderSelected else Dimens.borderDefault,
+                        color = if (current == null) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+                        shape = CircleShape,
+                    )
+                    .clickable { onSelect(null) },
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Default.Palette, null,
+                    modifier = Modifier.size(Dimens.sizeMd),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            ACCENT_COLORS.forEach { colorInt ->
+                val color = Color(colorInt)
+                val isSelected = current == colorInt
+                Box(
+                    modifier = Modifier
+                        .size(Dimens.sizeCard)
+                        .clip(CircleShape)
+                        .background(color)
+                        .border(
+                            width = if (isSelected) Dimens.borderSelected else Dimens.borderDefault,
+                            color = if (isSelected) MaterialTheme.colorScheme.outline
+                                    else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                            shape = CircleShape,
+                        )
+                        .clickable { onSelect(colorInt) },
+                ) {
+                    if (isSelected) {
+                        Icon(Icons.Default.Check, null,
+                            modifier = Modifier.align(Alignment.Center).size(Dimens.sizeMd),
+                            tint = Color.White)
+                    }
+                }
+            }
+        }
     }
 }
 
 @Composable
 private fun SectionLabel(text: String) =
     Text(text, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(horizontal = 4.dp))
+        modifier = Modifier.padding(horizontal = Dimens.spaceXxs))
 
 @Composable
 private fun SettingsCard(content: @Composable () -> Unit) =
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(Dimens.cornerXl),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) { content() }

@@ -31,9 +31,11 @@ import kotlinx.coroutines.launch
 enum class PasswordDialogMode { SET, CHANGE, REMOVE }
 
 data class GlobalSettingsUiState(
+    val isLoaded: Boolean = false,
     // Appearance
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val dynamicColor: Boolean = true,
+    val accentColor: Int? = null,
     val defaultUaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,
     val defaultEngineType: EngineType = EngineType.SYSTEM_WEBVIEW,
     // App lock password
@@ -78,11 +80,34 @@ class GlobalSettingsViewModel(
     val uiState: StateFlow<GlobalSettingsUiState> = _state
 
     init {
+        // Load all values atomically so the UI renders once with complete data
         viewModelScope.launch {
-            themeManager.themeMode.collect { mode -> _state.update { it.copy(themeMode = mode) } }
+            _state.update { it.copy(
+                themeMode           = themeManager.themeMode.first(),
+                dynamicColor        = themeManager.dynamicColor.first(),
+                accentColor         = themeManager.accentColor.first(),
+                defaultUaMode       = themeManager.defaultUaMode.first(),
+                defaultEngineType   = themeManager.defaultEngineType.first(),
+                hasPassword         = passwordManager.passwordHash.first() != null,
+                wipeOnFailedAttempts = passwordManager.wipeOnFailedAttempts.first(),
+                screenshotProtection = passwordManager.screenshotProtection.first(),
+                backupEnabled       = backupSettings.enabled.first(),
+                backupHasPassword   = backupSettings.hasPassword.first(),
+                backupDirectoryUri  = backupSettings.directoryUri.first(),
+                backupSchedule      = backupSettings.schedule.first(),
+                backupLastTime      = backupSettings.lastBackupTime.first(),
+                isLoaded            = true,
+            ) }
+        }
+        // Continue watching for live updates after the initial load
+        viewModelScope.launch {
+            themeManager.themeMode.collect { v -> _state.update { it.copy(themeMode = v) } }
         }
         viewModelScope.launch {
             themeManager.dynamicColor.collect { v -> _state.update { it.copy(dynamicColor = v) } }
+        }
+        viewModelScope.launch {
+            themeManager.accentColor.collect { v -> _state.update { it.copy(accentColor = v) } }
         }
         viewModelScope.launch {
             themeManager.defaultUaMode.collect { v -> _state.update { it.copy(defaultUaMode = v) } }
@@ -120,6 +145,7 @@ class GlobalSettingsViewModel(
 
     fun setThemeMode(mode: ThemeMode) = viewModelScope.launch { themeManager.setThemeMode(mode) }
     fun setDynamicColor(v: Boolean) = viewModelScope.launch { themeManager.setDynamicColor(v) }
+    fun setAccentColor(color: Int?) = viewModelScope.launch { themeManager.setAccentColor(color) }
     fun setDefaultUaMode(mode: UserAgentMode) = viewModelScope.launch { themeManager.setDefaultUaMode(mode) }
     fun setDefaultEngineType(engine: EngineType) = viewModelScope.launch { themeManager.setDefaultEngineType(engine) }
 

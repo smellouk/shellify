@@ -1,5 +1,6 @@
 package dev.pwaforge.presentation.navigation
 
+import android.app.Activity
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.fadeIn
@@ -10,7 +11,14 @@ import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material.icons.Icons
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import dev.pwaforge.R
+import dev.pwaforge.core.locale.LocaleHelper
+import kotlinx.coroutines.launch
 import androidx.compose.material.icons.automirrored.filled.Shortcut
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.PhoneAndroid
@@ -66,6 +74,9 @@ fun AppNavigation(
     val geckoInstalled = geckoInstallState is GeckoInstallState.Installed
             || geckoInstallState is GeckoInstallState.Downloading
             || geckoInstallState is GeckoInstallState.Installing
+    val context = LocalContext.current
+    val currentLanguage = remember { LocaleHelper.getLanguageCode(context) }
+    val coroutineScope = rememberCoroutineScope()
 
 
     Scaffold(
@@ -76,25 +87,25 @@ fun AppNavigation(
                         selected = currentRoute == Screen.Home.route,
                         onClick = { navController.navigateToTab(Screen.Home.route) },
                         icon = { Icon(Icons.Default.PhoneAndroid, null) },
-                        label = { Text("Apps") },
+                        label = { Text(stringResource(R.string.nav_apps)) },
                     )
                     NavigationBarItem(
                         selected = currentRoute == Screen.Categories.route,
                         onClick = { navController.navigateToTab(Screen.Categories.route) },
                         icon = { Icon(Icons.Default.Category, null) },
-                        label = { Text("Categories") },
+                        label = { Text(stringResource(R.string.nav_categories)) },
                     )
                     NavigationBarItem(
                         selected = currentRoute == Screen.Shortcuts.route,
                         onClick = { navController.navigateToTab(Screen.Shortcuts.route) },
                         icon = { Icon(Icons.AutoMirrored.Filled.Shortcut, null) },
-                        label = { Text("Shortcuts") },
+                        label = { Text(stringResource(R.string.nav_shortcuts)) },
                     )
                     NavigationBarItem(
                         selected = currentRoute == Screen.GlobalSettings.route,
                         onClick = { navController.navigateToTab(Screen.GlobalSettings.route) },
                         icon = { Icon(Icons.Default.Settings, null) },
-                        label = { Text("Settings") },
+                        label = { Text(stringResource(R.string.nav_settings)) },
                     )
                 }
             }
@@ -115,6 +126,12 @@ fun AppNavigation(
                 HomeScreen(
                     viewModel = remember { HomeViewModel(app.getWebApps, app.deleteWebApp, app.getCategories, app.saveWebApp, app.isolationManager, app) },
                     geckoInstalled = geckoInstalled,
+                    currentLanguage = currentLanguage,
+                    onLanguageChange = { code ->
+                        coroutineScope.launch { app.themeManager.setLanguageCode(code) }
+                        LocaleHelper.setLanguageCode(context, code)
+                        (context as? Activity)?.recreate()
+                    },
                     onAddApp = { navController.navigate(Screen.Add.createRoute()) },
                     onEditApp = { id -> navController.navigate(Screen.Add.createRoute(id)) },
                     onOpenApp = { },

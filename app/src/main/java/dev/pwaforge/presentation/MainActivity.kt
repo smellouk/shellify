@@ -1,9 +1,11 @@
 package dev.pwaforge.presentation
 
+import android.content.Context
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
+import dev.pwaforge.core.locale.LocaleHelper
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,6 +23,10 @@ import dev.pwaforge.presentation.navigation.AppNavigation
 import dev.pwaforge.presentation.theme.PWAForgeTheme
 
 class MainActivity : AppCompatActivity() {
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleHelper.wrap(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -31,6 +37,7 @@ class MainActivity : AppCompatActivity() {
 
             val themeMode by app.themeManager.themeMode.collectAsState(ThemeMode.SYSTEM)
             val dynamicColor by app.themeManager.dynamicColor.collectAsState(true)
+            val accentColor by app.themeManager.accentColor.collectAsState(null)
             val screenshotProtection by app.passwordManager.screenshotProtection.collectAsState(false)
 
             LaunchedEffect(screenshotProtection) {
@@ -38,7 +45,7 @@ class MainActivity : AppCompatActivity() {
                 else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
             }
 
-            PWAForgeTheme(themeMode = themeMode, dynamicColor = dynamicColor) {
+            PWAForgeTheme(themeMode = themeMode, dynamicColor = dynamicColor, accentColor = accentColor) {
                 CompositionLocalProvider(LocalThemeRevealState provides themeRevealState) {
                     Box(modifier = androidx.compose.ui.Modifier.fillMaxSize()) {
                         val navController = rememberNavController()

@@ -103,6 +103,7 @@ import dev.pwaforge.domain.model.TranslateEngine
 import dev.pwaforge.domain.model.TranslateLanguage
 import dev.pwaforge.domain.model.WebApp
 import dev.pwaforge.presentation.home.AppIcon
+import dev.pwaforge.presentation.theme.Dimens
 import dev.pwaforge.presentation.webview.WebViewActivity
 import kotlinx.coroutines.launch
 
@@ -186,7 +187,7 @@ fun AddScreen(
                         enabled = canRun,
                     ) {
                         if (state.isSaving && state.launchAppId == null) {
-                            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                            CircularProgressIndicator(modifier = Modifier.size(Dimens.sizeMd), strokeWidth = Dimens.strokeMd)
                         } else {
                             Icon(
                                 Icons.Default.PlayArrow,
@@ -205,7 +206,7 @@ fun AddScreen(
                         enabled = state.name.isNotBlank() && state.url.isNotBlank() && !state.isSaving && state.duplicateError == null,
                     ) {
                         if (state.isSaving && state.launchAppId != null) {
-                            CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                            CircularProgressIndicator(modifier = Modifier.size(Dimens.sizeXs), strokeWidth = Dimens.strokeMd)
                         } else {
                             Text(stringResource(R.string.common_save), fontWeight = FontWeight.SemiBold)
                         }
@@ -219,20 +220,20 @@ fun AddScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceSm),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
         ) {
             // ── Basic Info card ───────────────────────────────────────────────
             SectionCard {
                 Text(stringResource(R.string.add_basic_info), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(Dimens.spaceLg))
 
                 // 1. URL + inline Analyze
                 OutlinedTextField(
                     value = state.url,
                     onValueChange = viewModel::setUrl,
                     label = { Text(stringResource(R.string.add_url_label)) },
-                    leadingIcon = { Icon(Icons.Default.Link, null, modifier = Modifier.size(20.dp)) },
+                    leadingIcon = { Icon(Icons.Default.Link, null, modifier = Modifier.size(Dimens.sizeMd)) },
                     placeholder = { Text(stringResource(R.string.add_url_hint)) },
                     isError = state.urlError != null,
                     supportingText = {
@@ -247,7 +248,7 @@ fun AddScreen(
                             enabled = state.url.isNotBlank() && !state.isAnalyzing,
                         ) {
                             if (state.isAnalyzing) {
-                                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                                CircularProgressIndicator(modifier = Modifier.size(Dimens.sizeMd), strokeWidth = Dimens.strokeMd)
                             } else {
                                 Icon(
                                     Icons.Default.TravelExplore,
@@ -260,17 +261,17 @@ fun AddScreen(
                     },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(Dimens.cornerLg),
                 )
 
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(Dimens.spaceMd))
 
                 // 2. App Name
                 OutlinedTextField(
                     value = state.name,
                     onValueChange = viewModel::setName,
                     label = { Text(stringResource(R.string.add_name_label)) },
-                    leadingIcon = { Icon(Icons.Default.PhoneAndroid, null, modifier = Modifier.size(20.dp)) },
+                    leadingIcon = { Icon(Icons.Default.PhoneAndroid, null, modifier = Modifier.size(Dimens.sizeMd)) },
                     isError = state.nameError != null || state.duplicateError != null,
                     supportingText = {
                         when {
@@ -280,11 +281,11 @@ fun AddScreen(
                     },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(Dimens.cornerLg),
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                 )
 
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(Dimens.spaceLg))
 
                 // 3. Icon preview · fetch · gallery  ──  color swatch · label (single row)
                 val previewIconPath = state.iconPath ?: state.pendingIconPath
@@ -295,10 +296,10 @@ fun AddScreen(
                     // Icon preview
                     Box(
                         modifier = Modifier
-                            .size(52.dp)
-                            .clip(RoundedCornerShape(13.dp))
+                            .size(Dimens.sizeIconPreview)
+                            .clip(RoundedCornerShape(Dimens.cornerIcon))
                             .background(MaterialTheme.colorScheme.primaryContainer)
-                            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), RoundedCornerShape(13.dp))
+                            .border(Dimens.borderDefault, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f), RoundedCornerShape(Dimens.cornerIcon))
                             .clickable {
                                 imagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                             },
@@ -313,41 +314,41 @@ fun AddScreen(
                         } else {
                             Icon(Icons.Default.PhoneAndroid, null,
                                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.size(26.dp))
+                                modifier = Modifier.size(Dimens.size2xl))
                         }
                     }
 
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(Dimens.spaceSm))
 
                     // Fetch from URL
                     FilledIconButton(
                         onClick = viewModel::fetchIcon,
                         enabled = state.url.isNotBlank() && !state.isFetchingIcon,
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier.size(Dimens.size4xl),
                         colors = IconButtonDefaults.filledIconButtonColors(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         ),
                     ) {
                         if (state.isFetchingIcon) {
-                            CircularProgressIndicator(modifier = Modifier.size(13.dp), strokeWidth = 1.5.dp)
+                            CircularProgressIndicator(modifier = Modifier.size(Dimens.sizeTagIcon), strokeWidth = Dimens.strokeSm)
                         } else {
-                            Icon(Icons.Default.Language, stringResource(R.string.add_fetch_icon_cd), modifier = Modifier.size(16.dp))
+                            Icon(Icons.Default.Language, stringResource(R.string.add_fetch_icon_cd), modifier = Modifier.size(Dimens.sizeXs))
                         }
                     }
 
-                    Spacer(Modifier.width(4.dp))
+                    Spacer(Modifier.width(Dimens.spaceXxs))
 
                     // Pick from gallery
                     FilledIconButton(
                         onClick = {
                             imagePicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                         },
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier.size(Dimens.size4xl),
                         colors = IconButtonDefaults.filledIconButtonColors(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer,
                         ),
                     ) {
-                        Icon(Icons.Default.AutoAwesome, stringResource(R.string.add_choose_image_cd), modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.AutoAwesome, stringResource(R.string.add_choose_image_cd), modifier = Modifier.size(Dimens.sizeXs))
                     }
 
                     Spacer(Modifier.weight(1f))
@@ -355,17 +356,17 @@ fun AddScreen(
                     // Theme color swatch + label — tappable
                     Row(
                         modifier = Modifier
-                            .clip(RoundedCornerShape(12.dp))
-                            .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                            .clip(RoundedCornerShape(Dimens.cornerLg))
+                            .border(Dimens.borderDefault, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(Dimens.cornerLg))
                             .clickable { showColorPicker = true }
-                            .padding(horizontal = 10.dp, vertical = 8.dp),
+                            .padding(horizontal = Dimens.spaceMd, vertical = Dimens.spaceSm),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(26.dp)
-                                .clip(RoundedCornerShape(6.dp))
+                                .size(Dimens.size2xl)
+                                .clip(RoundedCornerShape(Dimens.cornerXs))
                                 .background(
                                     if (state.themeColor != null)
                                         runCatching { Color(android.graphics.Color.parseColor(state.themeColor)) }
@@ -392,23 +393,23 @@ fun AddScreen(
                 Text(stringResource(R.string.add_feature_adblock_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(Dimens.spaceMd))
                 SubToggleRow(stringResource(R.string.add_adblock_user_toggle),
                     stringResource(R.string.add_adblock_user_toggle_desc),
                     state.adBlockAllowUserToggle, viewModel::setAdBlockAllowUserToggle)
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(Dimens.spaceMd))
                 Text(stringResource(R.string.add_adblock_custom_rules_label), style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Medium)
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(Dimens.spaceSm))
                 Row(verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm)) {
                     OutlinedTextField(
                         value = state.adBlockCustomRuleInput,
                         onValueChange = viewModel::setAdBlockCustomRuleInput,
                         placeholder = { Text(stringResource(R.string.add_adblock_rule_placeholder)) },
                         singleLine = true,
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(Dimens.cornerMd),
                     )
                     FilledIconButton(onClick = viewModel::addAdBlockCustomRule, shape = CircleShape,
                         colors = IconButtonDefaults.filledIconButtonColors(
@@ -417,15 +418,15 @@ fun AddScreen(
                     }
                 }
                 if (state.adBlockCustomRules.isNotEmpty()) {
-                    Spacer(Modifier.height(8.dp))
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Spacer(Modifier.height(Dimens.spaceSm))
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs)) {
                         state.adBlockCustomRules.forEach { rule ->
                             InputChip(selected = false, onClick = {},
                                 label = { Text(rule, style = MaterialTheme.typography.bodySmall) },
                                 trailingIcon = {
                                     IconButton(onClick = { viewModel.removeAdBlockCustomRule(rule) },
-                                        modifier = Modifier.size(18.dp)) {
-                                        Icon(Icons.Default.Close, stringResource(R.string.common_remove), modifier = Modifier.size(14.dp))
+                                        modifier = Modifier.size(Dimens.sizeSm)) {
+                                        Icon(Icons.Default.Close, stringResource(R.string.common_remove), modifier = Modifier.size(Dimens.space14))
                                     }
                                 })
                         }
@@ -437,12 +438,12 @@ fun AddScreen(
                 Text(stringResource(R.string.add_feature_translate_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(Dimens.spaceLg))
                 LangDropdown(stringResource(R.string.add_translate_target_lang), state.translateTarget,
                     TranslateLanguage.entries, { it.displayName }, viewModel::setTranslateTarget)
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(Dimens.spaceMd))
                 EngineDropdown(state.translateEngine, viewModel::setTranslateEngine)
-                Spacer(Modifier.height(12.dp))
+                Spacer(Modifier.height(Dimens.spaceMd))
                 SubToggleRow(stringResource(R.string.add_translate_show_button), stringResource(R.string.add_translate_show_button_desc),
                     state.showTranslateButton, viewModel::setShowTranslateButton)
                 SubToggleRow(stringResource(R.string.add_translate_auto_load),
@@ -473,9 +474,9 @@ fun AddScreen(
                     dev.pwaforge.domain.model.LockType.SYSTEM to lockSystemLabel,
                 ).forEach { (type, label) ->
                     Row(
-                        modifier = Modifier.fillMaxWidth().clickable { viewModel.setLockType(type) }.padding(vertical = 4.dp),
+                        modifier = Modifier.fillMaxWidth().clickable { viewModel.setLockType(type) }.padding(vertical = Dimens.spaceXxs),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
                     ) {
                         androidx.compose.material3.RadioButton(
                             selected = state.lockType == type,
@@ -494,7 +495,7 @@ fun AddScreen(
                 onGoToSettings = { /* user is notified inline */ },
             )
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(Modifier.height(Dimens.spaceXl))
         }
 
         // ── Dialogs ───────────────────────────────────────────────────────────
@@ -533,21 +534,21 @@ private fun PwaAnalysisDialog(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
-                        .size(32.dp)
+                        .size(Dimens.size4xl)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.primary),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(Icons.Default.CheckCircle, null, tint = Color.White,
-                        modifier = Modifier.size(20.dp))
+                        modifier = Modifier.size(Dimens.sizeMd))
                 }
-                Spacer(Modifier.width(10.dp))
+                Spacer(Modifier.width(Dimens.spaceMd))
                 Text(stringResource(R.string.add_pwa_config_detected),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.weight(1f))
-                IconButton(onClick = onDismiss, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Default.Close, stringResource(R.string.add_dismiss_cd), modifier = Modifier.size(18.dp))
+                IconButton(onClick = onDismiss, modifier = Modifier.size(Dimens.size4xl)) {
+                    Icon(Icons.Default.Close, stringResource(R.string.add_dismiss_cd), modifier = Modifier.size(Dimens.sizeSm))
                 }
             }
         },
@@ -556,9 +557,9 @@ private fun PwaAnalysisDialog(
                 val source = if (manifest.display != null || manifest.icons.isNotEmpty()) "manifest.json" else "meta tags"
                 Text(stringResource(R.string.add_manifest_source, source), style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(Dimens.spaceSm))
                 HorizontalDivider()
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(Dimens.spaceSm))
 
                 manifest.name?.let {
                     ManifestRow(stringResource(R.string.add_manifest_name_label), it)
@@ -568,18 +569,18 @@ private fun PwaAnalysisDialog(
                 }
                 manifest.themeColor?.let { hex ->
                     Row(verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 3.dp)) {
+                        modifier = Modifier.padding(vertical = Dimens.spaceXxs)) {
                         Text(stringResource(R.string.add_manifest_color_label), style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.Medium)
-                        Spacer(Modifier.width(6.dp))
+                        Spacer(Modifier.width(Dimens.spaceXs))
                         val parsed = runCatching {
                             Color(android.graphics.Color.parseColor(hex))
                         }.getOrNull()
                         if (parsed != null) {
-                            Box(modifier = Modifier.size(18.dp).clip(RoundedCornerShape(4.dp))
+                            Box(modifier = Modifier.size(Dimens.sizeSm).clip(RoundedCornerShape(Dimens.cornerXxs))
                                 .background(parsed)
-                                .border(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), RoundedCornerShape(4.dp)))
-                            Spacer(Modifier.width(6.dp))
+                                .border(Dimens.borderHair, MaterialTheme.colorScheme.outline.copy(alpha = 0.4f), RoundedCornerShape(Dimens.cornerXxs)))
+                            Spacer(Modifier.width(Dimens.spaceXs))
                         }
                         Text(hex, style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -592,11 +593,11 @@ private fun PwaAnalysisDialog(
         confirmButton = {
             Button(
                 onClick = { onApplyAll(); onDismiss() },
-                modifier = Modifier.fillMaxWidth().height(48.dp),
-                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(Dimens.cornerLg),
             ) {
-                Icon(Icons.Default.AutoAwesome, null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(8.dp))
+                Icon(Icons.Default.AutoAwesome, null, modifier = Modifier.size(Dimens.sizeSm))
+                Spacer(Modifier.width(Dimens.spaceSm))
                 Text(stringResource(R.string.add_apply_all), fontWeight = FontWeight.SemiBold)
             }
         },
@@ -605,9 +606,9 @@ private fun PwaAnalysisDialog(
 
 @Composable
 private fun ManifestRow(label: String, value: String, maxLines: Int = 1) {
-    Row(verticalAlignment = Alignment.Top, modifier = Modifier.padding(vertical = 3.dp)) {
+    Row(verticalAlignment = Alignment.Top, modifier = Modifier.padding(vertical = Dimens.spaceXxs)) {
         Text(label, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
-        Spacer(Modifier.width(6.dp))
+        Spacer(Modifier.width(Dimens.spaceXs))
         Text(value, style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = maxLines, overflow = TextOverflow.Ellipsis)
@@ -630,33 +631,33 @@ private fun ColorPickerDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.add_pick_color_title)) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceLg)) {
                 // Preview swatch
                 Row(verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Box(modifier = Modifier.size(48.dp).clip(RoundedCornerShape(12.dp))
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMd)) {
+                    Box(modifier = Modifier.size(Dimens.sizeApp).clip(RoundedCornerShape(Dimens.cornerLg))
                         .background(runCatching { Color(android.graphics.Color.parseColor(selected)) }
                             .getOrDefault(MaterialTheme.colorScheme.primary))
-                        .border(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(12.dp)))
+                        .border(Dimens.borderDefault, MaterialTheme.colorScheme.outline.copy(alpha = 0.3f), RoundedCornerShape(Dimens.cornerLg)))
                     Text(selected, style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
 
                 // Preset grid
                 FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
                 ) {
                     PRESET_COLORS.forEach { hex ->
                         val color = runCatching { Color(android.graphics.Color.parseColor(hex)) }
                             .getOrDefault(Color.Gray)
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
+                                .size(Dimens.size5xl)
                                 .clip(CircleShape)
                                 .background(color)
                                 .border(
-                                    if (selected.equals(hex, ignoreCase = true)) 2.dp else 0.5.dp,
+                                    if (selected.equals(hex, ignoreCase = true)) Dimens.borderSelected else Dimens.borderHair,
                                     if (selected.equals(hex, ignoreCase = true))
                                         MaterialTheme.colorScheme.primary
                                     else MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
@@ -679,7 +680,7 @@ private fun ColorPickerDialog(
                     prefix = { Text("#") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
+                    shape = RoundedCornerShape(Dimens.cornerMd),
                 )
             }
         },
@@ -696,10 +697,10 @@ private fun ColorPickerDialog(
 
 @Composable
 private fun SectionCard(content: @Composable ColumnScope.() -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
+    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(Dimens.cornerXl),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)) {
-        Column(modifier = Modifier.padding(16.dp), content = content)
+        Column(modifier = Modifier.padding(Dimens.spaceLg), content = content)
     }
 }
 
@@ -711,19 +712,19 @@ private fun FeatureCard(
     onToggle: (Boolean) -> Unit,
     expandedContent: @Composable ColumnScope.() -> Unit,
 ) {
-    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
+    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(Dimens.cornerXl),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)) {
         Column {
-            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
                 verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp))
+                Box(modifier = Modifier.size(Dimens.sizeCard).clip(RoundedCornerShape(Dimens.cornerMd))
                     .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center) {
                     Icon(icon, null, tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(22.dp))
+                        modifier = Modifier.size(Dimens.sizeLg))
                 }
-                Spacer(Modifier.width(12.dp))
+                Spacer(Modifier.width(Dimens.spaceMd))
                 Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium,
                     modifier = Modifier.weight(1f))
                 Switch(checked = enabled, onCheckedChange = onToggle)
@@ -731,7 +732,7 @@ private fun FeatureCard(
             AnimatedVisibility(visible = enabled, enter = expandVertically(), exit = shrinkVertically()) {
                 Column {
                     HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+                    Column(modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
                         content = expandedContent)
                 }
             }
@@ -742,14 +743,14 @@ private fun FeatureCard(
 @Composable
 private fun SubToggleRow(title: String, description: String, checked: Boolean,
                           onCheckedChange: (Boolean) -> Unit) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = Dimens.spaceXs),
         verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
             Text(description, style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        Spacer(Modifier.width(16.dp))
+        Spacer(Modifier.width(Dimens.spaceLg))
         Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
@@ -764,7 +765,7 @@ private fun <T> LangDropdown(label: String, selected: T, options: List<T>,
             label = { Text(label) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
             modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable),
-            shape = RoundedCornerShape(12.dp))
+            shape = RoundedCornerShape(Dimens.cornerLg))
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             options.forEach { DropdownMenuItem(text = { Text(displayName(it)) },
                 onClick = { onSelect(it); expanded = false }) }
@@ -783,38 +784,38 @@ private fun BrowserEngineCard(
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(Dimens.cornerXl),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
         Column {
             Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Box(
-                    modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp))
+                    modifier = Modifier.size(Dimens.sizeCard).clip(RoundedCornerShape(Dimens.cornerMd))
                         .background(MaterialTheme.colorScheme.primaryContainer),
                     contentAlignment = Alignment.Center,
                 ) {
                     Icon(Icons.Default.Language, null,
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                        modifier = Modifier.size(22.dp))
+                        modifier = Modifier.size(Dimens.sizeLg))
                 }
-                Spacer(Modifier.width(12.dp))
+                Spacer(Modifier.width(Dimens.spaceMd))
                 Text(stringResource(R.string.add_engine_section), style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
+                verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs)) {
                 EngineType.entries.forEach { engine ->
                     val isGecko = engine == EngineType.GECKOVIEW
                     val enabled = !isGecko || geckoAvailable
                     Row(
                         modifier = Modifier.fillMaxWidth()
                             .clickable(enabled = enabled) { onSelect(engine) }
-                            .padding(vertical = 4.dp),
+                            .padding(vertical = Dimens.spaceXxs),
                         verticalAlignment = Alignment.Top,
                     ) {
                         androidx.compose.runtime.CompositionLocalProvider(
@@ -824,10 +825,10 @@ private fun BrowserEngineCard(
                                 selected = selected == engine,
                                 onClick = if (enabled) ({ onSelect(engine) }) else null,
                                 enabled = enabled,
-                                modifier = Modifier.size(20.dp),
+                                modifier = Modifier.size(Dimens.sizeMd),
                             )
                         }
-                        Spacer(Modifier.width(12.dp))
+                        Spacer(Modifier.width(Dimens.spaceMd))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 engine.displayName,
@@ -865,7 +866,7 @@ private fun EngineDropdown(selected: TranslateEngine, onSelect: (TranslateEngine
             label = { Text(stringResource(R.string.add_translate_engine_label)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
             modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable),
-            shape = RoundedCornerShape(12.dp))
+            shape = RoundedCornerShape(Dimens.cornerLg))
         ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             TranslateEngine.entries.forEach { engine ->
                 DropdownMenuItem(text = { Text(engine.displayName) },

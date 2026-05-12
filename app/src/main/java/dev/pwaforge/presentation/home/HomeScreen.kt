@@ -32,6 +32,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.GTranslate
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.PhoneAndroid
@@ -42,6 +43,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import dev.pwaforge.R
 import dev.pwaforge.domain.model.EngineType
 import androidx.compose.material3.Card
@@ -82,6 +84,13 @@ import androidx.compose.material3.TextButton
 import dev.pwaforge.domain.model.Category
 import dev.pwaforge.domain.model.LockType
 import dev.pwaforge.domain.model.WebApp
+import dev.pwaforge.presentation.theme.Dimens
+import dev.pwaforge.presentation.theme.GeckoWarning
+import dev.pwaforge.presentation.theme.TagAdBlock
+import dev.pwaforge.presentation.theme.TagFullscreen
+import dev.pwaforge.presentation.theme.TagLockPassword
+import dev.pwaforge.presentation.theme.TagLockSystem
+import dev.pwaforge.presentation.theme.TagTranslate
 import dev.pwaforge.presentation.webview.WebViewActivity
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -89,6 +98,8 @@ import dev.pwaforge.presentation.webview.WebViewActivity
 fun HomeScreen(
     viewModel: HomeViewModel,
     geckoInstalled: Boolean,
+    currentLanguage: String,
+    onLanguageChange: (String) -> Unit,
     onAddApp: () -> Unit,
     onEditApp: (Long) -> Unit,
     onOpenApp: (WebApp) -> Unit,
@@ -98,11 +109,13 @@ fun HomeScreen(
     val context = LocalContext.current
     var showSearch by remember { mutableStateOf(false) }
     var hideDetails by remember { mutableStateOf(false) }
+    var showLanguagePicker by remember { mutableStateOf(false) }
 
     val showDetailsCd = stringResource(R.string.home_show_details_cd)
     val hideDetailsCd = stringResource(R.string.home_hide_details_cd)
     val searchCd = stringResource(R.string.home_search_cd)
     val addFabCd = stringResource(R.string.home_add_fab_cd)
+    val languageChangeCd = stringResource(R.string.language_change_cd)
 
     val screenBg = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
     Scaffold(
@@ -133,6 +146,9 @@ fun HomeScreen(
                         Icon(if (hideDetails) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                             contentDescription = if (hideDetails) showDetailsCd else hideDetailsCd)
                     }
+                    IconButton(onClick = { showLanguagePicker = true }) {
+                        Icon(Icons.Default.Language, contentDescription = languageChangeCd)
+                    }
                     IconButton(onClick = { showSearch = !showSearch; if (!showSearch) viewModel.setSearch("") }) {
                         Icon(Icons.Default.Search, contentDescription = searchCd)
                     }
@@ -148,14 +164,25 @@ fun HomeScreen(
             }
         },
     ) { padding ->
+        if (showLanguagePicker) {
+            LanguagePickerDialog(
+                currentLanguage = currentLanguage,
+                onDismiss = { showLanguagePicker = false },
+                onSelect = { code ->
+                    showLanguagePicker = false
+                    onLanguageChange(code)
+                },
+            )
+        }
+
         Column(modifier = Modifier.padding(padding)) {
 
             // Category filter chips
             if (state.categories.isNotEmpty()) {
                 LazyRow(
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(vertical = 8.dp),
+                    contentPadding = PaddingValues(horizontal = Dimens.spaceLg),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
+                    modifier = Modifier.padding(vertical = Dimens.spaceSm),
                 ) {
                     item {
                         FilterChip(
@@ -174,11 +201,11 @@ fun HomeScreen(
                             label = {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
                                 ) {
                                     Box(
                                         modifier = Modifier
-                                            .size(10.dp)
+                                            .size(Dimens.space10)
                                             .background(catColor, CircleShape),
                                     )
                                     Text(cat.name)
@@ -200,10 +227,10 @@ fun HomeScreen(
                 )
             } else {
                 LazyVerticalGrid(
-                    columns = GridCells.Adaptive(160.dp),
-                    contentPadding = PaddingValues(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    columns = GridCells.Adaptive(Dimens.sizeGridCell),
+                    contentPadding = PaddingValues(Dimens.spaceLg),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
                 ) {
                     items(state.apps, key = { it.id }) { app ->
                         AppCard(
@@ -227,6 +254,69 @@ fun HomeScreen(
 
 }
 
+@Composable
+private fun LanguagePickerDialog(
+    currentLanguage: String,
+    onDismiss: () -> Unit,
+    onSelect: (String) -> Unit,
+) {
+    data class LangOption(val code: String, val nativeName: String, val englishName: String)
+    val options = listOf(
+        LangOption("en", "English", "English"),
+        LangOption("fr", "Français", "French"),
+        LangOption("ar", "العربية", "Arabic"),
+    )
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        icon = { Icon(Icons.Default.Language, null) },
+        title = { Text(stringResource(R.string.language_dialog_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm)) {
+                options.forEach { lang ->
+                    val isSelected = currentLanguage == lang.code
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(Dimens.cornerLg))
+                            .background(
+                                if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                            )
+                            .clickable { onSelect(lang.code) }
+                            .padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceMd),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                lang.nativeName,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                                        else MaterialTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                lang.englishName,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        RadioButton(
+                            selected = isSelected,
+                            onClick = { onSelect(lang.code) },
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) }
+        },
+    )
+}
+
 private sealed class HomeEmptyState {
     data object NoApps : HomeEmptyState()
     data class FilteredCategory(val name: String) : HomeEmptyState()
@@ -244,11 +334,11 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(horizontal = 48.dp),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
+            modifier = Modifier.padding(horizontal = Dimens.spaceXxl),
         ) {
             Box(
-                modifier = Modifier.size(120.dp),
+                modifier = Modifier.size(Dimens.sizeEmptyBox),
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
@@ -257,14 +347,14 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
                         is HomeEmptyState.FilteredCategory -> Icons.Default.Category
                     },
                     contentDescription = null,
-                    modifier = Modifier.size(96.dp),
+                    modifier = Modifier.size(Dimens.sizeEmptyIconLg),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                 )
                 Icon(
                     imageVector = Icons.Default.AutoAwesome,
                     contentDescription = null,
                     modifier = Modifier
-                        .size(40.dp)
+                        .size(Dimens.sizeCard)
                         .offset(x = 28.dp, y = (-16).dp)
                         .align(Alignment.TopEnd),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
@@ -312,32 +402,32 @@ private fun AppCard(
 
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(Dimens.cornerXl),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
     ) {
-        Column(modifier = Modifier.padding(12.dp)) {
+        Column(modifier = Modifier.padding(Dimens.spaceMd)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (hideDetails) {
                     Box(
                         modifier = Modifier
-                            .size(48.dp)
-                            .clip(RoundedCornerShape(12.dp))
+                            .size(Dimens.sizeApp)
+                            .clip(RoundedCornerShape(Dimens.cornerLg))
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(Icons.Default.VisibilityOff, null,
-                            modifier = Modifier.size(22.dp),
+                            modifier = Modifier.size(Dimens.sizeLg),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 } else {
-                    AppIcon(app = app, modifier = Modifier.size(48.dp))
+                    AppIcon(app = app, modifier = Modifier.size(Dimens.sizeApp))
                 }
                 Spacer(Modifier.weight(1f))
                 Box {
-                    IconButton(onClick = { showMenu = true }, modifier = Modifier.size(24.dp)) {
+                    IconButton(onClick = { showMenu = true }, modifier = Modifier.size(Dimens.sizeXl)) {
                         Icon(Icons.Default.MoreVert, contentDescription = "Menu",
-                            modifier = Modifier.size(16.dp))
+                            modifier = Modifier.size(Dimens.sizeXs))
                     }
                     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                         DropdownMenuItem(
@@ -368,7 +458,7 @@ private fun AppCard(
                     }
                 }
             }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(Dimens.spaceSm))
             Text(
                 if (hideDetails) "•".repeat(app.name.length.coerceIn(4, 12)) else app.name,
                 style = MaterialTheme.typography.labelLarge,
@@ -384,21 +474,21 @@ private fun AppCard(
             )
             FeatureTags(app)
             if (engineMissing) {
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(Dimens.spaceXs))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
                 ) {
                     Icon(
                         Icons.Default.Warning,
                         contentDescription = null,
-                        modifier = Modifier.size(12.dp),
-                        tint = androidx.compose.ui.graphics.Color(0xFFFF9800),
+                        modifier = Modifier.size(Dimens.sizeXxs),
+                        tint = GeckoWarning,
                     )
                     Text(
                         stringResource(R.string.home_gecko_required),
                         style = MaterialTheme.typography.labelSmall,
-                        color = androidx.compose.ui.graphics.Color(0xFFFF9800),
+                        color = GeckoWarning,
                     )
                 }
             }
@@ -457,11 +547,11 @@ private fun CategoryPickerDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { selected = null }
-                        .padding(vertical = 4.dp),
+                        .padding(vertical = Dimens.spaceXxs),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     RadioButton(selected = selected == null, onClick = { selected = null })
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(Dimens.spaceSm))
                     Text(stringResource(R.string.common_none), style = MaterialTheme.typography.bodyLarge)
                 }
                 categories.forEach { cat ->
@@ -469,11 +559,11 @@ private fun CategoryPickerDialog(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { selected = cat.id }
-                            .padding(vertical = 4.dp),
+                            .padding(vertical = Dimens.spaceXxs),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         RadioButton(selected = selected == cat.id, onClick = { selected = cat.id })
-                        Spacer(Modifier.width(8.dp))
+                        Spacer(Modifier.width(Dimens.spaceSm))
                         Text(cat.name, style = MaterialTheme.typography.bodyLarge)
                     }
                 }
@@ -492,26 +582,26 @@ private fun CategoryPickerDialog(
 private fun FeatureTags(app: WebApp) {
     data class Tag(val icon: androidx.compose.ui.graphics.vector.ImageVector, val desc: String, val color: Color)
     val tags = buildList {
-        if (app.isFullscreen) add(Tag(Icons.Default.Fullscreen, "Fullscreen", Color(0xFFFB8C00)))
-        if (app.adBlockEnabled) add(Tag(Icons.Default.Shield, "Ad block", Color(0xFF43A047)))
-        if (app.translateEnabled) add(Tag(Icons.Default.GTranslate, "Translate", Color(0xFF1E88E5)))
+        if (app.isFullscreen) add(Tag(Icons.Default.Fullscreen, "Fullscreen", TagFullscreen))
+        if (app.adBlockEnabled) add(Tag(Icons.Default.Shield, "Ad block", TagAdBlock))
+        if (app.translateEnabled) add(Tag(Icons.Default.GTranslate, "Translate", TagTranslate))
         when (app.lockType) {
-            LockType.PASSWORD -> add(Tag(Icons.Default.Lock, "Password lock", Color(0xFF7C4DFF)))
-            LockType.SYSTEM   -> add(Tag(Icons.Default.Fingerprint, "System lock", Color(0xFF3F51B5)))
+            LockType.PASSWORD -> add(Tag(Icons.Default.Lock, "Password lock", TagLockPassword))
+            LockType.SYSTEM   -> add(Tag(Icons.Default.Fingerprint, "System lock", TagLockSystem))
             LockType.NONE     -> Unit
         }
     }
     if (tags.isEmpty()) return
-    Spacer(Modifier.height(4.dp))
-    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+    Spacer(Modifier.height(Dimens.spaceXxs))
+    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs)) {
         tags.forEach { tag ->
             Box(
                 modifier = Modifier
-                    .size(22.dp)
-                    .background(tag.color.copy(alpha = 0.15f), RoundedCornerShape(6.dp)),
+                    .size(Dimens.sizeLg)
+                    .background(tag.color.copy(alpha = 0.15f), RoundedCornerShape(Dimens.cornerXs)),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(tag.icon, contentDescription = tag.desc, modifier = Modifier.size(13.dp), tint = tag.color)
+                Icon(tag.icon, contentDescription = tag.desc, modifier = Modifier.size(Dimens.sizeTagIcon), tint = tag.color)
             }
         }
     }
@@ -524,13 +614,13 @@ fun AppIcon(app: WebApp, modifier: Modifier = Modifier) {
             model = app.iconPath,
             contentDescription = app.name,
             contentScale = ContentScale.Crop,
-            modifier = modifier.clip(RoundedCornerShape(12.dp)),
+            modifier = modifier.clip(RoundedCornerShape(Dimens.cornerLg)),
         )
     } else {
         val color = runCatching { Color(android.graphics.Color.parseColor(app.themeColor)) }
             .getOrDefault(MaterialTheme.colorScheme.primary)
         Box(
-            modifier = modifier.clip(RoundedCornerShape(12.dp)).background(color),
+            modifier = modifier.clip(RoundedCornerShape(Dimens.cornerLg)).background(color),
             contentAlignment = Alignment.Center,
         ) {
             Text(

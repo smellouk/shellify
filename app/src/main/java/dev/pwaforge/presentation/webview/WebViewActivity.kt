@@ -57,6 +57,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import dev.pwaforge.presentation.theme.Dimens
 import kotlinx.coroutines.flow.MutableStateFlow
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -203,9 +204,9 @@ class WebViewActivity : FragmentActivity() {
                         icon = { Icon(Icons.Default.Lock, null) },
                         title = { Text(pwaApp.name) },
                         text = {
-                            Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(4.dp)) {
+                            Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(Dimens.spaceXxs)) {
                                 Text(stringResource(R.string.webview_password_prompt))
-                                Spacer(Modifier.height(8.dp))
+                                Spacer(Modifier.height(Dimens.spaceSm))
                                 OutlinedTextField(
                                     value = input,
                                     onValueChange = { input = it },
@@ -310,7 +311,7 @@ class WebViewActivity : FragmentActivity() {
                     var showSheet by remember { mutableStateOf(false) }
 
                     Box(
-                        modifier = Modifier.fillMaxSize().padding(16.dp),
+                        modifier = Modifier.fillMaxSize().padding(Dimens.spaceLg),
                         contentAlignment = Alignment.BottomEnd,
                     ) {
                         SmallFloatingActionButton(
@@ -327,9 +328,9 @@ class WebViewActivity : FragmentActivity() {
                             Text(
                                 pwaApp.name,
                                 style = MaterialTheme.typography.titleMedium,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+                                modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceXxs),
                             )
-                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                            HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.spaceSm))
 
                             ListItem(
                                 leadingContent = { Icon(Icons.Default.Shield, null) },

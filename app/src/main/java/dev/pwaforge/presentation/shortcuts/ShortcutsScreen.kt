@@ -52,6 +52,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.pwaforge.R
+import dev.pwaforge.presentation.theme.Dimens
 import dev.pwaforge.presentation.home.AppIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,13 +84,13 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
 
                 LazyColumn(
                     modifier = Modifier.padding(padding),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(Dimens.spaceLg),
+                    verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
                 ) {
                     items(state.items, key = { it.shortcutId }) { item ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(16.dp),
+                            shape = RoundedCornerShape(Dimens.cornerXl),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         ) {
@@ -167,7 +168,7 @@ private fun ShortcutRow(
 
     ListItem(
         colors = ListItemDefaults.colors(containerColor = MaterialTheme.colorScheme.surface),
-        leadingContent = { AppIcon(app = item.app, modifier = Modifier.size(48.dp)) },
+        leadingContent = { AppIcon(app = item.app, modifier = Modifier.size(Dimens.sizeApp)) },
         headlineContent = { Text(item.label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         supportingContent = {
             Text(
@@ -215,13 +216,13 @@ private fun EmptyState(modifier: Modifier = Modifier) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(horizontal = 48.dp),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
+            modifier = Modifier.padding(horizontal = Dimens.spaceXxl),
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.Shortcut,
                 contentDescription = null,
-                modifier = Modifier.size(72.dp),
+                modifier = Modifier.size(Dimens.sizeEmptyIcon),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
             )
             Text(

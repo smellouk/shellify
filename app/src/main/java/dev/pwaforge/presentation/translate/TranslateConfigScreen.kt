@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.pwaforge.R
+import dev.pwaforge.presentation.theme.Dimens
 import dev.pwaforge.domain.model.TranslateLanguage
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,7 +55,7 @@ fun TranslateConfigScreen(
     ) { padding ->
         if (app == null) return@Scaffold
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(16.dp),
+            modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(Dimens.spaceLg),
         ) {
             // Language selector
             ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
@@ -64,7 +65,7 @@ fun TranslateConfigScreen(
                     readOnly = true,
                     label = { Text(stringResource(R.string.translate_target_language)) },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                    modifier = Modifier.menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable).padding(bottom = 16.dp),
+                    modifier = Modifier.menuAnchor(androidx.compose.material3.MenuAnchorType.PrimaryNotEditable).padding(bottom = Dimens.spaceLg),
                 )
                 ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                     TranslateLanguage.entries.forEach { lang ->
