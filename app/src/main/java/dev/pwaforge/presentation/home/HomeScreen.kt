@@ -593,19 +593,16 @@ private fun AppCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
-                    ) {
-                        Text(
-                            if (hideDetails) "••••••••••••" else app.url.removePrefix("https://").removePrefix("http://"),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f),
-                        )
+                    Text(
+                        if (hideDetails) "••••••••••••" else app.url.removePrefix("https://").removePrefix("http://"),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         FeatureTags(app)
+                        Spacer(Modifier.weight(1f))
                         Box {
                             IconButton(onClick = { showMenu = true }, modifier = Modifier.size(Dimens.sizeXl)) {
                                 Icon(Icons.Default.MoreVert, contentDescription = "Menu",
@@ -760,22 +757,25 @@ private fun FeatureTags(app: WebApp) {
             LockType.NONE     -> Unit
         }
     }
-    tags.forEach { tag ->
-        Box(
-            modifier = Modifier
-                .background(
-                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
-                    RoundedCornerShape(Dimens.cornerFull),
+    if (tags.isEmpty()) return
+    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs)) {
+        tags.forEach { tag ->
+            Box(
+                modifier = Modifier
+                    .background(
+                        MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                        RoundedCornerShape(Dimens.cornerFull),
+                    )
+                    .padding(Dimens.spaceXxs),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    tag.icon,
+                    contentDescription = tag.label,
+                    modifier = Modifier.size(Dimens.sizeXs),
+                    tint = MaterialTheme.colorScheme.primary,
                 )
-                .padding(Dimens.spaceXxs),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                tag.icon,
-                contentDescription = tag.label,
-                modifier = Modifier.size(Dimens.sizeXs),
-                tint = MaterialTheme.colorScheme.primary,
-            )
+            }
         }
     }
 }
