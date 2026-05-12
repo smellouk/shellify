@@ -565,11 +565,8 @@ private fun AppCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
     ) {
-        Column {
-            Row(
-                modifier = Modifier.padding(Dimens.spaceMd),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
+        Column(modifier = Modifier.padding(Dimens.spaceMd)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 if (hideDetails) {
                     Box(
                         modifier = Modifier
@@ -600,63 +597,63 @@ private fun AppCard(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        FeatureTags(app)
-                        Spacer(Modifier.weight(1f))
-                        Box {
-                            IconButton(onClick = { showMenu = true }, modifier = Modifier.size(Dimens.sizeXl)) {
-                                Icon(Icons.Default.MoreVert, contentDescription = "Menu",
-                                    modifier = Modifier.size(Dimens.sizeXs))
-                            }
-                            DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.home_menu_edit)) },
-                                    leadingIcon = { Icon(Icons.Default.Edit, null) },
-                                    onClick = { showMenu = false; onEdit() },
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.home_menu_assign_category)) },
-                                    leadingIcon = { Icon(Icons.Default.Category, null) },
-                                    onClick = { showMenu = false; showCategoryPicker = true },
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.home_menu_settings)) },
-                                    leadingIcon = { Icon(Icons.Default.Settings, null) },
-                                    onClick = { showMenu = false; onSettings() },
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.home_menu_clear_data)) },
-                                    leadingIcon = { Icon(Icons.Default.DeleteSweep, null) },
-                                    onClick = { showMenu = false; showClearDataDialog = true },
-                                )
-                                DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.home_menu_delete)) },
-                                    leadingIcon = { Icon(Icons.Default.Delete, null) },
-                                    onClick = { showMenu = false; onDelete() },
-                                )
-                            }
-                        }
+                }
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                FeatureTags(app)
+                Spacer(Modifier.weight(1f))
+                Box {
+                    IconButton(onClick = { showMenu = true }, modifier = Modifier.size(Dimens.sizeXl)) {
+                        Icon(Icons.Default.MoreVert, contentDescription = "Menu",
+                            modifier = Modifier.size(Dimens.sizeXs))
+                    }
+                    DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.home_menu_edit)) },
+                            leadingIcon = { Icon(Icons.Default.Edit, null) },
+                            onClick = { showMenu = false; onEdit() },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.home_menu_assign_category)) },
+                            leadingIcon = { Icon(Icons.Default.Category, null) },
+                            onClick = { showMenu = false; showCategoryPicker = true },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.home_menu_settings)) },
+                            leadingIcon = { Icon(Icons.Default.Settings, null) },
+                            onClick = { showMenu = false; onSettings() },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.home_menu_clear_data)) },
+                            leadingIcon = { Icon(Icons.Default.DeleteSweep, null) },
+                            onClick = { showMenu = false; showClearDataDialog = true },
+                        )
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.home_menu_delete)) },
+                            leadingIcon = { Icon(Icons.Default.Delete, null) },
+                            onClick = { showMenu = false; onDelete() },
+                        )
                     }
                 }
             }
-            if (engineMissing) {
-                Row(
-                    modifier = Modifier.padding(start = Dimens.spaceMd, end = Dimens.spaceMd, bottom = Dimens.spaceSm),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
-                ) {
-                    Icon(
-                        Icons.Default.Warning,
-                        contentDescription = null,
-                        modifier = Modifier.size(Dimens.sizeXxs),
-                        tint = GeckoWarning,
-                    )
-                    Text(
-                        stringResource(R.string.home_gecko_required),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = GeckoWarning,
-                    )
-                }
+        }
+        if (engineMissing) {
+            Row(
+                modifier = Modifier.padding(top = Dimens.spaceXxs),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
+            ) {
+                Icon(
+                    Icons.Default.Warning,
+                    contentDescription = null,
+                    modifier = Modifier.size(Dimens.sizeXxs),
+                    tint = GeckoWarning,
+                )
+                Text(
+                    stringResource(R.string.home_gecko_required),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = GeckoWarning,
+                )
             }
         }
     }
