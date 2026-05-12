@@ -1178,7 +1178,7 @@ internal fun AccentColorRow(current: Int?, onSelect: (Int?) -> Unit) {
 private fun SectionLabel(text: String) =
     Text(
         text,
-        fontSize = Dimens.textSizeSectionLabel,
+        style = MaterialTheme.typography.labelMedium,
         fontWeight = FontWeight.Bold,
         letterSpacing = Dimens.letterSpacingCaps,
         color = MaterialTheme.colorScheme.primary,

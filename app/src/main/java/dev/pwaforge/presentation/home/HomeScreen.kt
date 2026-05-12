@@ -479,7 +479,7 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
         ) {
             Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeSm))
             Spacer(Modifier.width(Dimens.spaceSm))
-            Text(stringResource(R.string.home_empty_subtitle_action), fontSize = Dimens.textSizeCta, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.home_empty_subtitle_action), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
         }
         Spacer(Modifier.height(Dimens.space22))
 
@@ -490,7 +490,7 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
         ) {
             Text(
                 stringResource(R.string.home_quick_suggestions),
-                fontSize = Dimens.textSizeCaption,
+                style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.Bold,
                 letterSpacing = Dimens.letterSpacingCaps,
                 color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
@@ -519,7 +519,7 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(30.dp)
+                                .size(Dimens.sizeIconLarge)
                                 .background(p95, RoundedCornerShape(Dimens.cornerSm)),
                             contentAlignment = Alignment.Center,
                         ) {
@@ -772,7 +772,7 @@ private fun FeatureTags(app: WebApp) {
                 )
                 Text(
                     tag.label,
-                    fontSize = Dimens.textSizeCaption,
+                    style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.primary,
                 )

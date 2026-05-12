@@ -221,7 +221,7 @@ fun CategoryScreen(
                 Spacer(Modifier.height(Dimens.space14))
                 Text(
                     stringResource(R.string.categories_empty),
-                    fontSize = Dimens.textSizeEmptyTitle,
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.SemiBold,
                     letterSpacing = Dimens.letterSpacingTight,
                     color = MaterialTheme.colorScheme.onSurface,
@@ -244,7 +244,7 @@ fun CategoryScreen(
                 ) {
                     Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeSm))
                     Spacer(Modifier.size(Dimens.spaceSm))
-                    Text(stringResource(R.string.categories_add), fontSize = Dimens.textSizeCta, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.categories_add), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
                 }
                 Spacer(Modifier.height(Dimens.sizeMd))
 
@@ -285,7 +285,7 @@ fun CategoryScreen(
                                     horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
                                 ) {
                                     Icon(icon, null, modifier = Modifier.size(Dimens.sizeTagIcon), tint = fg)
-                                    Text(label, fontSize = Dimens.textSizeSectionLabel, fontWeight = FontWeight.SemiBold, color = fg)
+                                    Text(label, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, color = fg)
                                     Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeXxs), tint = fg)
                                 }
                             }
@@ -349,7 +349,7 @@ fun CategoryScreen(
                             }
                             Text(
                                 cat.name,
-                                fontSize = Dimens.textSizeCta,
+                                style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface,
                             )

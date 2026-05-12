@@ -727,7 +727,7 @@ private fun AppearancePage(
         ) {
             Text(
                 text = stringResource(R.string.onboarding_appearance_preview_label).uppercase(),
-                fontSize = Dimens.textSizeCaption,
+                style = MaterialTheme.typography.labelSmall,
                 fontWeight = FontWeight.SemiBold,
                 letterSpacing = Dimens.letterSpacingOverline,
                 color = onSurfaceVariant,
@@ -809,7 +809,7 @@ private fun AppearancePage(
                 }
                 Text(
                     text = "3/5 set up",
-                    fontSize = Dimens.textSizeCaption,
+                    style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.SemiBold,
                     color = onSurfaceVariant,
                 )

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -111,15 +112,15 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                     item {
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(20.dp),
+                            shape = RoundedCornerShape(Dimens.corner20),
                             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                            border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
                             elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         ) {
                             state.items.forEachIndexed { index, shortcutItem ->
                                 if (index > 0) {
                                     HorizontalDivider(
-                                        modifier = Modifier.padding(horizontal = 14.dp),
+                                        modifier = Modifier.padding(horizontal = Dimens.space14),
                                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                                     )
                                 }
@@ -201,8 +202,8 @@ private fun ShortcutRow(
         leadingContent = {
             Box(
                 modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(Dimens.sizeCard)
+                    .clip(RoundedCornerShape(Dimens.cornerLg))
                     .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
                 contentAlignment = Alignment.Center,
             ) {
@@ -260,17 +261,17 @@ private fun EmptyState(modifier: Modifier = Modifier) {
     val surfDim = MaterialTheme.colorScheme.outlineVariant
 
     Column(
-        modifier = modifier.padding(horizontal = 32.dp),
+        modifier = modifier.padding(horizontal = Dimens.size4xl),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(Dimens.spaceXl))
 
         // 160×160 illustration — 3 filled rings + single dashed orbit
-        Box(modifier = Modifier.size(160.dp), contentAlignment = Alignment.Center) {
-            Box(modifier = Modifier.size(160.dp).background(p97, CircleShape))
-            Box(modifier = Modifier.size(116.dp).background(p95, CircleShape))
-            Box(modifier = Modifier.size(72.dp).background(p90, CircleShape))
-            Canvas(modifier = Modifier.size(160.dp)) {
+        Box(modifier = Modifier.size(Dimens.illustrationSize), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.size(Dimens.illustrationSize).background(p97, CircleShape))
+            Box(modifier = Modifier.size(Dimens.illustrationSizeMid).background(p95, CircleShape))
+            Box(modifier = Modifier.size(Dimens.illustrationSizeInner).background(p90, CircleShape))
+            Canvas(modifier = Modifier.size(Dimens.illustrationSize)) {
                 drawCircle(
                     color = p40.copy(alpha = 0.35f),
                     radius = 70.dp.toPx(),
@@ -281,29 +282,29 @@ private fun EmptyState(modifier: Modifier = Modifier) {
                 )
             }
             Box(
-                modifier = Modifier.size(64.dp).background(p40, RoundedCornerShape(20.dp)),
+                modifier = Modifier.size(Dimens.sizeIllustrationTile).background(p40, RoundedCornerShape(Dimens.corner20)),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.AutoMirrored.Filled.Shortcut, null, modifier = Modifier.size(30.dp), tint = Color.White)
+                Icon(Icons.AutoMirrored.Filled.Shortcut, null, modifier = Modifier.size(Dimens.sizeIconLarge), tint = Color.White)
             }
-            Box(modifier = Modifier.size(26.dp).offset(x = (-49).dp, y = (-57).dp)
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
-                .border(1.dp, surfDim, RoundedCornerShape(8.dp)))
-            Box(modifier = Modifier.size(22.dp).offset(x = 57.dp, y = (-45).dp)
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(7.dp))
-                .border(1.dp, surfDim, RoundedCornerShape(7.dp)))
-            Box(modifier = Modifier.size(22.dp).offset(x = (-61).dp, y = 51.dp)
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(7.dp))
-                .border(1.dp, surfDim, RoundedCornerShape(7.dp)))
-            Box(modifier = Modifier.size(26.dp).offset(x = 41.dp, y = 59.dp)
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
-                .border(1.dp, surfDim, RoundedCornerShape(8.dp)))
+            Box(modifier = Modifier.size(Dimens.size2xl).offset(x = (-49).dp, y = (-57).dp)
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(Dimens.cornerSm))
+                .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)))
+            Box(modifier = Modifier.size(Dimens.sizeLg).offset(x = 57.dp, y = (-45).dp)
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(Dimens.cornerSm))
+                .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)))
+            Box(modifier = Modifier.size(Dimens.sizeLg).offset(x = (-61).dp, y = 51.dp)
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(Dimens.cornerSm))
+                .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)))
+            Box(modifier = Modifier.size(Dimens.size2xl).offset(x = 41.dp, y = 59.dp)
+                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(Dimens.cornerSm))
+                .border(Dimens.borderDefault, surfDim, RoundedCornerShape(Dimens.cornerSm)))
         }
 
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(Dimens.space14))
         Text(
             stringResource(R.string.shortcuts_empty_title),
-            fontSize = Dimens.textSizeEmptyTitle,
+            style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
             letterSpacing = Dimens.letterSpacingTight,
             color = MaterialTheme.colorScheme.onSurface,
@@ -317,16 +318,16 @@ private fun EmptyState(modifier: Modifier = Modifier) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(Dimens.space18))
         Button(
             onClick = {},
-            shape = RoundedCornerShape(24.dp),
-            modifier = Modifier.height(48.dp),
-            contentPadding = PaddingValues(horizontal = 22.dp),
+            shape = RoundedCornerShape(Dimens.corner24),
+            modifier = Modifier.heightIn(min = Dimens.sizeApp),
+            contentPadding = PaddingValues(horizontal = Dimens.space22),
         ) {
-            Icon(Icons.Default.Add, null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.shortcuts_add_button), fontSize = Dimens.textSizeCta, fontWeight = FontWeight.SemiBold)
+            Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeSm))
+            Spacer(Modifier.width(Dimens.spaceSm))
+            Text(stringResource(R.string.shortcuts_add_button), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
         }
         Spacer(Modifier.weight(1f))
     }
