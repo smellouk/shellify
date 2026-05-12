@@ -499,7 +499,9 @@ class WebViewActivity : FragmentActivity() {
 
     private fun applyWindowMode(app: WebApp) {
         val fullscreen = app.isFullscreen
-        WindowCompat.setDecorFitsSystemWindows(window, !fullscreen)
+        // Always edge-to-edge so insets reach the container and the status bar scrim
+        // can measure the real status bar height via ViewCompat.setOnApplyWindowInsetsListener.
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         val controller = WindowInsetsControllerCompat(window, window.decorView)
         if (fullscreen) {
             controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
