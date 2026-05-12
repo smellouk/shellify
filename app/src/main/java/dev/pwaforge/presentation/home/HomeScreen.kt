@@ -761,12 +761,22 @@ private fun FeatureTags(app: WebApp) {
         }
     }
     tags.forEach { tag ->
-        Icon(
-            tag.icon,
-            contentDescription = tag.label,
-            modifier = Modifier.size(Dimens.sizeXs),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-        )
+        Box(
+            modifier = Modifier
+                .background(
+                    MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                    RoundedCornerShape(Dimens.cornerFull),
+                )
+                .padding(Dimens.spaceXxs),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                tag.icon,
+                contentDescription = tag.label,
+                modifier = Modifier.size(Dimens.sizeXs),
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        }
     }
 }
 
