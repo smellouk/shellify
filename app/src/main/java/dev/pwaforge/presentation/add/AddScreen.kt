@@ -155,7 +155,7 @@ fun AddScreen(
 
     var showColorPicker by remember { mutableStateOf(false) }
 
-    val screenBg = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+    val screenBg = MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
 
     val createAppTitle = stringResource(R.string.add_create_app)
     val editAppTitle = stringResource(R.string.edit_title)

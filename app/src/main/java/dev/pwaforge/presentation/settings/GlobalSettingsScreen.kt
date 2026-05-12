@@ -153,7 +153,7 @@ fun GlobalSettingsScreen(
         uri?.let { viewModel.showImportDialog(it) }
     }
 
-    val screenBg = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+    val screenBg = MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
     Scaffold(
         containerColor = screenBg,
         topBar = { TopAppBar(title = { Text(stringResource(R.string.global_settings_title)) }) },
@@ -269,7 +269,7 @@ fun GlobalSettingsScreen(
                 Column(modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceMd),
                     verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs)) {
                     Text(stringResource(R.string.global_settings_default_engine_label),
-                        style = MaterialTheme.typography.labelLarge,
+                        style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.height(Dimens.spaceXxs))
 
@@ -1100,7 +1100,7 @@ private fun EngineOptionRow(
             Text(
                 title,
                 style = MaterialTheme.typography.bodyLarge,
-                fontWeight = if (selected) androidx.compose.ui.text.font.FontWeight.Medium
+                fontWeight = if (selected) androidx.compose.ui.text.font.FontWeight.Bold
                              else androidx.compose.ui.text.font.FontWeight.Normal,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = contentAlpha),
             )
@@ -1115,7 +1115,7 @@ private fun EngineOptionRow(
 }
 
 internal val ACCENT_COLORS = listOf(
-    0xFF5B3FBF.toInt(), // Violet
+    0xFF33691E.toInt(), // Green
     0xFF3F4FBF.toInt(), // Indigo
     0xFF006B5F.toInt(), // Teal
     0xFFB5365E.toInt(), // Rose

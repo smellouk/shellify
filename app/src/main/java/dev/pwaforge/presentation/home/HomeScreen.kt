@@ -131,7 +131,7 @@ fun HomeScreen(
     val addFabCd = stringResource(R.string.home_add_fab_cd)
     val languageChangeCd = stringResource(R.string.language_change_cd)
 
-    val screenBg = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+    val screenBg = MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
     Scaffold(
         containerColor = screenBg,
         topBar = {
@@ -301,7 +301,7 @@ private fun LanguagePickerDialog(
                             .clip(RoundedCornerShape(Dimens.cornerLg))
                             .background(
                                 if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                else MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
                             )
                             .clickable { onSelect(lang.code) }
                             .padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceMd),

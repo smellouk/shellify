@@ -81,7 +81,7 @@ import dev.pwaforge.presentation.home.AppIcon
 fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
     val state by viewModel.uiState.collectAsState()
 
-    val screenBg = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+    val screenBg = MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
     Scaffold(
         containerColor = screenBg,
         topBar = {

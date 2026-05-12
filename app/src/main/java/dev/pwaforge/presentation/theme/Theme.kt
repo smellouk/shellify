@@ -3,6 +3,9 @@ package dev.pwaforge.presentation.theme
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -54,6 +57,8 @@ private val LightColors = lightColorScheme(
     primary = Purple40,
     secondary = PurpleGrey40,
     tertiary = Pink40,
+    surface = Color.White,
+    onSurface = Color(0xFF1C1B1F),
 )
 
 @Composable
@@ -98,6 +103,21 @@ fun PWAForgeTheme(
     } else colorScheme
 
     val typography = if (Locale.getDefault().language == "ar") arabicTypography() else Typography()
+
+    val view = LocalView.current
+    if (!view.isInEditMode) {
+        SideEffect {
+            val window = (view.context as? android.app.Activity)?.window
+            if (window != null) {
+                @Suppress("DEPRECATION")
+                window.statusBarColor = if (useDark)
+                    android.graphics.Color.parseColor("#1C1B1F")
+                else
+                    android.graphics.Color.WHITE
+                WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !useDark
+            }
+        }
+    }
 
     MaterialTheme(
         colorScheme = finalColorScheme,
