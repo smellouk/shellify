@@ -523,8 +523,8 @@ private fun EmptyState(modifier: Modifier = Modifier, reason: HomeEmptyState = H
                             Icon(icon, null, modifier = Modifier.size(Dimens.sizeXs), tint = p40)
                         }
                         Column(modifier = Modifier.weight(1f)) {
-                            Text(name, fontSize = Dimens.textSizeBody, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
-                            Text(host, fontSize = Dimens.textSizeCaption, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(name, fontSize = Dimens.textSizeBody, lineHeight = Dimens.textSizeBody, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+                            Text(host, fontSize = Dimens.textSizeCaption, lineHeight = Dimens.textSizeCaption, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         Icon(Icons.Default.Add, null, modifier = Modifier.size(Dimens.sizeXs), tint = p40)
                     }
