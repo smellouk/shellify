@@ -49,7 +49,7 @@ class PWAForgeApplication : Application() {
 
     val geckoEngineManager by lazy { GeckoEngineManager(this) }
     val pwaAnalyzer by lazy { PwaAnalyzer.create() }
-    val faviconFetcher by lazy { FaviconFetcher(this) }
+    val faviconFetcher by lazy { FaviconFetcher(this, themeManager) }
     val adBlocker by lazy { AdBlocker() }
     val simpleIconsManager by lazy { SimpleIconsManager(this) }
     val isolationManager by lazy { IsolationManager(this, cryptoManager, geckoEngineManager) }

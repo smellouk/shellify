@@ -115,8 +115,7 @@ class ShortcutsViewModel(
         _state.update { it.copy(iconRefreshState = IconRefreshState.Loading) }
         viewModelScope.launch(Dispatchers.IO) {
             val success = runCatching {
-                val manifest = analyzer.analyze(item.app.url)
-                val iconUrl = manifest.bestIconUrl(item.app.url)
+                val iconUrl = runCatching { analyzer.analyze(item.app.url).bestIconUrl(item.app.url) }.getOrNull()
                 val path = faviconFetcher.fetch(iconUrl, item.app.url, item.app.isolationId)
                     ?: return@runCatching false
                 val updated = item.app.copy(iconSource = IconSource.Path(path))

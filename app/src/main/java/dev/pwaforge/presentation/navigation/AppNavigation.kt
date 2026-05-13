@@ -224,31 +224,16 @@ fun AppNavigation(
                 val appId = back.arguments!!.getLong("appId")
                 AppSettingsScreen(
                     viewModel = remember(appId) { AppSettingsViewModel(appId, app.webAppRepository, app.saveWebApp,
-                        app.deleteWebApp, app.isolationManager, app) },
+                        app.deleteWebApp, app.isolationManager, app,
+                        app.pwaAnalyzer, app.faviconFetcher, app.simpleIconsManager) },
                     onBack = { navController.popBackStack() },
                     onDeleted = { navController.popBackStack(Screen.Home.route, inclusive = false) },
-                    onOpenTranslate = { navController.navigate(Screen.TranslateConfig.createRoute(appId)) },
                 )
             }
 
             composable(Screen.Categories.route) {
                 CategoryScreen(
                     viewModel = remember { CategoryViewModel(app.getCategories, app.saveCategory, app.categoryRepository) },
-                )
-            }
-
-            composable(
-                route = Screen.TranslateConfig.route,
-                arguments = listOf(navArgument("appId") { type = NavType.LongType }),
-                enterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn() },
-                exitTransition = { ExitTransition.None },
-                popEnterTransition = { EnterTransition.None },
-                popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut() },
-            ) { back ->
-                val appId = back.arguments!!.getLong("appId")
-                TranslateConfigScreen(
-                    viewModel = remember(appId) { TranslateConfigViewModel(appId, app.webAppRepository, app.saveWebApp) },
-                    onBack = { navController.popBackStack() },
                 )
             }
 

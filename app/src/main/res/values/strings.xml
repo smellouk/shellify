@@ -146,6 +146,8 @@
 
     <!-- App Settings (per-app) -->
     <string name="settings_title">App settings</string>
+    <string name="settings_app_info">App info</string>
+    <string name="settings_features">Features</string>
     <string name="settings_display">Display</string>
     <string name="settings_fullscreen">Full screen</string>
     <string name="settings_ua_mode">Browser identity</string>

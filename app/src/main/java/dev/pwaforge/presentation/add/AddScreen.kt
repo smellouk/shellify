@@ -777,7 +777,7 @@ private fun ManifestRow(label: String, value: String, maxLines: Int = 1) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun ColorPickerDialog(
+internal fun ColorPickerDialog(
     current: String?,
     onColorSelected: (String) -> Unit,
     onDismiss: () -> Unit,

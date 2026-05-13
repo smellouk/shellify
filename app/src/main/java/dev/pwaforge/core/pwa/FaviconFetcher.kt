@@ -3,20 +3,19 @@ package dev.pwaforge.core.pwa
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import dev.pwaforge.core.theme.ThemeManager
+import dev.pwaforge.domain.model.UserAgentMode
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-/**
- * Downloads an icon (from PWA manifest or favicon fallback) and stores it
- * in the app's private files directory.
- * Inspired by AppForge's FaviconFetcher.
- */
 class FaviconFetcher(
     private val context: Context,
+    private val themeManager: ThemeManager,
     private val client: OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(8, TimeUnit.SECONDS)
         .readTimeout(8, TimeUnit.SECONDS)
@@ -28,24 +27,32 @@ class FaviconFetcher(
      */
     suspend fun fetch(iconUrl: String?, siteUrl: String, isolationId: String): String? =
         withContext(Dispatchers.IO) {
+            val uaMode = themeManager.defaultUaMode.first()
+            val userAgent = uaMode.uaString ?: UserAgentMode.CHROME_MOBILE.uaString!!
+            val origin = extractOrigin(siteUrl)
+            val host = origin.removePrefix("https://").removePrefix("http://")
             val candidates = buildList {
                 if (iconUrl != null) add(iconUrl)
-                val origin = extractOrigin(siteUrl)
                 add("$origin/favicon.ico")
                 add("$origin/apple-touch-icon.png")
                 add("$origin/apple-touch-icon-precomposed.png")
+                // Google favicon service always returns a valid PNG — reliable last resort
+                add("https://www.google.com/s2/favicons?domain=$host&sz=128")
             }
 
             for (url in candidates) {
-                val bitmap = downloadBitmap(url) ?: continue
+                val bitmap = downloadBitmap(url, userAgent) ?: continue
                 val file = saveIcon(bitmap, isolationId)
                 if (file != null) return@withContext file.absolutePath
             }
             null
         }
 
-    private fun downloadBitmap(url: String): Bitmap? = runCatching {
-        val request = Request.Builder().url(url).build()
+    private fun downloadBitmap(url: String, userAgent: String): Bitmap? = runCatching {
+        val request = Request.Builder()
+            .url(url)
+            .header("User-Agent", userAgent)
+            .build()
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) return@runCatching null
             val bytes = response.body?.bytes() ?: return@runCatching null

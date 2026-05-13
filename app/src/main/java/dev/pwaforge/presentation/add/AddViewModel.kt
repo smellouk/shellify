@@ -208,11 +208,8 @@ class AddViewModel(
         if (url.isBlank()) { _state.update { it.copy(urlError = "Enter a URL first") }; return }
         _state.update { it.copy(isFetchingIcon = true) }
         viewModelScope.launch {
-            val path = runCatching {
-                val manifest = analyzer.analyze(url)
-                val iconUrl = manifest.bestIconUrl(url)
-                faviconFetcher.fetch(iconUrl, url, _state.value.isolationId)
-            }.getOrNull()
+            val iconUrl = runCatching { analyzer.analyze(url).bestIconUrl(url) }.getOrNull()
+            val path = faviconFetcher.fetch(iconUrl, url, _state.value.isolationId)
             val resolvedPath = path ?: _state.value.iconPath
             _state.update {
                 it.copy(
@@ -229,15 +226,13 @@ class AddViewModel(
         if (rawUrl.isBlank()) { _state.update { it.copy(urlError = "Please enter a URL") }; return }
         _state.update { it.copy(isAnalyzing = true, analyzeError = null, url = rawUrl) }
         viewModelScope.launch {
-            runCatching {
-                val manifest = analyzer.analyze(rawUrl)
-                val iconUrl = manifest.bestIconUrl(rawUrl)
-                val iconPath = if (iconUrl != null) {
-                    faviconFetcher.fetch(iconUrl, rawUrl, _state.value.isolationId)
-                } else null
+            val manifest = runCatching { analyzer.analyze(rawUrl) }.getOrNull()
+            val iconUrl = manifest?.bestIconUrl(rawUrl)
+            val iconPath = faviconFetcher.fetch(iconUrl, rawUrl, _state.value.isolationId)
+            if (manifest != null) {
                 _state.update { it.copy(isAnalyzing = false, pendingManifest = manifest, pendingIconPath = iconPath) }
-            }.onFailure {
-                _state.update { it.copy(isAnalyzing = false, analyzeError = "Could not read site info. You can still save manually.") }
+            } else {
+                _state.update { it.copy(isAnalyzing = false, analyzeError = "Could not read site info. You can still save manually.", pendingIconPath = iconPath) }
             }
         }
     }

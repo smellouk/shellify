@@ -105,6 +105,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.TextButton
@@ -352,11 +353,9 @@ fun HomeScreen(
                             categories = state.categories,
                             hideDetails = hideDetails,
                             onClick = { context.startActivity(WebViewActivity.launchIntent(context, app.id)) },
-                            onEdit = { onEditApp(app.id) },
                             onSettings = { onOpenSettings(app.id) },
-                            onDelete = { viewModel.delete(app) },
-                            onClearData = { viewModel.clearData(app) },
                             onAssignCategory = { categoryId -> viewModel.assignCategory(app, categoryId) },
+                            onClearData = { viewModel.clearData(app) },
                         )
                     }
                 }
@@ -372,11 +371,9 @@ fun HomeScreen(
                             categories = state.categories,
                             hideDetails = hideDetails,
                             onClick = { context.startActivity(WebViewActivity.launchIntent(context, app.id)) },
-                            onEdit = { onEditApp(app.id) },
                             onSettings = { onOpenSettings(app.id) },
-                            onDelete = { viewModel.delete(app) },
-                            onClearData = { viewModel.clearData(app) },
                             onAssignCategory = { categoryId -> viewModel.assignCategory(app, categoryId) },
+                            onClearData = { viewModel.clearData(app) },
                         )
                     }
                 }
@@ -675,11 +672,9 @@ private fun AppCard(
     categories: List<Category>,
     hideDetails: Boolean = false,
     onClick: () -> Unit,
-    onEdit: () -> Unit,
     onSettings: () -> Unit,
-    onDelete: () -> Unit,
-    onClearData: () -> Unit,
     onAssignCategory: (Long?) -> Unit,
+    onClearData: () -> Unit,
 ) {
     val engineMissing = app.engineType == EngineType.GECKOVIEW && !geckoInstalled
     var showMenu by remember { mutableStateOf(false) }
@@ -738,19 +733,9 @@ private fun AppCard(
                     }
                     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                         DropdownMenuItem(
-                            text = { Text(stringResource(R.string.home_menu_edit)) },
-                            leadingIcon = { Icon(Icons.Default.Edit, null) },
-                            onClick = { showMenu = false; onEdit() },
-                        )
-                        DropdownMenuItem(
                             text = { Text(stringResource(R.string.home_menu_assign_category)) },
                             leadingIcon = { Icon(Icons.Default.Category, null) },
                             onClick = { showMenu = false; showCategoryPicker = true },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.home_menu_settings)) },
-                            leadingIcon = { Icon(Icons.Default.Settings, null) },
-                            onClick = { showMenu = false; onSettings() },
                         )
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.home_menu_clear_data)) },
@@ -758,9 +743,9 @@ private fun AppCard(
                             onClick = { showMenu = false; showClearDataDialog = true },
                         )
                         DropdownMenuItem(
-                            text = { Text(stringResource(R.string.home_menu_delete)) },
-                            leadingIcon = { Icon(Icons.Default.Delete, null) },
-                            onClick = { showMenu = false; onDelete() },
+                            text = { Text(stringResource(R.string.home_menu_settings)) },
+                            leadingIcon = { Icon(Icons.Default.Settings, null) },
+                            onClick = { showMenu = false; onSettings() },
                         )
                     }
                 }
@@ -808,9 +793,7 @@ private fun AppCard(
             confirmButton = {
                 TextButton(
                     onClick = { showClearDataDialog = false; onClearData() },
-                    colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
-                        contentColor = MaterialTheme.colorScheme.error,
-                    ),
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
                 ) { Text(stringResource(R.string.home_clear_data_button)) }
             },
             dismissButton = {
@@ -818,6 +801,7 @@ private fun AppCard(
             },
         )
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

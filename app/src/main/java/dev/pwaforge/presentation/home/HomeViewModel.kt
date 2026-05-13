@@ -79,26 +79,23 @@ class HomeViewModel(
         viewModelScope.launch {
             val fullUrl = if (rawUrl.startsWith("http")) rawUrl else "https://$rawUrl"
             _quickAdd.value = QuickAddState(loadingUrl = rawUrl)
-            try {
-                val manifest = pwaAnalyzer.analyze(fullUrl)
-                val isolationId = UUID.randomUUID().toString()
-                val fetchedIconPath = faviconFetcher.fetch(manifest.bestIconUrl(fullUrl), fullUrl, isolationId)
-                saveWebApp(
-                    WebApp(
-                        name = manifest.name?.takeIf { it.isNotBlank() }
-                            ?: manifest.shortName?.takeIf { it.isNotBlank() }
-                            ?: name,
-                        url = fullUrl,
-                        iconSource = dev.pwaforge.domain.model.IconSource.fromLegacyPath(fetchedIconPath),
-                        themeColor = manifest.themeColor,
-                        backgroundColor = manifest.backgroundColor,
-                        description = manifest.description,
-                        isolationId = isolationId,
-                    ),
-                )
-            } catch (_: Exception) {
-                saveWebApp(WebApp(name = name, url = fullUrl))
-            }
+            val isolationId = UUID.randomUUID().toString()
+            val manifest = runCatching { pwaAnalyzer.analyze(fullUrl) }.getOrNull()
+            val iconUrl = manifest?.bestIconUrl(fullUrl)
+            val fetchedIconPath = faviconFetcher.fetch(iconUrl, fullUrl, isolationId)
+            saveWebApp(
+                WebApp(
+                    name = manifest?.name?.takeIf { it.isNotBlank() }
+                        ?: manifest?.shortName?.takeIf { it.isNotBlank() }
+                        ?: name,
+                    url = fullUrl,
+                    iconSource = dev.pwaforge.domain.model.IconSource.fromLegacyPath(fetchedIconPath),
+                    themeColor = manifest?.themeColor,
+                    backgroundColor = manifest?.backgroundColor,
+                    description = manifest?.description,
+                    isolationId = isolationId,
+                ),
+            )
             _quickAdd.value = QuickAddState(doneUrl = rawUrl)
             delay(1200)
             _quickAdd.value = QuickAddState()
