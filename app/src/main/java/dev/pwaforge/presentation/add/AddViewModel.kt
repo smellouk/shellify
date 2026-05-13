@@ -3,6 +3,7 @@ package dev.pwaforge.presentation.add
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
+import dev.pwaforge.core.shortcut.SvgIconRenderer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import coil.ImageLoader
@@ -341,50 +342,14 @@ class AddViewModel(
     }
 
     private suspend fun reRenderSvgIconInternal(slug: String, bgColorArgb: Int, isSelection: Boolean) {
-        val oldIconPath = _state.value.iconPath
-        val isolationId = _state.value.isolationId
-        val path = withContext(Dispatchers.IO) {
-            runCatching {
-                val svgUrl = "https://cdn.jsdelivr.net/npm/simple-icons/icons/$slug.svg"
-                val iconSize = 140
-                val canvasSize = 192
-                val offset = (canvasSize - iconSize) / 2
-                val loader = ImageLoader.Builder(context)
-                    .components { add(SvgDecoder.Factory()) }
-                    .build()
-                val req = ImageRequest.Builder(context)
-                    .data(svgUrl)
-                    .size(iconSize, iconSize)
-                    .build()
-                val result = loader.execute(req)
-                if (result !is SuccessResult) return@runCatching null
-                val svgBitmap = (result.drawable as? BitmapDrawable)?.bitmap
-                    ?: return@runCatching null
-
-                val output = Bitmap.createBitmap(canvasSize, canvasSize, Bitmap.Config.ARGB_8888)
-                val canvas = android.graphics.Canvas(output)
-                canvas.drawColor(bgColorArgb)
-                val paint = android.graphics.Paint().apply {
-                    colorFilter = android.graphics.PorterDuffColorFilter(
-                        android.graphics.Color.WHITE,
-                        android.graphics.PorterDuff.Mode.SRC_IN,
-                    )
-                }
-                canvas.drawBitmap(svgBitmap, offset.toFloat(), offset.toFloat(), paint)
-
-                val dir = File(context.filesDir, "icons").also { it.mkdirs() }
-                oldIconPath?.let { File(it).delete() }
-                val file = File(dir, "${isolationId}_${System.currentTimeMillis()}.png")
-                file.outputStream().use { out ->
-                    output.compress(Bitmap.CompressFormat.PNG, 100, out)
-                }
-                file.absolutePath
-            }.getOrNull()
-        }
-        if (path != null) {
-            val bgHex = String.format("#%06X", 0xFFFFFF and bgColorArgb)
-            _state.update { it.copy(iconPath = path, iconSource = IconSource.SvgIcon(slug, bgHex, path)) }
-        }
+        val iconSource = SvgIconRenderer.render(
+            context = context,
+            slug = slug,
+            bgColorArgb = bgColorArgb,
+            isolationId = _state.value.isolationId,
+            existingIconPath = _state.value.iconPath,
+        ) ?: return
+        _state.update { it.copy(iconPath = iconSource.renderedPath, iconSource = iconSource) }
     }
 
     private suspend fun persistApp(url: String): Long {

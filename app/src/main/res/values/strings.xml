@@ -306,6 +306,10 @@
     <string name="shortcuts_menu_remove">Remove</string>
     <string name="shortcuts_empty_title">No shortcuts yet</string>
     <string name="shortcuts_empty_desc">Shortcuts you add from an app\'s settings appear here. Rename them, swap icons, or remove them anytime.</string>
+    <string name="shortcuts_change_icon_title">Change icon</string>
+    <string name="shortcuts_icon_from_source">From source</string>
+    <string name="shortcuts_icon_from_gallery">From gallery</string>
+    <string name="shortcuts_icon_from_pack">From icon pack</string>
 
     <!-- Translate -->
     <string name="translate_title">Translation settings</string>

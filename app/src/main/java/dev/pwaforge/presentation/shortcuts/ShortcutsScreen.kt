@@ -35,9 +35,18 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.ViewList
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Sync
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -64,6 +73,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -77,6 +87,9 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -87,6 +100,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import dev.pwaforge.R
+import dev.pwaforge.presentation.add.SimpleIconPickerSheet
 import dev.pwaforge.presentation.theme.Dimens
 import dev.pwaforge.presentation.home.AppIcon
 
@@ -106,10 +120,18 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
 
     var isGridView by remember { mutableStateOf(true) }
     var iconPickItem by remember { mutableStateOf<ShortcutItem?>(null) }
+    var pendingGalleryLaunch by remember { mutableStateOf(false) }
     val pickImage = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
         val item = iconPickItem ?: return@rememberLauncherForActivityResult
         iconPickItem = null
         if (uri != null) viewModel.applyPickedIcon(item, uri)
+    }
+
+    LaunchedEffect(state.iconSheetTarget, pendingGalleryLaunch) {
+        if (pendingGalleryLaunch && state.iconSheetTarget == null) {
+            pendingGalleryLaunch = false
+            pickImage.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
+        }
     }
 
     val screenBg = MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
@@ -170,10 +192,7 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                             ShortcutGridCard(
                                 item = shortcutItem,
                                 onRename = { viewModel.startRename(shortcutItem) },
-                                onChangeIcon = {
-                                    iconPickItem = shortcutItem
-                                    pickImage.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
-                                },
+                                onChangeIcon = { viewModel.showIconSheet(shortcutItem) },
                                 onRemove = { viewModel.showRemove(shortcutItem) },
                             )
                         }
@@ -195,10 +214,7 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                                 ShortcutRow(
                                     item = shortcutItem,
                                     onRename = { viewModel.startRename(shortcutItem) },
-                                    onChangeIcon = {
-                                        iconPickItem = shortcutItem
-                                        pickImage.launch(PickVisualMediaRequest(PickVisualMedia.ImageOnly))
-                                    },
+                                    onChangeIcon = { viewModel.showIconSheet(shortcutItem) },
                                     onRemove = { viewModel.showRemove(shortcutItem) },
                                 )
                             }
@@ -249,6 +265,85 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                 item { Spacer(Modifier.height(Dimens.spaceXl)) }
             }
         }
+    }
+
+    if (state.iconSheetTarget != null && !state.showIconPackPicker) {
+        val refreshState = state.iconRefreshState
+        val isRefreshing = refreshState == IconRefreshState.Loading
+
+        val infiniteTransition = rememberInfiniteTransition(label = "sync_spin")
+        val rotation by infiniteTransition.animateFloat(
+            initialValue = 360f,
+            targetValue = 0f,
+            animationSpec = infiniteRepeatable(tween(800, easing = LinearEasing)),
+            label = "sync_rotation",
+        )
+
+        val sourceIcon = when (refreshState) {
+            IconRefreshState.Success -> Icons.Default.CheckCircle
+            IconRefreshState.Error   -> Icons.Default.Warning
+            else                     -> Icons.Default.Sync
+        }
+        val sourceTint = when (refreshState) {
+            IconRefreshState.Success -> Color(0xFF22C55E)
+            IconRefreshState.Error   -> MaterialTheme.colorScheme.error
+            else                     -> MaterialTheme.colorScheme.primary
+        }
+
+        ModalBottomSheet(onDismissRequest = viewModel::dismissIconSheet) {
+            Text(
+                stringResource(R.string.shortcuts_change_icon_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(start = Dimens.spaceLg, end = Dimens.spaceLg, bottom = Dimens.spaceMd),
+            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.spaceLg),
+                horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
+            ) {
+                IconOptionCard(
+                    icon = sourceIcon,
+                    iconTint = sourceTint,
+                    iconModifier = if (isRefreshing) Modifier.graphicsLayer { rotationZ = rotation } else Modifier,
+                    label = stringResource(R.string.shortcuts_icon_from_source),
+                    enabled = !isRefreshing,
+                    modifier = Modifier.weight(1f),
+                    onClick = { viewModel.refreshIconFromSource() },
+                )
+                IconOptionCard(
+                    icon = Icons.Default.Image,
+                    label = stringResource(R.string.shortcuts_icon_from_gallery),
+                    enabled = !isRefreshing,
+                    modifier = Modifier.weight(1f),
+                    onClick = {
+                        iconPickItem = state.iconSheetTarget
+                        pendingGalleryLaunch = true
+                        viewModel.dismissIconSheet()
+                    },
+                )
+                IconOptionCard(
+                    icon = Icons.Default.AutoAwesome,
+                    label = stringResource(R.string.shortcuts_icon_from_pack),
+                    enabled = !isRefreshing,
+                    modifier = Modifier.weight(1f),
+                    onClick = { viewModel.openIconPackPicker() },
+                )
+            }
+            Spacer(Modifier.height(Dimens.spaceXl))
+        }
+    }
+
+    if (state.showIconPackPicker) {
+        SimpleIconPickerSheet(
+            icons = state.packIcons,
+            query = state.iconPickerQuery,
+            isLoading = state.isLoadingIconPack,
+            onQueryChange = viewModel::setIconPickerQuery,
+            onSelect = { entry, bgColorArgb -> viewModel.applyPackIcon(entry, bgColorArgb) },
+            onDismiss = viewModel::closeIconPackPicker,
+        )
     }
 
     if (state.renameTarget != null) {
@@ -500,5 +595,60 @@ private fun EmptyState(onAddShortcut: (() -> Unit)?, modifier: Modifier = Modifi
             }
         }
         Spacer(Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun IconOptionCard(
+    icon: ImageVector,
+    label: String,
+    modifier: Modifier = Modifier,
+    iconTint: Color = MaterialTheme.colorScheme.primary,
+    iconModifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    onClick: () -> Unit,
+) {
+    val bgTint = iconTint.copy(alpha = 0.15f)
+    Card(
+        modifier = modifier,
+        shape = RoundedCornerShape(Dimens.cornerXl),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+        ),
+        border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        enabled = enabled,
+        onClick = onClick,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = Dimens.spaceMd),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(Dimens.sizeCard)
+                    .clip(RoundedCornerShape(Dimens.cornerLg))
+                    .background(bgTint),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(Dimens.sizeMd).then(iconModifier),
+                )
+            }
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
 }

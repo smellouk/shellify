@@ -29,11 +29,14 @@ object ShortcutIconBuilder {
             }
             is IconSource.Path -> {
                 val bmp = loadFile(src.path)
-                if (bmp != null) scaleCentered(bmp) else fallback(context, app)
+                if (bmp != null) buildAdaptivePath(bmp) else fallback(context, app)
             }
             null -> fallback(context, app)
         }
     }
+
+    private fun buildAdaptivePath(src: Bitmap): Bitmap =
+        Bitmap.createScaledBitmap(src, ADAPTIVE_SIZE, ADAPTIVE_SIZE, true)
 
     private fun buildAdaptiveSvg(background: String, renderedIcon: Bitmap): Bitmap {
         val bgColor = runCatching { Color.parseColor(background) }.getOrDefault(0xFF1976D2.toInt())
@@ -54,27 +57,17 @@ object ShortcutIconBuilder {
         return generateLetterAvatar(app.name, app.themeColor)
     }
 
-    private fun buildSvgIcon(context: Context, src: IconSource.SvgIcon): Bitmap {
-        // Download SVG synchronously (called from coroutine context via PwaShortcutManager)
-        val svgUrl = "https://cdn.jsdelivr.net/npm/simple-icons/icons/${src.slug}.svg"
-        val svgBitmap = runCatching {
-            val loader = coil.ImageLoader.Builder(context)
-                .components { add(coil.decode.SvgDecoder.Factory()) }
-                .build()
-            val req = coil.request.ImageRequest.Builder(context)
-                .data(svgUrl)
-                .size(SVG_ICON_SIZE, SVG_ICON_SIZE)
-                .build()
-            val result = kotlinx.coroutines.runBlocking { loader.execute(req) }
-            (result as? coil.request.SuccessResult)
-                ?.let { (it.drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap }
-        }.getOrNull()
+    fun buildFromSlug(context: Context, slug: String, bgColorArgb: Int): Bitmap {
+        val svgBitmap = fetchSvgBitmap(context, slug, SVG_ICON_SIZE) ?: return generateLetterAvatar("?", null)
+        return buildAdaptiveSvg("#%06X".format(0xFFFFFF and bgColorArgb), svgBitmap)
+    }
 
+    private fun buildSvgIcon(context: Context, src: IconSource.SvgIcon): Bitmap {
+        val svgBitmap = fetchSvgBitmap(context, src.slug, SVG_ICON_SIZE)
         val bgColor = runCatching { Color.parseColor(src.background) }.getOrDefault(0xFF1976D2.toInt())
         val out = Bitmap.createBitmap(SIZE, SIZE, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(out)
         canvas.drawColor(bgColor)
-
         if (svgBitmap != null) {
             val offset = (SIZE - SVG_ICON_SIZE) / 2f
             val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
@@ -84,6 +77,20 @@ object ShortcutIconBuilder {
         }
         return out
     }
+
+    private fun fetchSvgBitmap(context: Context, slug: String, size: Int): Bitmap? = runCatching {
+        val svgUrl = "https://cdn.jsdelivr.net/npm/simple-icons/icons/$slug.svg"
+        val loader = coil.ImageLoader.Builder(context)
+            .components { add(coil.decode.SvgDecoder.Factory()) }
+            .build()
+        val req = coil.request.ImageRequest.Builder(context)
+            .data(svgUrl)
+            .size(size, size)
+            .build()
+        val result = kotlinx.coroutines.runBlocking { loader.execute(req) }
+        (result as? coil.request.SuccessResult)
+            ?.let { (it.drawable as? android.graphics.drawable.BitmapDrawable)?.bitmap }
+    }.getOrNull()
 
     private fun loadFile(path: String): Bitmap? = runCatching {
         BitmapFactory.decodeFile(path)

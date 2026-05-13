@@ -570,7 +570,7 @@ fun AddScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SimpleIconPickerSheet(
+internal fun SimpleIconPickerSheet(
     icons: List<SimpleIconEntry>,
     query: String,
     isLoading: Boolean,
@@ -606,6 +606,10 @@ private fun SimpleIconPickerSheet(
                 leadingIcon = { Icon(Icons.Default.Search, null, modifier = Modifier.size(Dimens.sizeMd)) },
                 singleLine = true,
                 shape = RoundedCornerShape(Dimens.cornerMd),
+                colors = androidx.compose.material3.OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                ),
                 modifier = Modifier.fillMaxWidth(),
             )
             Card(

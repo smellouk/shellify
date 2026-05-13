@@ -254,7 +254,7 @@ fun AppNavigation(
 
             composable(Screen.Shortcuts.route) {
                 ShortcutsScreen(
-                    viewModel = remember { ShortcutsViewModel(context = app, repo = app.webAppRepository) },
+                    viewModel = remember { ShortcutsViewModel(context = app, repo = app.webAppRepository, analyzer = app.pwaAnalyzer, faviconFetcher = app.faviconFetcher) },
                 )
             }
 
