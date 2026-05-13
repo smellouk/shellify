@@ -13,6 +13,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.shape.CircleShape
@@ -508,10 +509,15 @@ fun GlobalSettingsScreen(
                     headlineContent = { Text(stringResource(R.string.global_settings_encrypted_backup), style = MaterialTheme.typography.bodyMedium) },
                     supportingContent = { Text(if (state.backupEnabled) stringResource(R.string.global_settings_backup_enabled) else stringResource(R.string.global_settings_backup_disabled)) },
                     trailingContent = {
-                        Switch(
-                            checked = state.backupEnabled,
-                            onCheckedChange = viewModel::setBackupEnabled,
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(onClick = { filePicker.launch(arrayOf("application/octet-stream", "*/*")) }) {
+                                Icon(Icons.Default.Restore, contentDescription = stringResource(R.string.global_settings_import_backup), tint = MaterialTheme.colorScheme.primary)
+                            }
+                            Switch(
+                                checked = state.backupEnabled,
+                                onCheckedChange = viewModel::setBackupEnabled,
+                            )
+                        }
                     },
                 )
                 AnimatedVisibility(
@@ -545,6 +551,7 @@ fun GlobalSettingsScreen(
 
                         // Directory
                         ListItem(
+                            modifier = Modifier.alpha(if (state.backupHasPassword) 1f else 0.38f),
                             leadingContent = {
                                 Box(
                                     modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
@@ -560,7 +567,10 @@ fun GlobalSettingsScreen(
                                 )
                             },
                             trailingContent = {
-                                IconButton(onClick = { folderPicker.launch(null) }) {
+                                IconButton(
+                                    onClick = { folderPicker.launch(null) },
+                                    enabled = state.backupHasPassword,
+                                ) {
                                     Icon(Icons.Default.FolderOpen, contentDescription = stringResource(R.string.global_settings_select_folder_cd))
                                 }
                             },
@@ -568,12 +578,14 @@ fun GlobalSettingsScreen(
                         HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
 
                         // Schedule
+                        val canBackup = state.backupHasPassword && state.backupDirectoryUri != null
                         val scheduleLabel = when (state.backupSchedule) {
                             BackupSchedule.NONE -> stringResource(R.string.global_settings_schedule_disabled)
                             BackupSchedule.WEEKLY -> stringResource(R.string.global_settings_schedule_weekly)
                             BackupSchedule.MONTHLY -> stringResource(R.string.global_settings_schedule_monthly)
                         }
                         ListItem(
+                            modifier = Modifier.alpha(if (canBackup) 1f else 0.38f),
                             leadingContent = {
                                 Box(
                                     modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
@@ -586,12 +598,16 @@ fun GlobalSettingsScreen(
                                 Text(scheduleLabel)
                             },
                             trailingContent = {
-                                TextButton(onClick = { showScheduleDialog = true }) { Text(stringResource(R.string.common_change)) }
+                                TextButton(
+                                    onClick = { showScheduleDialog = true },
+                                    enabled = canBackup,
+                                ) { Text(stringResource(R.string.common_change)) }
                             },
                         )
                         if (state.backupLastTime > 0L) {
                             HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                             ListItem(
+                                modifier = Modifier.alpha(if (canBackup) 1f else 0.38f),
                                 leadingContent = {
                                     Box(
                                         modifier = Modifier.size(36.dp).clip(RoundedCornerShape(10.dp))
@@ -615,7 +631,7 @@ fun GlobalSettingsScreen(
                         ) {
                             Button(
                                 onClick = viewModel::backupNow,
-                                enabled = !state.backupRunning,
+                                enabled = canBackup && !state.backupRunning,
                                 modifier = Modifier.fillMaxWidth(),
                             ) {
                                 if (state.backupRunning) {
@@ -626,19 +642,6 @@ fun GlobalSettingsScreen(
                                 Icon(Icons.Default.Backup, null, modifier = Modifier.size(Dimens.sizeSm))
                                 Spacer(Modifier.width(Dimens.spaceSm))
                                 Text(stringResource(R.string.global_settings_backup_now))
-                            }
-                            Button(
-                                onClick = { filePicker.launch(arrayOf("application/octet-stream", "*/*")) },
-                                enabled = !state.backupRunning,
-                                modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
-                                ),
-                            ) {
-                                Icon(Icons.Default.Restore, null, modifier = Modifier.size(Dimens.sizeSm))
-                                Spacer(Modifier.width(Dimens.spaceSm))
-                                Text(stringResource(R.string.global_settings_import_backup))
                             }
                         }
                     }

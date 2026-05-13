@@ -1,9 +1,12 @@
 package dev.pwaforge.core.backup
 
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import androidx.documentfile.provider.DocumentFile
+import dev.pwaforge.core.iconpack.SimpleIconsManager
+import dev.pwaforge.core.iconpack.SimpleIconsState
 import dev.pwaforge.core.isolation.CookieJarManager
 import dev.pwaforge.core.security.PasswordManager
 import dev.pwaforge.core.theme.ThemeManager
@@ -30,6 +33,7 @@ class BackupManager(
     private val themeManager: ThemeManager,
     private val passwordManager: PasswordManager,
     private val backupSettings: BackupSettings,
+    private val simpleIconsManager: SimpleIconsManager,
 ) {
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -146,6 +150,10 @@ class BackupManager(
         val bkSchedule     = backupSettings.schedule.first()
         val bkDirectory    = backupSettings.directoryUri.first()
         val bkLastTime     = backupSettings.lastBackupTime.first()
+        val bkPasswordEnc  = backupSettings.getEncryptedPassword()
+        val iconsState     = simpleIconsManager.state.value
+        val iconsImported  = iconsState is SimpleIconsState.Imported
+        val iconsCount     = if (iconsImported) (iconsState as SimpleIconsState.Imported).iconCount else 0
 
         return JSONObject().apply {
             put("theme_mode",              themeMode.name)
@@ -161,6 +169,9 @@ class BackupManager(
             put("backup_schedule",         bkSchedule.name)
             if (bkDirectory != null)  put("backup_directory_uri", bkDirectory)
             put("backup_last_time",        bkLastTime)
+            if (bkPasswordEnc != null) put("backup_password_encrypted", bkPasswordEnc)
+            put("simple_icons_imported",   iconsImported)
+            put("simple_icons_count",      iconsCount)
         }.toString()
     }
 
@@ -293,13 +304,31 @@ class BackupManager(
             passwordManager.clearPassword()
         }
 
-        // Backup settings (non-password — password comes from pwa_backup.preferences_pb)
+        // Backup settings
         runCatching { backupSettings.setEnabled(obj.getBoolean("backup_enabled")) }
         runCatching { backupSettings.setSchedule(BackupSchedule.valueOf(obj.getString("backup_schedule"))) }
         val bkDir = obj.optString("backup_directory_uri", "")
-        if (bkDir.isNotEmpty()) runCatching { backupSettings.setDirectoryUri(bkDir) }
+        if (bkDir.isNotEmpty()) {
+            // Re-take the SAF write permission. This succeeds on same-device restores where the
+            // original grant still exists; it throws SecurityException after reinstall or on a
+            // different device. In that case we leave the directory unset so the user re-selects.
+            val permGranted = runCatching {
+                context.contentResolver.takePersistableUriPermission(
+                    Uri.parse(bkDir),
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+                )
+            }.isSuccess
+            if (permGranted) runCatching { backupSettings.setDirectoryUri(bkDir) }
+        }
         val bkLastTime = obj.optLong("backup_last_time", 0L)
         if (bkLastTime > 0L) runCatching { backupSettings.setLastBackupTime(bkLastTime) }
+        val bkPasswordEnc = obj.optString("backup_password_encrypted", "")
+        if (bkPasswordEnc.isNotEmpty()) runCatching { backupSettings.setEncryptedPassword(bkPasswordEnc) }
+
+        // Simple Icons
+        val iconsImported = obj.optBoolean("simple_icons_imported", false)
+        val iconsCount = obj.optInt("simple_icons_count", 0)
+        simpleIconsManager.restoreState(iconsImported, iconsCount)
     }
 
     // ── Database helpers ──────────────────────────────────────────────────────

@@ -44,7 +44,7 @@ class PWAForgeApplication : Application() {
     val passwordManager by lazy { PasswordManager(this) }
     val backupSettings by lazy { BackupSettings(this, cryptoManager) }
     val backupManager by lazy {
-        BackupManager(this, database, isolationManager.cookieJarManager, themeManager, passwordManager, backupSettings)
+        BackupManager(this, database, isolationManager.cookieJarManager, themeManager, passwordManager, backupSettings, simpleIconsManager)
     }
 
     val geckoEngineManager by lazy { GeckoEngineManager(this) }

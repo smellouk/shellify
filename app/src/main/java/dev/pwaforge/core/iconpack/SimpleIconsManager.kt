@@ -139,4 +139,15 @@ class SimpleIconsManager(private val context: Context) {
         prefs.edit().remove(KEY_IMPORTED).remove(KEY_ICON_COUNT).apply()
         _state.value = SimpleIconsState.NotImported
     }
+
+    /** Called after backup restore to update both SharedPreferences and the live state flow. */
+    fun restoreState(imported: Boolean, iconCount: Int) {
+        if (imported && iconCount > 0) {
+            prefs.edit().putBoolean(KEY_IMPORTED, true).putInt(KEY_ICON_COUNT, iconCount).apply()
+            _state.value = SimpleIconsState.Imported(iconCount)
+        } else {
+            prefs.edit().remove(KEY_IMPORTED).remove(KEY_ICON_COUNT).apply()
+            _state.value = SimpleIconsState.NotImported
+        }
+    }
 }

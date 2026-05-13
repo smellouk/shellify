@@ -35,8 +35,19 @@ object ShortcutIconBuilder {
         }
     }
 
-    private fun buildAdaptivePath(src: Bitmap): Bitmap =
-        Bitmap.createScaledBitmap(src, ADAPTIVE_SIZE, ADAPTIVE_SIZE, true)
+    private fun buildAdaptivePath(src: Bitmap): Bitmap {
+        val out = Bitmap.createBitmap(ADAPTIVE_SIZE, ADAPTIVE_SIZE, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(out)
+        canvas.drawColor(Color.WHITE)
+        // Scale proportionally so the icon fits within ~56% of canvas, centered
+        val maxDraw = (ADAPTIVE_SIZE * 0.40f).toInt()
+        val scale = maxDraw.toFloat() / maxOf(src.width, src.height)
+        val w = (src.width * scale).toInt().coerceAtLeast(1)
+        val h = (src.height * scale).toInt().coerceAtLeast(1)
+        val scaled = Bitmap.createScaledBitmap(src, w, h, true)
+        canvas.drawBitmap(scaled, (ADAPTIVE_SIZE - w) / 2f, (ADAPTIVE_SIZE - h) / 2f, null)
+        return out
+    }
 
     private fun buildAdaptiveSvg(background: String, renderedIcon: Bitmap): Bitmap {
         val bgColor = runCatching { Color.parseColor(background) }.getOrDefault(0xFF1976D2.toInt())

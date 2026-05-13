@@ -58,6 +58,14 @@ class BackupSettings(private val context: Context, private val crypto: CryptoMan
         return runCatching { crypto.decryptString(enc) }.getOrNull()
     }
 
+    /** Returns the raw Keystore-encrypted password string for inclusion in a backup. */
+    suspend fun getEncryptedPassword(): String? =
+        context.backupStore.data.first()[keyPasswordEnc]
+
+    /** Restores the raw Keystore-encrypted password directly (same-device restore). */
+    suspend fun setEncryptedPassword(enc: String) =
+        context.backupStore.edit { it[keyPasswordEnc] = enc }
+
     /** Reads a restored DataStore file and applies its contents (incl. encrypted password) to the live instance. */
     suspend fun reloadFromFile(restoredFile: File) {
         val tempFile = File(context.cacheDir, "tmp_backup_restore.preferences_pb")
