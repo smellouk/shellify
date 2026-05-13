@@ -64,6 +64,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
@@ -732,59 +733,65 @@ fun GlobalSettingsScreen(
     // ── Dialogs ───────────────────────────────────────────────────────────────
 
     if (showUaDialog) {
-        AlertDialog(
-            onDismissRequest = { showUaDialog = false },
-            title = { Text(stringResource(R.string.global_settings_ua_dialog_title)) },
-            text = {
-                Column {
-                    @Suppress("DEPRECATION")
-                    UserAgentMode.values().forEach { mode ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth()
-                                .clickable { viewModel.setDefaultUaMode(mode); showUaDialog = false }
-                                .padding(vertical = Dimens.spaceXxs),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            RadioButton(selected = state.defaultUaMode == mode,
-                                onClick = { viewModel.setDefaultUaMode(mode); showUaDialog = false })
-                            Spacer(Modifier.width(Dimens.spaceSm))
-                            Text(mode.label, style = MaterialTheme.typography.bodyLarge)
-                        }
+        ModalBottomSheet(onDismissRequest = { showUaDialog = false }) {
+            Text(
+                stringResource(R.string.global_settings_ua_dialog_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(start = Dimens.spaceLg, end = Dimens.spaceLg, bottom = Dimens.spaceSm),
+            )
+            Column(modifier = Modifier.padding(horizontal = Dimens.spaceMd)) {
+                @Suppress("DEPRECATION")
+                UserAgentMode.values().forEach { mode ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .clip(RoundedCornerShape(Dimens.cornerLg))
+                            .clickable { viewModel.setDefaultUaMode(mode); showUaDialog = false }
+                            .padding(horizontal = Dimens.spaceMd, vertical = Dimens.spaceXxs),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(selected = state.defaultUaMode == mode,
+                            onClick = { viewModel.setDefaultUaMode(mode); showUaDialog = false })
+                        Spacer(Modifier.width(Dimens.spaceSm))
+                        Text(mode.label, style = MaterialTheme.typography.bodyLarge)
                     }
                 }
-            },
-            confirmButton = { TextButton(onClick = { showUaDialog = false }) { Text(stringResource(R.string.common_done)) } },
-        )
+            }
+            Spacer(Modifier.height(Dimens.spaceXl))
+        }
     }
 
     if (showScheduleDialog) {
-        AlertDialog(
-            onDismissRequest = { showScheduleDialog = false },
-            title = { Text(stringResource(R.string.global_settings_schedule_dialog_title)) },
-            text = {
-                Column {
-                    BackupSchedule.entries.forEach { schedule ->
-                        val label = when (schedule) {
-                            BackupSchedule.NONE -> stringResource(R.string.global_settings_schedule_disabled)
-                            BackupSchedule.DAILY -> stringResource(R.string.global_settings_schedule_daily)
-                            BackupSchedule.WEEKLY -> stringResource(R.string.global_settings_schedule_weekly)
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth()
-                                .clickable { viewModel.setBackupSchedule(schedule); showScheduleDialog = false }
-                                .padding(vertical = Dimens.spaceXxs),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            RadioButton(selected = state.backupSchedule == schedule,
-                                onClick = { viewModel.setBackupSchedule(schedule); showScheduleDialog = false })
-                            Spacer(Modifier.width(Dimens.spaceSm))
-                            Text(label, style = MaterialTheme.typography.bodyLarge)
-                        }
+        ModalBottomSheet(onDismissRequest = { showScheduleDialog = false }) {
+            Text(
+                stringResource(R.string.global_settings_schedule_dialog_title),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(start = Dimens.spaceLg, end = Dimens.spaceLg, bottom = Dimens.spaceSm),
+            )
+            Column(modifier = Modifier.padding(horizontal = Dimens.spaceMd)) {
+                BackupSchedule.entries.forEach { schedule ->
+                    val label = when (schedule) {
+                        BackupSchedule.NONE -> stringResource(R.string.global_settings_schedule_disabled)
+                        BackupSchedule.DAILY -> stringResource(R.string.global_settings_schedule_daily)
+                        BackupSchedule.WEEKLY -> stringResource(R.string.global_settings_schedule_weekly)
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .clip(RoundedCornerShape(Dimens.cornerLg))
+                            .clickable { viewModel.setBackupSchedule(schedule); showScheduleDialog = false }
+                            .padding(horizontal = Dimens.spaceMd, vertical = Dimens.spaceXxs),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(selected = state.backupSchedule == schedule,
+                            onClick = { viewModel.setBackupSchedule(schedule); showScheduleDialog = false })
+                        Spacer(Modifier.width(Dimens.spaceSm))
+                        Text(label, style = MaterialTheme.typography.bodyLarge)
                     }
                 }
-            },
-            confirmButton = { TextButton(onClick = { showScheduleDialog = false }) { Text(stringResource(R.string.common_done)) } },
-        )
+            }
+            Spacer(Modifier.height(Dimens.spaceXl))
+        }
     }
 
     if (state.showRemovePasswordWarning) {

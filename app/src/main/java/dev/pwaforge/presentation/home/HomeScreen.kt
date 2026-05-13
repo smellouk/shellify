@@ -105,6 +105,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.TextButton
 import dev.pwaforge.domain.model.Category
@@ -386,6 +387,7 @@ fun HomeScreen(
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LanguagePickerDialog(
     currentLanguage: String,
@@ -398,55 +400,53 @@ private fun LanguagePickerDialog(
         LangOption("fr", "Français", "French"),
         LangOption("ar", "العربية", "Arabic"),
     )
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        icon = { Icon(Icons.Default.Language, null) },
-        title = { Text(stringResource(R.string.language_dialog_title)) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm)) {
-                options.forEach { lang ->
-                    val isSelected = currentLanguage == lang.code
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(Dimens.cornerLg))
-                            .background(
-                                if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                                else MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
-                            )
-                            .clickable { onSelect(lang.code) }
-                            .padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceMd),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                lang.nativeName,
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                                        else MaterialTheme.colorScheme.onSurface,
-                            )
-                            Text(
-                                lang.englishName,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-                                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        RadioButton(
-                            selected = isSelected,
-                            onClick = { onSelect(lang.code) },
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Text(
+            stringResource(R.string.language_dialog_title),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(start = Dimens.spaceLg, end = Dimens.spaceLg, bottom = Dimens.spaceSm),
+        )
+        Column(
+            modifier = Modifier.padding(horizontal = Dimens.spaceMd),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
+        ) {
+            options.forEach { lang ->
+                val isSelected = currentLanguage == lang.code
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(Dimens.cornerLg))
+                        .background(
+                            if (isSelected) MaterialTheme.colorScheme.primaryContainer
+                            else MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
+                        )
+                        .clickable { onSelect(lang.code) }
+                        .padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceMd),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            lang.nativeName,
+                            style = MaterialTheme.typography.bodyLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
+                                    else MaterialTheme.colorScheme.onSurface,
+                        )
+                        Text(
+                            lang.englishName,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                                    else MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+                    RadioButton(selected = isSelected, onClick = { onSelect(lang.code) })
                 }
             }
-        },
-        confirmButton = {},
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) }
-        },
-    )
+        }
+        Spacer(Modifier.height(Dimens.spaceXl))
+    }
 }
 
 private sealed class HomeEmptyState {
@@ -820,6 +820,7 @@ private fun AppCard(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CategoryPickerDialog(
     categories: List<Category>,
@@ -827,47 +828,43 @@ private fun CategoryPickerDialog(
     onDismiss: () -> Unit,
     onSelect: (Long?) -> Unit,
 ) {
-    var selected by remember { mutableStateOf(currentCategoryId) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.home_assign_category_title)) },
-        text = {
-            Column {
-                // "None" option
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Text(
+            stringResource(R.string.home_assign_category_title),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(start = Dimens.spaceLg, end = Dimens.spaceLg, bottom = Dimens.spaceSm),
+        )
+        Column(modifier = Modifier.padding(horizontal = Dimens.spaceMd)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(Dimens.cornerLg))
+                    .clickable { onSelect(null) }
+                    .padding(horizontal = Dimens.spaceMd, vertical = Dimens.spaceXxs),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                RadioButton(selected = currentCategoryId == null, onClick = { onSelect(null) })
+                Spacer(Modifier.width(Dimens.spaceSm))
+                Text(stringResource(R.string.common_none), style = MaterialTheme.typography.bodyLarge)
+            }
+            categories.forEach { cat ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { selected = null }
-                        .padding(vertical = Dimens.spaceXxs),
+                        .clip(RoundedCornerShape(Dimens.cornerLg))
+                        .clickable { onSelect(cat.id) }
+                        .padding(horizontal = Dimens.spaceMd, vertical = Dimens.spaceXxs),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    RadioButton(selected = selected == null, onClick = { selected = null })
+                    RadioButton(selected = currentCategoryId == cat.id, onClick = { onSelect(cat.id) })
                     Spacer(Modifier.width(Dimens.spaceSm))
-                    Text(stringResource(R.string.common_none), style = MaterialTheme.typography.bodyLarge)
-                }
-                categories.forEach { cat ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { selected = cat.id }
-                            .padding(vertical = Dimens.spaceXxs),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        RadioButton(selected = selected == cat.id, onClick = { selected = cat.id })
-                        Spacer(Modifier.width(Dimens.spaceSm))
-                        Text(cat.name, style = MaterialTheme.typography.bodyLarge)
-                    }
+                    Text(cat.name, style = MaterialTheme.typography.bodyLarge)
                 }
             }
-        },
-        confirmButton = {
-            TextButton(onClick = { onSelect(selected) }) { Text(stringResource(R.string.common_apply)) }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.common_cancel)) }
-        },
-    )
+        }
+        Spacer(Modifier.height(Dimens.spaceXl))
+    }
 }
 
 @Composable

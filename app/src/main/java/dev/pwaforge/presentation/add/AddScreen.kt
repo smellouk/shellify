@@ -568,6 +568,7 @@ fun AddScreen(
 
 // ── Simple Icons Picker Dialog ────────────────────────────────────────────────
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SimpleIconPickerSheet(
     icons: List<SimpleIconEntry>,
@@ -587,86 +588,88 @@ private fun SimpleIconPickerSheet(
     }
     val iconBgColor = MaterialTheme.colorScheme.primary
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.add_icon_pack_picker_title)) },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm)) {
-                OutlinedTextField(
-                    value = query,
-                    onValueChange = onQueryChange,
-                    placeholder = { Text(stringResource(R.string.add_icon_pack_search_hint)) },
-                    leadingIcon = { Icon(Icons.Default.Search, null, modifier = Modifier.size(Dimens.sizeMd)) },
-                    singleLine = true,
-                    shape = RoundedCornerShape(Dimens.cornerMd),
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(Dimens.cornerXl),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                    border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
-                ) {
-                    if (isLoading) {
-                        Box(
-                            modifier = Modifier.fillMaxWidth().height(Dimens.heroHeightSm),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    } else {
-                        LazyVerticalGrid(
-                            columns = GridCells.Adaptive(Dimens.sizeEmptyIcon),
-                            modifier = Modifier.fillMaxWidth().padding(Dimens.spaceSm),
-                            horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
-                            verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
-                        ) {
-                            items(filtered, key = { it.slug }) { entry ->
-                                Column(
+    ModalBottomSheet(onDismissRequest = onDismiss) {
+        Text(
+            stringResource(R.string.add_icon_pack_picker_title),
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(start = Dimens.spaceLg, end = Dimens.spaceLg, bottom = Dimens.spaceSm),
+        )
+        Column(
+            modifier = Modifier.padding(horizontal = Dimens.spaceLg),
+            verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
+        ) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = onQueryChange,
+                placeholder = { Text(stringResource(R.string.add_icon_pack_search_hint)) },
+                leadingIcon = { Icon(Icons.Default.Search, null, modifier = Modifier.size(Dimens.sizeMd)) },
+                singleLine = true,
+                shape = RoundedCornerShape(Dimens.cornerMd),
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(Dimens.cornerXl),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
+            ) {
+                if (isLoading) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().height(Dimens.heroHeightSm),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Adaptive(Dimens.sizeEmptyIcon),
+                        modifier = Modifier.fillMaxWidth().padding(Dimens.spaceSm),
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
+                        verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
+                    ) {
+                        items(filtered, key = { it.slug }) { entry ->
+                            Column(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(Dimens.cornerMd))
+                                    .clickable { onSelect(entry, primaryArgb) }
+                                    .padding(Dimens.spaceXxs),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
+                            ) {
+                                Box(
                                     modifier = Modifier
+                                        .size(Dimens.sizeIconHero)
                                         .clip(RoundedCornerShape(Dimens.cornerMd))
-                                        .clickable { onSelect(entry, primaryArgb) }
-                                        .padding(Dimens.spaceXxs),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
+                                        .background(iconBgColor),
+                                    contentAlignment = Alignment.Center,
                                 ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(Dimens.sizeIconHero)
-                                            .clip(RoundedCornerShape(Dimens.cornerMd))
-                                            .background(iconBgColor),
-                                        contentAlignment = Alignment.Center,
-                                    ) {
-                                        AsyncImage(
-                                            model = "https://cdn.jsdelivr.net/npm/simple-icons/icons/${entry.slug}.svg",
-                                            contentDescription = entry.title,
-                                            imageLoader = svgLoader,
-                                            modifier = Modifier.size(Dimens.size5xl),
-                                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(
-                                                Color.White,
-                                                androidx.compose.ui.graphics.BlendMode.SrcIn,
-                                            ),
-                                        )
-                                    }
-                                    Text(
-                                        entry.title,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
+                                    AsyncImage(
+                                        model = "https://cdn.jsdelivr.net/npm/simple-icons/icons/${entry.slug}.svg",
+                                        contentDescription = entry.title,
+                                        imageLoader = svgLoader,
+                                        modifier = Modifier.size(Dimens.size5xl),
+                                        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(
+                                            Color.White,
+                                            androidx.compose.ui.graphics.BlendMode.SrcIn,
+                                        ),
                                     )
                                 }
+                                Text(
+                                    entry.title,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
                             }
                         }
                     }
                 }
             }
-        },
-        confirmButton = {},
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.add_cancel)) }
-        },
-    )
+        }
+        Spacer(Modifier.height(Dimens.spaceXl))
+    }
 }
 
 // ── PWA Analysis Report Dialog ────────────────────────────────────────────────
