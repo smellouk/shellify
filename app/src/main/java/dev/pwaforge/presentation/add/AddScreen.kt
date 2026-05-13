@@ -54,6 +54,7 @@ import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -600,50 +601,61 @@ private fun SimpleIconPickerSheet(
                     shape = RoundedCornerShape(Dimens.cornerMd),
                     modifier = Modifier.fillMaxWidth(),
                 )
-                if (isLoading) {
-                    Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                } else {
-                    LazyVerticalGrid(
-                        columns = GridCells.Adaptive(72.dp),
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
-                        verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
-                    ) {
-                        items(filtered, key = { it.slug }) { entry ->
-                            Column(
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(Dimens.cornerMd))
-                                    .clickable { onSelect(entry, primaryArgb) }
-                                    .padding(Dimens.spaceXxs),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
-                            ) {
-                                Box(
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(Dimens.cornerXl),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
+                ) {
+                    if (isLoading) {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().height(Dimens.heroHeightSm),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    } else {
+                        LazyVerticalGrid(
+                            columns = GridCells.Adaptive(Dimens.sizeEmptyIcon),
+                            modifier = Modifier.fillMaxWidth().padding(Dimens.spaceSm),
+                            horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
+                            verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
+                        ) {
+                            items(filtered, key = { it.slug }) { entry ->
+                                Column(
                                     modifier = Modifier
-                                        .size(56.dp)
                                         .clip(RoundedCornerShape(Dimens.cornerMd))
-                                        .background(iconBgColor),
-                                    contentAlignment = Alignment.Center,
+                                        .clickable { onSelect(entry, primaryArgb) }
+                                        .padding(Dimens.spaceXxs),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
                                 ) {
-                                    AsyncImage(
-                                        model = "https://cdn.jsdelivr.net/npm/simple-icons/icons/${entry.slug}.svg",
-                                        contentDescription = entry.title,
-                                        imageLoader = svgLoader,
-                                        modifier = Modifier.size(36.dp),
-                                        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(
-                                            Color.White,
-                                            androidx.compose.ui.graphics.BlendMode.SrcIn,
-                                        ),
+                                    Box(
+                                        modifier = Modifier
+                                            .size(Dimens.sizeIconHero)
+                                            .clip(RoundedCornerShape(Dimens.cornerMd))
+                                            .background(iconBgColor),
+                                        contentAlignment = Alignment.Center,
+                                    ) {
+                                        AsyncImage(
+                                            model = "https://cdn.jsdelivr.net/npm/simple-icons/icons/${entry.slug}.svg",
+                                            contentDescription = entry.title,
+                                            imageLoader = svgLoader,
+                                            modifier = Modifier.size(Dimens.size5xl),
+                                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(
+                                                Color.White,
+                                                androidx.compose.ui.graphics.BlendMode.SrcIn,
+                                            ),
+                                        )
+                                    }
+                                    Text(
+                                        entry.title,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
                                     )
                                 }
-                                Text(
-                                    entry.title,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                )
                             }
                         }
                     }
@@ -837,7 +849,8 @@ private fun ColorPickerDialog(
 private fun SectionCard(content: @Composable ColumnScope.() -> Unit) {
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(Dimens.cornerXl),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)) {
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant)) {
         Column(modifier = Modifier.padding(Dimens.spaceLg), content = content)
     }
 }
@@ -852,7 +865,8 @@ private fun FeatureCard(
 ) {
     Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(Dimens.cornerXl),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)) {
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant)) {
         Column {
             Row(modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
                 verticalAlignment = Alignment.CenterVertically) {
@@ -925,6 +939,7 @@ private fun BrowserEngineCard(
         shape = RoundedCornerShape(Dimens.cornerXl),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
     ) {
         Column {
             Row(

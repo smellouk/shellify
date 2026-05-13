@@ -13,6 +13,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -110,9 +111,8 @@ fun PWAForgeTheme(
         SideEffect {
             val window = (view.context as? android.app.Activity)?.window
             if (window != null) {
-                WindowCompat.setDecorFitsSystemWindows(window, false)
                 @Suppress("DEPRECATION")
-                window.statusBarColor = android.graphics.Color.TRANSPARENT
+                window.statusBarColor = finalColorScheme.surface.toArgb()
                 WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !useDark
             }
         }

@@ -327,7 +327,11 @@ class AddViewModel(
     fun selectPackIcon(entry: SimpleIconEntry, isolationId: String, bgColorArgb: Int) {
         viewModelScope.launch {
             _state.update { it.copy(isSelectingPackIcon = true) }
-            reRenderSvgIconInternal(entry.slug, bgColorArgb, isSelection = true)
+            val themeColor = _state.value.themeColor
+            val effectiveBg = themeColor
+                ?.let { runCatching { android.graphics.Color.parseColor(it) }.getOrNull() }
+                ?: bgColorArgb
+            reRenderSvgIconInternal(entry.slug, effectiveBg, isSelection = true)
             _state.update { it.copy(isSelectingPackIcon = false, showIconPackPicker = false) }
         }
     }

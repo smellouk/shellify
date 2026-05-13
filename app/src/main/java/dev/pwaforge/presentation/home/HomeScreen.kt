@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Handyman
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.focus.onFocusChanged
@@ -147,7 +148,22 @@ fun HomeScreen(
         containerColor = screenBg,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.home_title)) },
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Default.Handyman,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(Dimens.sizeLg),
+                        )
+                        Spacer(Modifier.width(Dimens.spaceXs))
+                        Text(
+                            text = stringResource(R.string.home_title),
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
+                },
                 actions = {
                     IconButton(onClick = { showLanguagePicker = true }) {
                         Icon(Icons.Default.Language, contentDescription = languageChangeCd)
