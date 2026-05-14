@@ -247,6 +247,30 @@
     <string name="licenses_title">تراخيص المصدر المفتوح</string>
     <string name="changelog_title">سجل التغييرات</string>
     <string name="privacy_title">سياسة الخصوصية</string>
+
+    <!-- Consent screen -->
+    <string name="consent_title">قبل البدء</string>
+    <string name="consent_subtitle">يُرجى قراءة ما يلي بعناية. بمتابعتك، فإنك توافق على هذه الشروط.</string>
+    <string name="consent_section_what_title">ما يفعله شيليفاي</string>
+    <string name="consent_what_1">يحوّل المواقع الإلكترونية إلى تطبيقات مستقلة ومعزولة على جهازك</string>
+    <string name="consent_what_2">يعمل كمتصفح — يُحمِّل المواقع التي تختار إضافتها</string>
+    <string name="consent_what_3">يخزّن جميع البيانات محلياً على جهازك؛ لا شيء يُرسَل إلينا</string>
+    <string name="consent_section_not_title">ما لا نفعله</string>
+    <string name="consent_not_1">لا نجمع بياناتك الشخصية أو نشاطك في التصفح ولا نخزّنها أو ننقلها</string>
+    <string name="consent_not_2">لا نتحكم في أي موقع إلكتروني أو نشرف عليه أو نوافق على محتواه</string>
+    <string name="consent_not_3">لسنا تابعين لأي خدمة طرف ثالث تضيفها ولسنا مسؤولين عنها</string>
+    <string name="consent_section_responsibility_title">مسؤوليتك</string>
+    <string name="consent_responsibility_1">أنت المسؤول الوحيد عن المواقع التي تضيفها والمحتوى الذي تصل إليه</string>
+    <string name="consent_responsibility_2">يجب عليك الالتزام بشروط خدمة كل موقع تستخدمه</string>
+    <string name="consent_responsibility_3">يجب أن يكون عمرك 13 عاماً على الأقل، أو الحد الأدنى للسن الرقمي في بلدك</string>
+    <string name="consent_section_legal_title">الإشعار القانوني</string>
+    <string name="consent_legal_1">يُقدَّم هذا التطبيق "كما هو" دون أي ضمانات من أي نوع</string>
+    <string name="consent_legal_2">لسنا مسؤولين عن أي أضرار تنشأ عن استخدامك لهذا التطبيق أو المواقع التي تصل إليها من خلاله</string>
+    <string name="consent_legal_3">لا نروّج لأي نشاط غير قانوني أو ضار ولا نُيسّره أو نوافق عليه</string>
+    <string name="consent_read_privacy">اقرأ سياسة الخصوصية الكاملة</string>
+    <string name="consent_checkbox_label">لقد قرأتُ الشروط أعلاه وأوافق عليها</string>
+    <string name="consent_agree_button">أوافق وأتابع</string>
+    <string name="consent_decline_button">رفض</string>
     <string name="global_settings_ua_dialog_title">عميل المستخدم الافتراضي</string>
     <string name="global_settings_schedule_dialog_title">جدول النسخ الاحتياطي التلقائي</string>
     <string name="global_settings_remove_password_title">إزالة كلمة مرور التطبيق؟</string>

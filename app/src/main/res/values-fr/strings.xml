@@ -247,6 +247,30 @@
     <string name="licenses_title">Licences open source</string>
     <string name="changelog_title">Journal des modifications</string>
     <string name="privacy_title">Politique de confidentialité</string>
+
+    <!-- Consent screen -->
+    <string name="consent_title">Avant de commencer</string>
+    <string name="consent_subtitle">Veuillez lire attentivement ce qui suit. En continuant, vous acceptez ces conditions.</string>
+    <string name="consent_section_what_title">Ce que fait Shellify</string>
+    <string name="consent_what_1">Transforme les sites web en applications autonomes et isolées sur votre appareil</string>
+    <string name="consent_what_2">Agit comme un navigateur — il charge les sites web que vous choisissez d\'ajouter</string>
+    <string name="consent_what_3">Stocke toutes les données localement sur votre appareil ; rien ne nous est envoyé</string>
+    <string name="consent_section_not_title">Ce que nous ne faisons pas</string>
+    <string name="consent_not_1">Nous ne collectons, stockons ni transmettons pas vos données personnelles ou votre activité de navigation</string>
+    <string name="consent_not_2">Nous ne contrôlons, surveillons ni n\'approuvons aucun site web ni son contenu</string>
+    <string name="consent_not_3">Nous ne sommes pas affiliés ni responsables d\'aucun service tiers que vous ajoutez</string>
+    <string name="consent_section_responsibility_title">Votre responsabilité</string>
+    <string name="consent_responsibility_1">Vous êtes seul responsable des sites web que vous ajoutez et du contenu auquel vous accédez</string>
+    <string name="consent_responsibility_2">Vous devez respecter les conditions d\'utilisation de chaque site web que vous utilisez</string>
+    <string name="consent_responsibility_3">Vous devez avoir au moins 13 ans, ou l\'âge numérique minimum dans votre pays</string>
+    <string name="consent_section_legal_title">Mentions légales</string>
+    <string name="consent_legal_1">Cette application est fournie "telle quelle" sans garantie d\'aucune sorte</string>
+    <string name="consent_legal_2">Nous ne sommes pas responsables des dommages résultant de votre utilisation de cette application ou des sites web auxquels vous accédez</string>
+    <string name="consent_legal_3">Nous ne promouvons, facilitons ni n\'approuvons aucune activité illégale ou nuisible</string>
+    <string name="consent_read_privacy">Lire notre politique de confidentialité complète</string>
+    <string name="consent_checkbox_label">J\'ai lu et j\'accepte les conditions ci-dessus</string>
+    <string name="consent_agree_button">J\'accepte &amp; continuer</string>
+    <string name="consent_decline_button">Refuser</string>
     <string name="global_settings_ua_dialog_title">Agent utilisateur par défaut</string>
     <string name="global_settings_schedule_dialog_title">Planification de sauvegarde automatique</string>
     <string name="global_settings_remove_password_title">Supprimer le mot de passe de l\'application ?</string>

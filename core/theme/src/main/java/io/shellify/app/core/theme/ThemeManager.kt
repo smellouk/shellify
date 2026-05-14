@@ -93,10 +93,13 @@ class ThemeManager(private val context: Context) {
 
     private val keyOnboardingDone = booleanPreferencesKey("onboarding_done")
     private val keyOnboardingPage = intPreferencesKey("onboarding_page")
+    private val keyConsentGiven = booleanPreferencesKey("consent_given")
 
     val onboardingDone: Flow<Boolean> =
         context.themeStore.data.map { it[keyOnboardingDone] ?: false }
     val onboardingPage: Flow<Int> = context.themeStore.data.map { it[keyOnboardingPage] ?: 0 }
+    val consentGiven: Flow<Boolean> =
+        context.themeStore.data.map { it[keyConsentGiven] ?: false }
 
     suspend fun setOnboardingDone() {
         context.themeStore.edit { it[keyOnboardingDone] = true }
@@ -104,6 +107,10 @@ class ThemeManager(private val context: Context) {
 
     suspend fun saveOnboardingPage(p: Int) {
         context.themeStore.edit { it[keyOnboardingPage] = p }
+    }
+
+    suspend fun setConsentGiven() {
+        context.themeStore.edit { it[keyConsentGiven] = true }
     }
 
     /** Reads a restored DataStore file and applies its contents to the live DataStore instance. */

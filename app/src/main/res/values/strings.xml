@@ -251,6 +251,30 @@
     <string name="licenses_title">Open Source Licenses</string>
     <string name="changelog_title">Changelog</string>
     <string name="privacy_title">Privacy Policy</string>
+
+    <!-- Consent screen -->
+    <string name="consent_title">Before you start</string>
+    <string name="consent_subtitle">Please read the following carefully. By continuing, you agree to these terms.</string>
+    <string name="consent_section_what_title">What Shellify does</string>
+    <string name="consent_what_1">Wraps websites into standalone, isolated apps on your device</string>
+    <string name="consent_what_2">Acts as a browser — it loads the websites you choose to add</string>
+    <string name="consent_what_3">Stores all data locally on your device; nothing is sent to us</string>
+    <string name="consent_section_not_title">What we don\'t do</string>
+    <string name="consent_not_1">We do not collect, store, or transmit your personal data or browsing activity</string>
+    <string name="consent_not_2">We do not control, monitor, or endorse any website or its content</string>
+    <string name="consent_not_3">We are not affiliated with or responsible for any third-party service you add</string>
+    <string name="consent_section_responsibility_title">Your responsibility</string>
+    <string name="consent_responsibility_1">You are solely responsible for the websites you add and the content you access</string>
+    <string name="consent_responsibility_2">You must comply with the terms of service of each website you use</string>
+    <string name="consent_responsibility_3">You must be at least 13 years old, or the minimum digital age in your country</string>
+    <string name="consent_section_legal_title">Legal</string>
+    <string name="consent_legal_1">This app is provided "as is" without warranties of any kind</string>
+    <string name="consent_legal_2">We are not liable for any damages arising from your use of this app or the websites you access through it</string>
+    <string name="consent_legal_3">We are not promoting, facilitating, or endorsing any illegal or harmful activity</string>
+    <string name="consent_read_privacy">Read our full Privacy Policy</string>
+    <string name="consent_checkbox_label">I have read and agree to the above terms</string>
+    <string name="consent_agree_button">I Agree &amp; Continue</string>
+    <string name="consent_decline_button">Decline</string>
     <string name="global_settings_ua_dialog_title">Default user agent</string>
     <string name="global_settings_schedule_dialog_title">Auto-backup schedule</string>
     <string name="global_settings_remove_password_title">Remove app password?</string>

@@ -61,6 +61,7 @@ import io.shellify.app.presentation.category.CategoryScreen
 import io.shellify.app.presentation.category.CategoryViewModel
 import io.shellify.app.presentation.home.HomeScreen
 import io.shellify.app.presentation.home.HomeViewModel
+import io.shellify.app.presentation.onboarding.ConsentScreen
 import io.shellify.app.presentation.onboarding.OnboardingScreen
 import io.shellify.app.presentation.onboarding.OnboardingViewModel
 import io.shellify.app.presentation.settings.AppSettingsScreen
@@ -99,11 +100,15 @@ fun AppNavigation(
     val currentLanguage = remember { LocaleHelper.getLanguageCode(context) }
     val coroutineScope = rememberCoroutineScope()
 
+    val consentGiven by app.themeManager.consentGiven.collectAsState(initial = null)
     val onboardingDone by app.themeManager.onboardingDone.collectAsState(initial = null)
-    if (onboardingDone == null) return
+    if (consentGiven == null || onboardingDone == null) return
 
-    val startDestination =
-        if (onboardingDone == true) Screen.Home.route else Screen.Onboarding.route
+    val startDestination = when {
+        consentGiven != true -> Screen.Consent.route
+        onboardingDone != true -> Screen.Onboarding.route
+        else -> Screen.Home.route
+    }
 
     LaunchedEffect(Unit) {
         app.pendingDeepLink.collect { (url, name) ->
@@ -338,6 +343,17 @@ fun AppNavigation(
                 popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut() },
             ) {
                 LicensesScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Screen.Consent.route) {
+                ConsentScreen(
+                    onAccepted = {
+                        coroutineScope.launch { app.themeManager.setConsentGiven() }
+                        navController.navigate(Screen.Onboarding.route) {
+                            popUpTo(Screen.Consent.route) { inclusive = true }
+                        }
+                    },
+                )
             }
 
             composable(Screen.Onboarding.route) {
