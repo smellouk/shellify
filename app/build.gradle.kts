@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.detekt)
     alias(libs.plugins.aboutlibraries)
+    alias(libs.plugins.roborazzi)
 }
 
 ksp {
@@ -48,6 +49,7 @@ android {
             isIncludeAndroidResources = true
         }
     }
+
 
     lint {
         lintConfig = file("${rootDir}/config/lint/lint.xml")
@@ -143,8 +145,16 @@ dependencies {
     // Konsist — architecture consistency tests
     testImplementation(libs.konsist)
 
+    // Screenshot tests (Roborazzi + Robolectric)
+    testImplementation(libs.roborazzi)
+    testImplementation(libs.roborazzi.compose)
+    testImplementation(libs.robolectric)
+    testImplementation(platform(libs.compose.bom))
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+
     // Detekt formatting rules (ktlint-based)
     detektPlugins(libs.detekt.formatting)
+
 
     // Instrumented tests
     androidTestImplementation(composeBom)
