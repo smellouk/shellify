@@ -283,6 +283,8 @@
     <string name="consent_privacy_desc">Shellify ne collecte, ne stocke ni ne transmet intentionnellement votre activité de navigation. L\'activité de navigation est traitée localement sur l\'appareil. Veuillez consulter notre Politique de confidentialité et nos Conditions d\'utilisation pour plus de détails.</string>
     <string name="consent_read_privacy">Lire notre politique de confidentialité complète</string>
     <string name="consent_read_tos">Lire nos Conditions d\'utilisation</string>
+    <string name="consent_contact_legal">Demandes légales : legal@shellify.app</string>
+    <string name="consent_contact_abuse">Signalement d\'abus : abuse@shellify.app</string>
     <string name="consent_checkbox_label">J\'ai lu et j\'accepte les Conditions et la Politique de confidentialité</string>
     <string name="consent_agree_button">J\'accepte &amp; continuer</string>
     <string name="consent_decline_button">Refuser</string>

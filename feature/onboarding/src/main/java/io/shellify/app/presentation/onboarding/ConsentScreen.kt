@@ -134,6 +134,12 @@ fun ConsentScreen(onAccepted: () -> Unit) {
                 TextButton(onClick = { uriHandler.openUri("https://shellify.app/terms") }) {
                     Text(stringResource(R.string.consent_read_tos))
                 }
+                TextButton(onClick = { uriHandler.openUri("mailto:legal@shellify.app") }) {
+                    Text(stringResource(R.string.consent_contact_legal))
+                }
+                TextButton(onClick = { uriHandler.openUri("mailto:abuse@shellify.app") }) {
+                    Text(stringResource(R.string.consent_contact_abuse))
+                }
             }
         }
 

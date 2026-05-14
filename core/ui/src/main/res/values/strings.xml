@@ -287,6 +287,8 @@
     <string name="consent_privacy_desc">Shellify does not intentionally collect, store, or transmit your browsing activity. Browsing activity is processed locally on the device. Please review our Privacy Policy and Terms of Service for full details.</string>
     <string name="consent_read_privacy">Read our full Privacy Policy</string>
     <string name="consent_read_tos">Read our Terms of Service</string>
+    <string name="consent_contact_legal">Legal enquiries: legal@shellify.app</string>
+    <string name="consent_contact_abuse">Abuse reports: abuse@shellify.app</string>
     <string name="consent_checkbox_label">I have read and agree to the Terms and Privacy Policy</string>
     <string name="consent_agree_button">I Agree &amp; Continue</string>
     <string name="consent_decline_button">Decline</string>

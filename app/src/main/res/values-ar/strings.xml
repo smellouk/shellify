@@ -283,6 +283,8 @@
     <string name="consent_privacy_desc">لا يجمع شيليفاي نشاط تصفّحك عن قصد ولا يخزّنه ولا يُرسله. تُعالَج أنشطة التصفّح محلياً على الجهاز. يُرجى مراجعة سياسة الخصوصية وشروط الخدمة للاطلاع على التفاصيل الكاملة.</string>
     <string name="consent_read_privacy">اقرأ سياسة الخصوصية الكاملة</string>
     <string name="consent_read_tos">اقرأ شروط الخدمة</string>
+    <string name="consent_contact_legal">الاستفسارات القانونية: legal@shellify.app</string>
+    <string name="consent_contact_abuse">الإبلاغ عن الإساءة: abuse@shellify.app</string>
     <string name="consent_checkbox_label">لقد قرأتُ الشروط وسياسة الخصوصية وأوافق عليهما</string>
     <string name="consent_agree_button">أوافق وأتابع</string>
     <string name="consent_decline_button">رفض</string>
