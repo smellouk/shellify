@@ -4,11 +4,56 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Shellify icon: stylised "P" inside a rounded phone outline -->
-    <path
-        android:fillColor="#1565C0"
-        android:pathData="M30,18 L78,18 Q90,18 90,30 L90,78 Q90,90 78,90 L30,90 Q18,90 18,78 L18,30 Q18,18 30,18 Z"/>
+
+    <!--
+        Scallop fan shell — 7 sections, 8 rim points, symmetric.
+        Ellipse: centre (54, 52), rx=36, ry=34
+        Rim points at 180°/7 ≈ 25.7° steps (left → top → right):
+          P0=(18,52)  P1=(22,37)  P2=(32,25)  P3=(46,19)
+          P4=(62,19)  P5=(76,25)  P6=(86,37)  P7=(90,52)
+        Section 4 (P3→P4) sits exactly at the top — used as the white centre.
+        Colour pattern L→R: lavender white lavender WHITE lavender white lavender
+        Hinge: (54, 82)
+    -->
+
+    <!-- White sections: S2 (P1→P2), S4 centre (P3→P4), S6 (P5→P6) -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M40,36 L58,36 Q68,36 68,46 Q68,56 58,56 L48,56 L48,72 L40,72 Z M48,44 L48,48 L57,48 Q60,48 60,46 Q60,44 57,44 Z"/>
+        android:pathData="M54,82 L22,37 A36,34 0 0,1 32,25 Z
+                          M54,82 L46,19 A36,34 0 0,1 62,19 Z
+                          M54,82 L76,25 A36,34 0 0,1 86,37 Z"/>
+
+    <!-- Lavender sections: S1 (P0→P1), S3 (P2→P3), S5 (P4→P5), S7 (P6→P7) -->
+    <path
+        android:fillColor="#D0BCFF"
+        android:pathData="M54,82 L18,52 A36,34 0 0,1 22,37 Z
+                          M54,82 L32,25 A36,34 0 0,1 46,19 Z
+                          M54,82 L62,19 A36,34 0 0,1 76,25 Z
+                          M54,82 L86,37 A36,34 0 0,1 90,52 Z"/>
+
+    <!-- Shell silhouette outline -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2"
+        android:pathData="M54,82 L18,52 A36,34 0 0,1 90,52 Z"/>
+
+    <!-- Internal rib lines: 6 lines (outer 2 edges covered by outline) -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#9A8FBD"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M54,82 L22,37
+                          M54,82 L32,25
+                          M54,82 L46,19
+                          M54,82 L62,19
+                          M54,82 L76,25
+                          M54,82 L86,37"/>
+
+    <!-- Hinge bump -->
+    <path
+        android:fillColor="#9A8FBD"
+        android:pathData="M49,82 Q54,90 59,82 Q54,78 49,82 Z"/>
+
 </vector>
