@@ -63,6 +63,7 @@ import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ModalBottomSheet
@@ -108,6 +109,8 @@ import androidx.compose.ui.unit.dp
 import dev.pwaforge.core.backup.BackupSchedule
 import dev.pwaforge.presentation.theme.ACCENT_COLORS
 import dev.pwaforge.presentation.theme.Dimens
+import dev.pwaforge.presentation.theme.GeckoWarning
+import dev.pwaforge.presentation.theme.VerifiedGreen
 import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.core.engine.GeckoInstallState
 import dev.pwaforge.core.iconpack.SimpleIconsState
@@ -388,6 +391,36 @@ fun GlobalSettingsScreen(
                                             if (hasUpdate) Text(stringResource(R.string.global_settings_gecko_update_available, geckoLatestVersion ?: ""),
                                                 style = MaterialTheme.typography.bodySmall,
                                                 color = MaterialTheme.colorScheme.primary)
+                                        }
+                                    }
+                                    Row(
+                                        verticalAlignment = Alignment.Top,
+                                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
+                                    ) {
+                                        if (gs.verified) {
+                                            val sha = viewModel.geckoEngineManager.getInstalledSha256()
+                                            Icon(Icons.Default.VerifiedUser, null,
+                                                modifier = Modifier.size(Dimens.sizeXs),
+                                                tint = VerifiedGreen)
+                                            Column {
+                                                Text(stringResource(R.string.global_settings_gecko_sha_verified),
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = VerifiedGreen)
+                                                if (sha != null) Text(
+                                                    sha,
+                                                    style = MaterialTheme.typography.labelSmall.copy(
+                                                        fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
+                                                    ),
+                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                )
+                                            }
+                                        } else {
+                                            Icon(Icons.Default.Warning, null,
+                                                modifier = Modifier.size(Dimens.sizeXs),
+                                                tint = GeckoWarning)
+                                            Text(stringResource(R.string.global_settings_gecko_sha_unverified),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = GeckoWarning)
                                         }
                                     }
                                     Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),

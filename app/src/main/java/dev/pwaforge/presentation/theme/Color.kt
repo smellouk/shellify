@@ -18,6 +18,7 @@ val TagTranslate    = Color(0xFF1E88E5) // blue    – translate indicator
 val TagLockPassword = Color(0xFF7C4DFF) // purple  – password-lock indicator
 val TagLockSystem   = Color(0xFF3F51B5) // indigo  – system-lock indicator
 val GeckoWarning    = Color(0xFFFF9800) // orange  – GeckoView not installed
+val VerifiedGreen   = Color(0xFF4CAF50) // green   – SHA-256 integrity verified
 
 // User-selectable accent palette (shared between onboarding and global settings)
 val ACCENT_COLORS = listOf(

@@ -20,6 +20,7 @@ import org.mozilla.geckoview.GeckoRuntimeSettings
 import org.mozilla.geckoview.StorageController
 import java.io.File
 import java.io.FileOutputStream
+import java.security.MessageDigest
 import java.util.concurrent.TimeUnit
 import java.util.zip.ZipInputStream
 
@@ -27,7 +28,7 @@ sealed class GeckoInstallState {
     data object NotInstalled : GeckoInstallState()
     data class Downloading(val progress: Float, val message: String) : GeckoInstallState()
     data object Installing : GeckoInstallState()
-    data object Installed : GeckoInstallState()
+    data class Installed(val verified: Boolean) : GeckoInstallState()
     data class Error(val message: String) : GeckoInstallState()
 }
 
@@ -38,6 +39,8 @@ class GeckoEngineManager(private val context: Context) {
         private const val PREFS_NAME = "gecko_engine"
         private const val KEY_INSTALLED = "installed"
         private const val KEY_VERSION = "version"
+        private const val KEY_VERIFIED = "sha256_verified"
+        private const val KEY_SHA256   = "sha256_hash"
 
         const val GECKO_VERSION = "128.0.20240704121409"
         private const val MAVEN_BASE = "https://maven.mozilla.org/maven2/org/mozilla/geckoview"
@@ -47,6 +50,14 @@ class GeckoEngineManager(private val context: Context) {
             "armeabi-v7a" to "geckoview-armeabi-v7a",
             "x86_64"      to "geckoview-x86_64",
             "x86"         to "geckoview-x86",
+        )
+
+        // SHA-256 of the AAR for each ABI at GECKO_VERSION — fetched from maven.mozilla.org
+        private val KNOWN_SHA256 = mapOf(
+            "arm64-v8a"   to "23c1fb46874310d8ba2708f12022e6b3d719a8434efbb95090f4f8a8ae57621c",
+            "armeabi-v7a" to "c908a15b8e3e40967deedfb70b007ddc42a479caf00077e38c0b5dc56674d6eb",
+            "x86_64"      to "ff45bf56fb6fd4caed09f94e8ea95ffa3de3059e08ce2f80dbde9621753c481e",
+            "x86"         to "be651ec149648afa8e4628434cb2c05ac9b7973347f26232a076a3ced79a6cfd",
         )
 
         // libmozglue must be loaded before libxul (dependency order)
@@ -64,7 +75,8 @@ class GeckoEngineManager(private val context: Context) {
         .build()
 
     private val _installState = MutableStateFlow<GeckoInstallState>(
-        if (isInstalled()) GeckoInstallState.Installed else GeckoInstallState.NotInstalled
+        if (isInstalled()) GeckoInstallState.Installed(verified = prefs.getBoolean(KEY_VERIFIED, false))
+        else GeckoInstallState.NotInstalled
     )
     val installState: StateFlow<GeckoInstallState> = _installState.asStateFlow()
 
@@ -99,6 +111,7 @@ class GeckoEngineManager(private val context: Context) {
     }
 
     fun getInstalledVersion(): String? = prefs.getString(KEY_VERSION, null)
+    fun getInstalledSha256(): String? = prefs.getString(KEY_SHA256, null)
 
     fun getInstalledSizeMb(): Int {
         val dir = File(context.filesDir, "gecko_engine")
@@ -134,8 +147,9 @@ class GeckoEngineManager(private val context: Context) {
 
     suspend fun downloadAndInstall(version: String = GECKO_VERSION): Boolean = withContext(Dispatchers.IO) {
         cancelRequested = false
-        val abi = Build.SUPPORTED_ABIS.firstOrNull() ?: "arm64-v8a"
-        val artifact = ABI_ARTIFACT[abi] ?: ABI_ARTIFACT["arm64-v8a"]!!
+        val abi = Build.SUPPORTED_ABIS.firstOrNull()
+            ?.takeIf { it in ABI_ARTIFACT } ?: "arm64-v8a"
+        val artifact = ABI_ARTIFACT[abi]!!
         val url = "$MAVEN_BASE/$artifact/$version/$artifact-$version.aar"
         Log.i(TAG, "Downloading GeckoView from $url")
 
@@ -159,6 +173,29 @@ class GeckoEngineManager(private val context: Context) {
                 return@withContext false
             }
 
+            // ── Integrity verification ────────────────────────────────────────
+            _installState.value = GeckoInstallState.Downloading(0.9f, "Verifying…")
+            val expectedHash = if (version == GECKO_VERSION) {
+                KNOWN_SHA256[abi]
+            } else {
+                fetchMavenSha256(artifact, version)
+            }
+            val verified: Boolean
+            if (expectedHash == null) {
+                Log.w(TAG, "No expected hash available for $artifact $version — skipping verification")
+                verified = false
+            } else {
+                val actualHash = sha256(tempAar)
+                if (actualHash != expectedHash) {
+                    Log.e(TAG, "SHA-256 mismatch! expected=$expectedHash actual=$actualHash")
+                    tempAar.delete()
+                    _installState.value = GeckoInstallState.Error("Integrity check failed — download may be corrupted or tampered")
+                    return@withContext false
+                }
+                Log.i(TAG, "SHA-256 verified: $actualHash")
+                verified = true
+            }
+
             _installState.value = GeckoInstallState.Installing
             val extracted = extractSoFiles(tempAar, abi)
             tempAar.delete()
@@ -171,9 +208,11 @@ class GeckoEngineManager(private val context: Context) {
             prefs.edit()
                 .putBoolean(KEY_INSTALLED, true)
                 .putString(KEY_VERSION, version)
+                .putBoolean(KEY_VERIFIED, verified)
+                .putString(KEY_SHA256, if (verified) expectedHash else null)
                 .apply()
-            _installState.value = GeckoInstallState.Installed
-            Log.i(TAG, "GeckoView installed successfully (ABI=$abi)")
+            _installState.value = GeckoInstallState.Installed(verified = verified)
+            Log.i(TAG, "GeckoView installed successfully (ABI=$abi, verified=$verified)")
             true
         } catch (e: CancellationException) {
             _installState.value = GeckoInstallState.NotInstalled
@@ -234,7 +273,7 @@ class GeckoEngineManager(private val context: Context) {
 
     fun uninstall() {
         File(context.filesDir, "gecko_engine").deleteRecursively()
-        prefs.edit().remove(KEY_INSTALLED).remove(KEY_VERSION).apply()
+        prefs.edit().remove(KEY_INSTALLED).remove(KEY_VERSION).remove(KEY_VERIFIED).remove(KEY_SHA256).apply()
         _installState.value = GeckoInstallState.NotInstalled
         try { sharedRuntime?.shutdown() } catch (_: Exception) {}
         sharedRuntime = null
@@ -271,6 +310,27 @@ class GeckoEngineManager(private val context: Context) {
             }
         }
         return dest.exists() && dest.length() > 0
+    }
+
+    private fun sha256(file: File): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val buf = ByteArray(8192)
+        file.inputStream().use { input ->
+            var n: Int
+            while (input.read(buf).also { n = it } != -1) digest.update(buf, 0, n)
+        }
+        return digest.digest().joinToString("") { "%02x".format(it) }
+    }
+
+    private fun fetchMavenSha256(artifact: String, version: String): String? {
+        return try {
+            val url = "$MAVEN_BASE/$artifact/$version/$artifact-$version.aar.sha256"
+            val request = Request.Builder().url(url).header("User-Agent", "Mozilla/5.0").build()
+            httpClient.newCall(request).execute().use { it.body?.string()?.trim() }
+        } catch (e: Exception) {
+            Log.w(TAG, "Could not fetch SHA-256 from Maven: ${e.message}")
+            null
+        }
     }
 
     private fun extractSoFiles(aarFile: File, abi: String): Boolean {

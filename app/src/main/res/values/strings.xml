@@ -209,6 +209,8 @@
     <string name="global_settings_gecko_update_available">Update available: %s</string>
     <string name="global_settings_gecko_version">Version %1$s  ·  ~%2$d MB</string>
     <string name="global_settings_gecko_download_failed">Download failed: %s</string>
+    <string name="global_settings_gecko_sha_verified">SHA-256 verified — matches Mozilla\'s release</string>
+    <string name="global_settings_gecko_sha_unverified">Integrity not verified — reinstall to verify</string>
     <string name="global_settings_section_security">Security</string>
     <string name="global_settings_app_password_headline">App password</string>
     <string name="global_settings_password_set">Password is set</string>

@@ -89,6 +89,7 @@ import dev.pwaforge.R
 import dev.pwaforge.core.engine.GeckoInstallState
 import dev.pwaforge.core.shortcut.PwaShortcutManager
 import dev.pwaforge.domain.model.EngineType
+import dev.pwaforge.presentation.theme.GeckoWarning
 import dev.pwaforge.domain.model.LockType
 import dev.pwaforge.domain.model.TranslateLanguage
 import dev.pwaforge.domain.model.WebApp
@@ -103,7 +104,6 @@ fun AppSettingsScreen(
     viewModel: AppSettingsViewModel,
     onBack: () -> Unit,
     onDeleted: () -> Unit,
-    onGoToGlobalSettings: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsState()
     val geckoInstallState by viewModel.geckoEngineManager.installState.collectAsState()
@@ -358,7 +358,6 @@ fun AppSettingsScreen(
                 selected = app.engineType,
                 geckoInstallState = geckoInstallState,
                 onSelect = viewModel::setEngineType,
-                onGoToGlobalSettings = onGoToGlobalSettings,
             )
 
             // ── Shortcut ──────────────────────────────────────────────────────
@@ -552,7 +551,6 @@ private fun AppEngineCard(
     selected: EngineType,
     geckoInstallState: GeckoInstallState,
     onSelect: (EngineType) -> Unit,
-    onGoToGlobalSettings: () -> Unit,
 ) {
     val geckoAvailable = geckoInstallState is GeckoInstallState.Installed
     val geckoMissing = selected == EngineType.GECKOVIEW && !geckoAvailable
@@ -563,7 +561,7 @@ private fun AppEngineCard(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(androidx.compose.ui.graphics.Color(0xFFFF9800).copy(alpha = 0.12f))
+                        .background(GeckoWarning.copy(alpha = 0.12f))
                         .padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceSm),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
@@ -571,13 +569,13 @@ private fun AppEngineCard(
                     Icon(
                         Icons.Default.Warning,
                         contentDescription = null,
-                        tint = androidx.compose.ui.graphics.Color(0xFFFF9800),
+                        tint = GeckoWarning,
                         modifier = Modifier.size(Dimens.sizeMd),
                     )
                     Text(
                         stringResource(R.string.settings_engine_gecko_missing),
                         style = MaterialTheme.typography.bodySmall,
-                        color = androidx.compose.ui.graphics.Color(0xFFFF9800),
+                        color = GeckoWarning,
                         modifier = Modifier.weight(1f),
                     )
                 }

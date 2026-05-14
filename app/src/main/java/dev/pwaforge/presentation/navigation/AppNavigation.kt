@@ -229,7 +229,6 @@ fun AppNavigation(
                         app.geckoEngineManager) },
                     onBack = { navController.popBackStack() },
                     onDeleted = { navController.popBackStack(Screen.Home.route, inclusive = false) },
-                    onGoToGlobalSettings = { navController.navigate(Screen.GlobalSettings.route) },
                 )
             }
 
