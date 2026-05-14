@@ -2,7 +2,9 @@ package io.shellify.app.screen
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.shellify.app.core.engine.GeckoEngineManager
 import io.shellify.app.core.engine.GeckoInstallState
@@ -69,7 +71,7 @@ class AppSettingsScreenTest {
         val app = FakeData.webApp(id = 1L, name = "Notion", url = "https://notion.so")
         setAppSettingsScreen(AppSettingsUiState(app = app, isLoading = false))
         composeTestRule
-            .onNodeWithText("Notion")
+            .onAllNodesWithText("Notion")[0]
             .assertIsDisplayed()
     }
 
@@ -124,6 +126,7 @@ class AppSettingsScreenTest {
         setAppSettingsScreen(AppSettingsUiState(app = app, isLoading = false))
         composeTestRule
             .onNodeWithText("Danger zone")
+            .performScrollTo()
             .assertIsDisplayed()
     }
 
@@ -132,7 +135,8 @@ class AppSettingsScreenTest {
         val app = FakeData.webApp(id = 1L, name = "Mastodon", url = "https://mastodon.social")
         setAppSettingsScreen(AppSettingsUiState(app = app, isLoading = false))
         composeTestRule
-            .onNodeWithText("Delete app")
+            .onNodeWithText("Delete app", substring = true)
+            .performScrollTo()
             .assertIsDisplayed()
     }
 

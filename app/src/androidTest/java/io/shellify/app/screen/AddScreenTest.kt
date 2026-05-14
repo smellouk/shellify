@@ -2,7 +2,9 @@ package io.shellify.app.screen
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.shellify.app.core.engine.GeckoEngineManager
 import io.shellify.app.core.engine.GeckoInstallState
@@ -109,17 +111,17 @@ class AddScreenTest {
 
     @Test
     fun analyzeButton_isDisplayedWhenNotAnalyzing() {
-        setAddScreen(AddUiState(isAnalyzing = false))
+        setAddScreen(AddUiState(isAnalyzing = false, url = "https://example.com"))
         composeTestRule
-            .onNodeWithText("Analyze")
+            .onNodeWithContentDescription("Analyze site")
             .assertIsDisplayed()
     }
 
     @Test
-    fun analyzeButton_showsAnalyzingLabel_duringAnalysis() {
-        setAddScreen(AddUiState(isAnalyzing = true))
+    fun analyzeButton_showsAnalyzingIndicator_duringAnalysis() {
+        setAddScreen(AddUiState(isAnalyzing = true, url = "https://example.com"))
         composeTestRule
-            .onNodeWithText("Analyzing…")
+            .onNodeWithContentDescription("Analyzing")
             .assertIsDisplayed()
     }
 
@@ -148,6 +150,7 @@ class AddScreenTest {
         setAddScreen(AddUiState(name = "App", url = "https://example.com"))
         composeTestRule
             .onNodeWithText("Fullscreen Mode")
+            .performScrollTo()
             .assertIsDisplayed()
     }
 

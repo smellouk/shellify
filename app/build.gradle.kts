@@ -70,7 +70,11 @@ android {
     }
 
     packaging {
-        resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" }
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/LICENSE.md"
+            excludes += "/META-INF/LICENSE-notice.md"
+        }
         jniLibs {
             // GeckoView native libs are downloaded at runtime — exclude from APK to keep it small
             excludes += "**/libxul.so"
