@@ -262,7 +262,7 @@
     <string name="consent_what_4">Shellify may allow users to locally share user-selected website links or app configurations using standard operating-system sharing features without transmitting that data through Shellify infrastructure</string>
     <string name="consent_section_not_title">What Shellify does not do</string>
     <string name="consent_not_1">We do not own, host, control, monitor, modify, or endorse third-party websites or services</string>
-    <string name="consent_not_2">We do not collect or store your browsing activity or the content you access through third-party websites</string>
+    <string name="consent_not_2">We do not intentionally collect, store, or transmit your browsing activity or the content you access through third-party websites</string>
     <string name="consent_not_3">We are not affiliated with any third-party website unless explicitly stated</string>
     <string name="consent_not_4">We do not guarantee the legality, security, availability, or reliability of any third-party website or content</string>
     <string name="consent_not_5">Shellify is a general-purpose user-controlled tool and does not encourage, promote, or facilitate unlawful activity or unauthorized access to services</string>

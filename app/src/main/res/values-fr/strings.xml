@@ -258,7 +258,7 @@
     <string name="consent_what_4">Shellify peut permettre aux utilisateurs de partager localement des liens de sites ou des configurations d\'applications via les fonctions de partage standard du système d\'exploitation, sans transmettre ces données via l\'infrastructure de Shellify</string>
     <string name="consent_section_not_title">Ce que Shellify ne fait pas</string>
     <string name="consent_not_1">Nous ne possédons, hébergeons, contrôlons, surveillons, modifions ni n\'approuvons les sites ou services tiers</string>
-    <string name="consent_not_2">Nous ne collectons ni ne stockons votre activité de navigation ou le contenu consulté via des sites tiers</string>
+    <string name="consent_not_2">Nous ne collectons, ne stockons ni ne transmettons intentionnellement votre activité de navigation ou le contenu consulté via des sites tiers</string>
     <string name="consent_not_3">Nous ne sommes affiliés à aucun site tiers, sauf mention explicite</string>
     <string name="consent_not_4">Nous ne garantissons pas la légalité, la sécurité, la disponibilité ou la fiabilité d\'un site ou contenu tiers</string>
     <string name="consent_not_5">Shellify est un outil polyvalent contrôlé par l\'utilisateur et n\'encourage, ne promeut ni ne facilite aucune activité illégale ou tout accès non autorisé à des services</string>
