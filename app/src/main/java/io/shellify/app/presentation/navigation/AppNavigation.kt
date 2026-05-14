@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -105,6 +106,12 @@ fun AppNavigation(
     if (onboardingDone == null) return
 
     val startDestination = if (onboardingDone == true) Screen.Home.route else Screen.Onboarding.route
+
+    LaunchedEffect(Unit) {
+        app.pendingDeepLink.collect { (url, name) ->
+            navController.navigate(Screen.Add.createRoute(url = url, name = name))
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -196,18 +203,25 @@ fun AppNavigation(
 
             composable(
                 route = Screen.Add.route,
-                arguments = listOf(navArgument("appId") { type = NavType.LongType; defaultValue = 0L }),
+                arguments = listOf(
+                    navArgument("appId") { type = NavType.LongType; defaultValue = 0L },
+                    navArgument("url") { type = NavType.StringType; defaultValue = "" },
+                    navArgument("name") { type = NavType.StringType; defaultValue = "" },
+                ),
                 enterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn() },
                 exitTransition = { ExitTransition.None },
                 popEnterTransition = { EnterTransition.None },
                 popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut() },
             ) { back ->
                 val appId = back.arguments?.getLong("appId") ?: 0L
+                val prefilledUrl = back.arguments?.getString("url") ?: ""
+                val prefilledName = back.arguments?.getString("name") ?: ""
                 AddScreen(
                     viewModel = remember(appId) { AddViewModel(appId, app.webAppRepository, app.saveWebApp,
                         app.getCategories, app.pwaAnalyzer, app.faviconFetcher,
                         app.geckoEngineManager, app.themeManager,
-                        app.simpleIconsManager, app) },
+                        app.simpleIconsManager, app,
+                        prefilledUrl = prefilledUrl, prefilledName = prefilledName) },
                     onSaved = { navController.popBackStack() },
                     onBack = { navController.popBackStack() },
                 )

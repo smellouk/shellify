@@ -24,8 +24,10 @@ import io.shellify.app.domain.usecase.GetCategoriesUseCase
 import io.shellify.app.domain.usecase.GetWebAppsUseCase
 import io.shellify.app.domain.usecase.SaveCategoryUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
+import kotlinx.coroutines.flow.MutableSharedFlow
 
 class ShellifyApplication : Application() {
+    val pendingDeepLink = MutableSharedFlow<Pair<String, String>>(replay = 1)
     // Crypto first — everything else depends on it
     val cryptoManager by lazy { CryptoManager(this) }
 

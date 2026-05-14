@@ -100,6 +100,8 @@ class AddViewModel(
     private val themeManager: ThemeManager,
     private val simpleIconsManager: SimpleIconsManager,
     private val context: Context,
+    private val prefilledUrl: String = "",
+    private val prefilledName: String = "",
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AddUiState(
@@ -141,6 +143,12 @@ class AddViewModel(
                         wipeOnFailedAttempts = app.wipeOnFailedAttempts,
                     )
                 }
+            }
+        } else if (prefilledUrl.isNotBlank()) {
+            _state.update { it.copy(url = prefilledUrl, name = prefilledName) }
+            viewModelScope.launch {
+                val defaultEngine = themeManager.defaultEngineType.first()
+                _state.update { it.copy(engineType = defaultEngine) }
             }
         } else {
             viewModelScope.launch {

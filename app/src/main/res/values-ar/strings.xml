@@ -394,6 +394,10 @@
     <string name="onboarding_quickpicks_mastodon">ماستودون</string>
     <string name="onboarding_quickpicks_mastodon_host">mastodon.social</string>
 
+    <!-- Share / Deeplink -->
+    <string name="share_copy_link">نسخ الرابط</string>
+    <string name="share_button">مشاركة</string>
+
     <!-- Errors -->
     <string name="error_invalid_url">يرجى إدخال رابط صحيح</string>
     <string name="error_analyze_failed">تعذَّر قراءة معلومات الموقع. يمكنك الحفظ يدوياً.</string>

@@ -394,6 +394,10 @@
     <string name="onboarding_quickpicks_mastodon">Mastodon</string>
     <string name="onboarding_quickpicks_mastodon_host">mastodon.social</string>
 
+    <!-- Share / Deeplink -->
+    <string name="share_copy_link">Copier le lien</string>
+    <string name="share_button">Partager</string>
+
     <!-- Errors -->
     <string name="error_invalid_url">Veuillez entrer une URL valide</string>
     <string name="error_analyze_failed">Impossible de lire les informations du site. Vous pouvez toujours enregistrer manuellement.</string>

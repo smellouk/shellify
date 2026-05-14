@@ -109,6 +109,9 @@ dependencies {
     // DocumentFile — SAF-based file writing for backups
     implementation("androidx.documentfile:documentfile:1.0.1")
 
+    // QR code generation
+    implementation("com.google.zxing:core:3.5.3")
+
     // GeckoView — Java/Kotlin API only; .so files excluded from APK (see packagingOptions) and downloaded at runtime
     implementation("org.mozilla.geckoview:geckoview-arm64-v8a:128.0.20240704121409")
 

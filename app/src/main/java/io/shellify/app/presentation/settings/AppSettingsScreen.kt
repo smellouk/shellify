@@ -22,12 +22,20 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.content.Intent
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Shortcut
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.GTranslate
 import androidx.compose.material.icons.filled.Image
@@ -48,6 +56,9 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -93,6 +104,8 @@ import io.shellify.app.presentation.theme.GeckoWarning
 import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.TranslateLanguage
 import io.shellify.app.domain.model.WebApp
+import io.shellify.app.core.deeplink.DeepLinkHandler
+import io.shellify.app.core.deeplink.QrCodeGenerator
 import io.shellify.app.presentation.add.SimpleIconPickerSheet
 import io.shellify.app.presentation.home.AppIcon
 import io.shellify.app.presentation.theme.Dimens
@@ -118,6 +131,7 @@ fun AppSettingsScreen(
     var showClearDataDialog by remember { mutableStateOf(false) }
     var showLangMenu by remember { mutableStateOf(false) }
     var showColorPicker by remember { mutableStateOf(false) }
+    var showShareSheet by remember { mutableStateOf(false) }
 
     val imagePicker = rememberLauncherForActivityResult(
         ActivityResultContracts.PickVisualMedia()
@@ -144,6 +158,11 @@ fun AppSettingsScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.common_back))
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { showShareSheet = true }) {
+                        Icon(Icons.Default.Share, contentDescription = stringResource(R.string.share_button))
                     }
                 },
             )
@@ -542,6 +561,48 @@ fun AppSettingsScreen(
                 },
                 onDismiss = viewModel::closeIconPackPicker,
             )
+        }
+
+        if (showShareSheet && app != null) {
+            val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            val customLink = DeepLinkHandler.buildCustomScheme(app.url, app.name)
+            val httpsLink = DeepLinkHandler.buildHttps(app.url, app.name)
+            val qrBitmap: Bitmap = remember(customLink) { QrCodeGenerator.generate(customLink) }
+
+            ModalBottomSheet(
+                onDismissRequest = { showShareSheet = false },
+                sheetState = sheetState,
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(Dimens.spaceLg).padding(bottom = Dimens.spaceLg),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
+                ) {
+                    Text(app.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                    Image(
+                        bitmap = qrBitmap.asImageBitmap(),
+                        contentDescription = null,
+                        modifier = Modifier.size(200.dp),
+                    )
+                    Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
+                        Text(customLink, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(httpsLink, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceMd)) {
+                        OutlinedButton(onClick = {
+                            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                            clipboard.setPrimaryClip(ClipData.newPlainText("Shellify link", customLink))
+                        }) { Text(stringResource(R.string.share_copy_link)) }
+                        Button(onClick = {
+                            val intent = Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_TEXT, "$customLink\n\n$httpsLink")
+                            }
+                            context.startActivity(Intent.createChooser(intent, app.name))
+                        }) { Text(stringResource(R.string.share_button)) }
+                    }
+                }
+            }
         }
     }
 }
