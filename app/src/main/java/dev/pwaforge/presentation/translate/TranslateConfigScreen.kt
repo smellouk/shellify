@@ -80,16 +80,6 @@ fun TranslateConfigScreen(
             HorizontalDivider()
 
             ListItem(
-                headlineContent = { Text(stringResource(R.string.translate_show_button)) },
-                supportingContent = { Text(stringResource(R.string.translate_show_button_desc)) },
-                trailingContent = {
-                    Switch(checked = app.showTranslateButton, onCheckedChange = viewModel::setShowButton)
-                },
-            )
-
-            HorizontalDivider()
-
-            ListItem(
                 headlineContent = { Text(stringResource(R.string.translate_auto)) },
                 supportingContent = { Text(stringResource(R.string.translate_auto_desc)) },
                 trailingContent = {

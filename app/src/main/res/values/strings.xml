@@ -90,8 +90,6 @@
     <string name="add_feature_translate">Auto Translate</string>
     <string name="add_feature_translate_desc">Auto translate to specified language after page loads with multi-engine fallback (Google / MyMemory / LibreTranslate / Lingva)</string>
     <string name="add_translate_target_lang">Translation Target Language</string>
-    <string name="add_translate_show_button">Show Translate Button</string>
-    <string name="add_translate_show_button_desc">Show a draggable translate FAB at bottom right</string>
     <string name="add_translate_auto_load">Auto Translate on Load</string>
     <string name="add_translate_auto_load_desc">Automatically translate after page loads without manual click</string>
     <string name="add_feature_fullscreen">Fullscreen Mode</string>
@@ -143,6 +141,7 @@
     <string name="webview_control_fullscreen">Fullscreen</string>
     <string name="webview_control_applock">App lock</string>
     <string name="webview_applock_disabled_hint">Set an app password in Settings to enable</string>
+    <string name="webview_sheet_title">Features</string>
 
     <!-- App Settings (per-app) -->
     <string name="settings_title">App settings</string>
@@ -165,6 +164,8 @@
     <string name="settings_applock">App Lock</string>
     <string name="settings_lock_password">App password (set in Settings)</string>
     <string name="settings_lock_system">System lock (fingerprint / PIN)</string>
+    <string name="settings_disable_lock_title">Disable App Lock</string>
+    <string name="settings_disable_lock_body">Enter your current password to disable App Lock.</string>
     <string name="settings_danger_zone">Danger zone</string>
     <string name="settings_clear_data">Clear app data</string>
     <string name="settings_delete_app">Delete app</string>
@@ -318,8 +319,6 @@
     <!-- Translate -->
     <string name="translate_title">Translation settings</string>
     <string name="translate_target_language">Target language</string>
-    <string name="translate_show_button">Show translate button in app</string>
-    <string name="translate_show_button_desc">Floating button inside the WebView</string>
     <string name="translate_auto">Auto-translate on page load</string>
     <string name="translate_auto_desc">Translate automatically after each page loads</string>
 

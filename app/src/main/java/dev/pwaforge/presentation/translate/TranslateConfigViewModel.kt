@@ -39,6 +39,5 @@ class TranslateConfigViewModel(
     }
 
     fun setLanguage(lang: TranslateLanguage) = update { it.copy(translateTarget = lang) }
-    fun setShowButton(v: Boolean) = update { it.copy(showTranslateButton = v) }
     fun setAutoTranslate(v: Boolean) = update { it.copy(autoTranslateOnLoad = v) }
 }

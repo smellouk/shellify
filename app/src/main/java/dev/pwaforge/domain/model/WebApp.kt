@@ -26,8 +26,7 @@ data class WebApp(
     val translateEnabled: Boolean = false,
     val translateTarget: TranslateLanguage = TranslateLanguage.ENGLISH,
     val translateEngine: TranslateEngine = TranslateEngine.AUTO,
-    val showTranslateButton: Boolean = true,
-    val autoTranslateOnLoad: Boolean = false,
+    val autoTranslateOnLoad: Boolean = true,
     // Browser
     val uaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,
     val engineType: EngineType = EngineType.SYSTEM_WEBVIEW,

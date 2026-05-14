@@ -69,8 +69,7 @@ data class AddUiState(
     val translateEnabled: Boolean = false,
     val translateTarget: TranslateLanguage = TranslateLanguage.ENGLISH,
     val translateEngine: TranslateEngine = TranslateEngine.AUTO,
-    val showTranslateButton: Boolean = true,
-    val autoTranslateOnLoad: Boolean = false,
+    val autoTranslateOnLoad: Boolean = true,
     // Browser
     val uaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,
     val engineType: EngineType = EngineType.SYSTEM_WEBVIEW,
@@ -138,7 +137,6 @@ class AddViewModel(
                         translateEnabled = app.translateEnabled,
                         translateTarget = app.translateTarget,
                         translateEngine = app.translateEngine,
-                        showTranslateButton = app.showTranslateButton,
                         autoTranslateOnLoad = app.autoTranslateOnLoad,
                         uaMode = app.uaMode,
                         engineType = app.engineType,
@@ -189,7 +187,6 @@ class AddViewModel(
     fun setTranslate(v: Boolean) = _state.update { it.copy(translateEnabled = v) }
     fun setTranslateTarget(v: TranslateLanguage) = _state.update { it.copy(translateTarget = v) }
     fun setTranslateEngine(v: TranslateEngine) = _state.update { it.copy(translateEngine = v) }
-    fun setShowTranslateButton(v: Boolean) = _state.update { it.copy(showTranslateButton = v) }
     fun setAutoTranslateOnLoad(v: Boolean) = _state.update { it.copy(autoTranslateOnLoad = v) }
 
     // Browser
@@ -376,7 +373,6 @@ class AddViewModel(
             translateEnabled = s.translateEnabled,
             translateTarget = s.translateTarget,
             translateEngine = s.translateEngine,
-            showTranslateButton = s.showTranslateButton,
             autoTranslateOnLoad = s.autoTranslateOnLoad,
             uaMode = s.uaMode,
             engineType = s.engineType,

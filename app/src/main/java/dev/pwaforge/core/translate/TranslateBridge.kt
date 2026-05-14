@@ -13,7 +13,6 @@ object TranslateBridge {
      */
     fun buildScript(
         targetLang: String,
-        showButton: Boolean,
         autoTranslate: Boolean,
     ): String = """
 (function() {
@@ -46,7 +45,6 @@ object TranslateBridge {
     const nodes = [];
     while (walker.nextNode()) nodes.push(walker.currentNode);
 
-    // batch translate: chunk 50 nodes at a time
     for (let i = 0; i < nodes.length; i += 50) {
       const chunk = nodes.slice(i, i + 50);
       const texts = chunk.map(function(n){ return n.nodeValue; });
@@ -59,35 +57,9 @@ object TranslateBridge {
     }
   }
 
-  ${if (showButton) buildButtonScript() else ""}
-
-  ${if (autoTranslate) "window.addEventListener('load', function(){ setTimeout(translatePage, 800); });" else ""}
-
   window.__pwaforgeTranslate = translatePage;
+
+  ${if (autoTranslate) "translatePage();" else ""}
 })();
 """.trimIndent()
-
-    private fun buildButtonScript(): String = """
-  function injectButton() {
-    if (document.getElementById('__pwaforge_translate_btn')) return;
-    const btn = document.createElement('button');
-    btn.id = '__pwaforge_translate_btn';
-    btn.textContent = '🌐';
-    Object.assign(btn.style, {
-      position: 'fixed', bottom: '80px', right: '16px',
-      zIndex: '2147483647', width: '44px', height: '44px',
-      borderRadius: '50%', border: 'none',
-      background: 'rgba(33,150,243,0.92)', color: '#fff',
-      fontSize: '20px', cursor: 'pointer',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-    });
-    btn.onclick = function() { window.__pwaforgeTranslate && window.__pwaforgeTranslate(); };
-    document.body.appendChild(btn);
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', injectButton);
-  } else {
-    injectButton();
-  }
-  """
 }

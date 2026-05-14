@@ -7,6 +7,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -37,6 +38,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -127,7 +129,9 @@ class WebViewActivity : FragmentActivity() {
         }
 
         container = FrameLayout(this)
-        container.setBackgroundColor(Color.BLACK)
+        container.setBackgroundColor(
+            pwaApp.themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() } ?: Color.BLACK
+        )
 
         val engineView = engine.createView(this, pwaApp, buildCallback(pwaApp, container))
 
@@ -141,6 +145,16 @@ class WebViewActivity : FragmentActivity() {
             FrameLayout.LayoutParams.MATCH_PARENT,
             FrameLayout.LayoutParams.MATCH_PARENT,
         )
+
+        // Apply status-bar and nav-bar insets to the container so WebView content never renders
+        // behind system bars. Works on all API levels including Android 15 where
+        // setDecorFitsSystemWindows(true) is ignored. Insets are 0 when bars are hidden.
+        ViewCompat.setOnApplyWindowInsetsListener(container) { view, insets ->
+            val statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            val navBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            view.setPadding(0, statusBars.top, 0, navBars.bottom)
+            insets
+        }
 
         val barHeightPx = (3 * resources.displayMetrics.density).toInt().coerceAtLeast(2)
         progressBar = ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply {
@@ -159,7 +173,7 @@ class WebViewActivity : FragmentActivity() {
 
         setContentView(container)
         applyWindowMode(pwaApp)
-        if (!pwaApp.isFullscreen) applyStatusBarColor(pwaApp.themeColor)
+        applyStatusBarColor(pwaApp.themeColor)
         applyTaskDescription(pwaApp)
 
         authenticate(app, pwaApp)
@@ -326,15 +340,19 @@ class WebViewActivity : FragmentActivity() {
                     }
 
                     if (showSheet) {
-                        ModalBottomSheet(onDismissRequest = { showSheet = false }) {
+                        ModalBottomSheet(
+                            onDismissRequest = { showSheet = false },
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        ) {
                             Text(
-                                pwaApp.name,
+                                stringResource(R.string.webview_sheet_title),
                                 style = MaterialTheme.typography.titleMedium,
                                 modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceXxs),
                             )
-                            HorizontalDivider(modifier = Modifier.padding(vertical = Dimens.spaceSm))
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceSm))
 
                             ListItem(
+                                colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
                                 leadingContent = { Icon(Icons.Default.Shield, null) },
                                 headlineContent = { Text(stringResource(R.string.webview_control_adblock)) },
                                 trailingContent = {
@@ -349,8 +367,9 @@ class WebViewActivity : FragmentActivity() {
                                     )
                                 },
                             )
-                            HorizontalDivider()
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                             ListItem(
+                                colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
                                 leadingContent = { Icon(Icons.Default.GTranslate, null) },
                                 headlineContent = { Text(stringResource(R.string.webview_control_translate)) },
                                 trailingContent = {
@@ -361,10 +380,10 @@ class WebViewActivity : FragmentActivity() {
                                             currentAppFlow.value = updated
                                             scope.launch(Dispatchers.IO) { app.webAppRepository.save(updated) }
                                             if (on) {
+                                                engine.evaluateJavascript("window.__pwaforgeTranslateLoaded = false;", null)
                                                 val script = TranslateBridge.buildScript(
                                                     targetLang = updated.translateTarget.code,
-                                                    showButton = updated.showTranslateButton,
-                                                    autoTranslate = updated.autoTranslateOnLoad,
+                                                    autoTranslate = true,
                                                 )
                                                 engine.evaluateJavascript(script, null)
                                             } else {
@@ -374,8 +393,9 @@ class WebViewActivity : FragmentActivity() {
                                     )
                                 },
                             )
-                            HorizontalDivider()
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                             ListItem(
+                                colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
                                 leadingContent = { Icon(Icons.Default.Fullscreen, null) },
                                 headlineContent = { Text(stringResource(R.string.webview_control_fullscreen)) },
                                 trailingContent = {
@@ -390,8 +410,9 @@ class WebViewActivity : FragmentActivity() {
                                     )
                                 },
                             )
-                            HorizontalDivider()
+                            HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                             ListItem(
+                                colors = ListItemDefaults.colors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
                                 leadingContent = {
                                     Icon(
                                         if (pwaApp.lockType != LockType.NONE) Icons.Default.Lock else Icons.Default.LockOpen,
@@ -451,10 +472,10 @@ class WebViewActivity : FragmentActivity() {
             override fun onPageFinished(url: String?) {
                 url?.let { visitedUrls += it }
                 if (app.translateEnabled) {
+                    engine.evaluateJavascript("window.__pwaforgeTranslateLoaded = false;", null)
                     val script = TranslateBridge.buildScript(
                         targetLang = app.translateTarget.code,
-                        showButton = app.showTranslateButton,
-                        autoTranslate = app.autoTranslateOnLoad,
+                        autoTranslate = true,
                     )
                     engine.evaluateJavascript(script, null)
                 }
@@ -499,15 +520,14 @@ class WebViewActivity : FragmentActivity() {
 
     private fun applyWindowMode(app: WebApp) {
         val fullscreen = app.isFullscreen
-        // Always edge-to-edge so insets reach the container and the status bar scrim
-        // can measure the real status bar height via ViewCompat.setOnApplyWindowInsetsListener.
-        WindowCompat.setDecorFitsSystemWindows(window, false)
         val controller = WindowInsetsControllerCompat(window, window.decorView)
+        // Always edge-to-edge; the container insets listener handles padding.
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         if (fullscreen) {
-            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             val showStatus = app.fullscreenShowStatusBar
             val showNav = app.fullscreenShowNavBar
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             when {
                 showStatus && showNav -> controller.show(WindowInsetsCompat.Type.systemBars())
                 showStatus -> { controller.hide(WindowInsetsCompat.Type.navigationBars()); controller.show(WindowInsetsCompat.Type.statusBars()) }
@@ -525,20 +545,11 @@ class WebViewActivity : FragmentActivity() {
         val color = themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() } ?: return
         val isLight = (0.299 * Color.red(color) + 0.587 * Color.green(color) + 0.114 * Color.blue(color)) / 255 > 0.5
         WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars = isLight
-
-        // Make the system status bar transparent so the scrim view shows through on all API levels.
-        window.statusBarColor = Color.TRANSPARENT
-
-        // Read height from system resource — reliable on all API levels without async callbacks.
-        val resId = resources.getIdentifier("status_bar_height", "dimen", "android")
-        val statusBarHeight = if (resId > 0) resources.getDimensionPixelSize(resId) else 0
-
-        // Remove + re-add so the scrim is always the topmost view in the container,
-        // above any ComposeView overlays that would otherwise cover it.
-        val scrim = statusBarScrim ?: View(this).also { statusBarScrim = it }
-        scrim.setBackgroundColor(color)
-        container.removeView(scrim)
-        container.addView(scrim, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, statusBarHeight, Gravity.TOP))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) window.isStatusBarContrastEnforced = false
+        window.statusBarColor = color
+        // Remove any scrim left over from a previous approach.
+        statusBarScrim?.let { container.removeView(it) }
+        statusBarScrim = null
     }
 
     @Suppress("DEPRECATION")

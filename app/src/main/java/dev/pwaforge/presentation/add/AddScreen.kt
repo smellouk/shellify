@@ -479,8 +479,6 @@ fun AddScreen(
                 Spacer(Modifier.height(Dimens.spaceMd))
                 EngineDropdown(state.translateEngine, viewModel::setTranslateEngine)
                 Spacer(Modifier.height(Dimens.spaceMd))
-                SubToggleRow(stringResource(R.string.add_translate_show_button), stringResource(R.string.add_translate_show_button_desc),
-                    state.showTranslateButton, viewModel::setShowTranslateButton)
                 SubToggleRow(stringResource(R.string.add_translate_auto_load),
                     stringResource(R.string.add_translate_auto_load_desc),
                     state.autoTranslateOnLoad, viewModel::setAutoTranslateOnLoad)
