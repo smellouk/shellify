@@ -1,5 +1,7 @@
 # Shellify — Claude Code Guide
 
+Do not add Co-Authored-By lines to git commits.
+
 Shellify. Wraps websites in isolated WebView containers with per-app ad blocking, biometric lock, and encrypted backup. Local-first, no cloud, no analytics.
 
 ---
