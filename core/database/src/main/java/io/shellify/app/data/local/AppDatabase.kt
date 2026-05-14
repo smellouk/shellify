@@ -5,8 +5,6 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
 import io.shellify.app.core.crypto.CryptoManager
 import io.shellify.app.data.local.converter.IconSourceConverter
 import io.shellify.app.data.local.dao.CategoryDao
@@ -17,8 +15,8 @@ import net.sqlcipher.database.SupportFactory
 
 @Database(
     entities = [WebAppEntity::class, CategoryEntity::class],
-    version = 12,
-    exportSchema = true,
+    version = 1,
+    exportSchema = false,
 )
 @TypeConverters(IconSourceConverter::class)
 abstract class AppDatabase : RoomDatabase() {
@@ -28,81 +26,6 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         @Volatile
         private var instance: AppDatabase? = null
-
-        private val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE web_apps ADD COLUMN fullscreenShowStatusBar INTEGER NOT NULL DEFAULT 0")
-                db.execSQL("ALTER TABLE web_apps ADD COLUMN fullscreenShowNavBar INTEGER NOT NULL DEFAULT 0")
-                db.execSQL("ALTER TABLE web_apps ADD COLUMN fullscreenShowTopToolbar INTEGER NOT NULL DEFAULT 0")
-                db.execSQL("ALTER TABLE web_apps ADD COLUMN adBlockAllowUserToggle INTEGER NOT NULL DEFAULT 0")
-                db.execSQL("ALTER TABLE web_apps ADD COLUMN adBlockCustomRules TEXT NOT NULL DEFAULT ''")
-                db.execSQL("ALTER TABLE web_apps ADD COLUMN translateEngine TEXT NOT NULL DEFAULT 'AUTO'")
-            }
-        }
-
-        private val MIGRATION_2_3 = object : Migration(2, 3) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE categories ADD COLUMN icon TEXT NOT NULL DEFAULT 'folder'")
-                db.execSQL("ALTER TABLE categories ADD COLUMN color TEXT NOT NULL DEFAULT '#6D28D9'")
-            }
-        }
-
-        private val MIGRATION_3_4 = object : Migration(3, 4) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE web_apps ADD COLUMN passwordHash TEXT DEFAULT NULL")
-            }
-        }
-
-        private val MIGRATION_4_5 = object : Migration(4, 5) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE web_apps ADD COLUMN lockType TEXT NOT NULL DEFAULT 'NONE'")
-            }
-        }
-
-        private val MIGRATION_5_6 = object : Migration(5, 6) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE web_apps ADD COLUMN engineType TEXT NOT NULL DEFAULT 'SYSTEM_WEBVIEW'")
-            }
-        }
-
-        private val MIGRATION_6_7 = object : Migration(6, 7) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE web_apps ADD COLUMN wipeOnFailedAttempts INTEGER NOT NULL DEFAULT 0")
-            }
-        }
-
-        private val MIGRATION_7_8 = object : Migration(7, 8) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE web_apps ADD COLUMN icon_source TEXT DEFAULT NULL")
-                db.execSQL(
-                    "UPDATE web_apps SET icon_source = json_object('type','path','path',icon_path) WHERE icon_path IS NOT NULL"
-                )
-            }
-        }
-
-        private val MIGRATION_8_9 = object : Migration(8, 9) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE web_apps ADD COLUMN has_launcher_shortcut INTEGER NOT NULL DEFAULT 0")
-            }
-        }
-
-        private val MIGRATION_9_10 = object : Migration(9, 10) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE web_apps ADD COLUMN libreTranslateUrl TEXT NOT NULL DEFAULT 'https://libretranslate.com'")
-            }
-        }
-
-        private val MIGRATION_10_11 = object : Migration(10, 11) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE web_apps ADD COLUMN libreTranslateApiKey TEXT NOT NULL DEFAULT ''")
-            }
-        }
-
-        private val MIGRATION_11_12 = object : Migration(11, 12) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("UPDATE web_apps SET libreTranslateUrl = 'https://translate.fedilab.app' WHERE libreTranslateUrl = 'https://libretranslate.com'")
-            }
-        }
 
         fun getInstance(context: Context, crypto: CryptoManager): AppDatabase =
             instance ?: synchronized(this) {
@@ -120,19 +43,6 @@ abstract class AppDatabase : RoomDatabase() {
                 "pwaforge.db",
             )
                 .openHelperFactory(factory)
-                .addMigrations(
-                    MIGRATION_1_2,
-                    MIGRATION_2_3,
-                    MIGRATION_3_4,
-                    MIGRATION_4_5,
-                    MIGRATION_5_6,
-                    MIGRATION_6_7,
-                    MIGRATION_7_8,
-                    MIGRATION_8_9,
-                    MIGRATION_9_10,
-                    MIGRATION_10_11,
-                    MIGRATION_11_12
-                )
                 .build()
                 .also { passphrase.fill(0) }
         }
