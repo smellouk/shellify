@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -138,76 +139,7 @@ fun AppNavigation(
     Scaffold(
         bottomBar = {
             if (currentRoute in topLevelRoutes) {
-                Surface(
-                    color = MaterialTheme.colorScheme.surface,
-                    shadowElevation = 0.dp,
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Column(modifier = Modifier.navigationBarsPadding()) {
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-                        )
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = Dimens.spaceXs, vertical = Dimens.spaceSm),
-                            horizontalArrangement = Arrangement.SpaceEvenly,
-                        ) {
-                            data class NavItem(
-                                val route: String,
-                                val icon: ImageVector,
-                                val label: String
-                            )
-                            listOf(
-                                NavItem(Screen.Home.route, Icons.Default.PhoneAndroid, stringResource(R.string.nav_apps)),
-                                NavItem(Screen.Categories.route, Icons.Default.Layers, stringResource(R.string.nav_categories)),
-                                NavItem(Screen.Shortcuts.route, Icons.AutoMirrored.Filled.Shortcut, stringResource(R.string.nav_shortcuts)),
-                                NavItem(Screen.GlobalSettings.route, Icons.Default.Settings, stringResource(R.string.nav_settings)),
-                            ).forEach { item ->
-                                val active = currentRoute == item.route
-                                Column(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clickable(
-                                            indication = null,
-                                            interactionSource = remember { MutableInteractionSource() },
-                                        ) { navController.navigateToTab(item.route) },
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(
-                                                width = Dimens.sizeIllustrationTile,
-                                                height = Dimens.size4xl
-                                            )
-                                            .background(
-                                                if (active) MaterialTheme.colorScheme.primaryContainer
-                                                else Color.Transparent,
-                                                RoundedCornerShape(Dimens.cornerXl),
-                                            ),
-                                        contentAlignment = Alignment.Center,
-                                    ) {
-                                        Icon(
-                                            item.icon,
-                                            null,
-                                            modifier = Modifier.size(Dimens.sizeLg),
-                                            tint = if (active) MaterialTheme.colorScheme.primary
-                                            else MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
-                                    }
-                                    Text(
-                                        item.label,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        fontWeight = if (active) FontWeight.SemiBold else FontWeight.Medium,
-                                        color = if (active) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
+                BottomNavBar(currentRoute = currentRoute, navController = navController)
             }
         },
     ) { padding ->
@@ -436,6 +368,80 @@ internal fun resolveStartDestination(consentGiven: Boolean, onboardingDone: Bool
         !onboardingDone -> Screen.Onboarding.route
         else -> Screen.Home.route
     }
+
+private data class NavItem(val route: String, val icon: ImageVector, val label: String)
+
+@Composable
+private fun BottomNavBar(currentRoute: String?, navController: NavHostController) {
+    val items = listOf(
+        NavItem(Screen.Home.route, Icons.Default.PhoneAndroid, stringResource(R.string.nav_apps)),
+        NavItem(Screen.Categories.route, Icons.Default.Layers, stringResource(R.string.nav_categories)),
+        NavItem(Screen.Shortcuts.route, Icons.AutoMirrored.Filled.Shortcut, stringResource(R.string.nav_shortcuts)),
+        NavItem(Screen.GlobalSettings.route, Icons.Default.Settings, stringResource(R.string.nav_settings)),
+    )
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 0.dp,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(modifier = Modifier.navigationBarsPadding()) {
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.spaceXs, vertical = Dimens.spaceSm),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                items.forEach { item ->
+                    BottomNavItem(
+                        item = item,
+                        active = currentRoute == item.route,
+                        onClick = { navController.navigateToTab(item.route) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RowScope.BottomNavItem(item: NavItem, active: Boolean, onClick: () -> Unit) {
+    val activeColor = MaterialTheme.colorScheme.primary
+    val inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant
+    Column(
+        modifier = Modifier
+            .weight(1f)
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() },
+                onClick = onClick,
+            ),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(Dimens.spaceXxs),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(width = Dimens.sizeIllustrationTile, height = Dimens.size4xl)
+                .background(
+                    if (active) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+                    RoundedCornerShape(Dimens.cornerXl),
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                item.icon, null,
+                modifier = Modifier.size(Dimens.sizeLg),
+                tint = if (active) activeColor else inactiveColor,
+            )
+        }
+        Text(
+            item.label,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = if (active) FontWeight.SemiBold else FontWeight.Medium,
+            color = if (active) activeColor else inactiveColor,
+        )
+    }
+}
 
 private fun NavHostController.navigateToTab(route: String) {
     navigate(route) {

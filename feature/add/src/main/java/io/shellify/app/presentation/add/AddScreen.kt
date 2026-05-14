@@ -147,10 +147,10 @@ fun AddScreen(
 
     LaunchedEffect(state.saved) { if (state.saved) onSaved() }
 
-    LaunchedEffect(state.launchAppId) {
-        val id = state.launchAppId ?: return@LaunchedEffect
-        context.startActivity(WebViewActivity.launchIntent(context, id))
-        viewModel.onLaunched()
+    LaunchedEffect(state.previewUrl) {
+        val url = state.previewUrl ?: return@LaunchedEffect
+        context.startActivity(WebViewActivity.previewIntent(context, url, state.name))
+        viewModel.onPreviewed()
     }
 
     // Image picker for custom icon
@@ -206,19 +206,12 @@ fun AddScreen(
                         onClick = { viewModel.run() },
                         enabled = canRun,
                     ) {
-                        if (state.isSaving && state.launchAppId == null) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(Dimens.sizeMd),
-                                strokeWidth = Dimens.strokeMd
-                            )
-                        } else {
-                            Icon(
-                                Icons.Default.PlayArrow,
-                                contentDescription = stringResource(R.string.add_run_app_cd),
-                                tint = if (canRun) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
-                            )
-                        }
+                        Icon(
+                            Icons.Default.PlayArrow,
+                            contentDescription = stringResource(R.string.add_run_app_cd),
+                            tint = if (canRun) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                        )
                     }
                     TextButton(
                         onClick = {
@@ -229,7 +222,7 @@ fun AddScreen(
                         },
                         enabled = state.name.isNotBlank() && state.url.isNotBlank() && !state.isSaving && state.duplicateError == null,
                     ) {
-                        if (state.isSaving && state.launchAppId != null) {
+                        if (state.isSaving) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(Dimens.sizeXs),
                                 strokeWidth = Dimens.strokeMd

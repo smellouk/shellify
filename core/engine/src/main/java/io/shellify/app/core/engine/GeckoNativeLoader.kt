@@ -53,7 +53,7 @@ object GeckoNativeLoader {
                 elemClass.getDeclaredConstructor(File::class.java)
                     .also { it.isAccessible = true }.newInstance(libDir)
             } catch (_: NoSuchMethodException) {
-                elemClass.constructors.firstOrNull { it.parameterCount == 1 }
+                elemClass.constructors.firstOrNull { it.parameterTypes.size == 1 }
                     ?.also { it.isAccessible = true }?.newInstance(libDir)
             } ?: return
             val newArray = java.lang.reflect.Array.newInstance(elemClass, existing.size + 1)

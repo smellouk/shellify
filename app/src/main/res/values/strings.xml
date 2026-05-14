@@ -280,7 +280,7 @@
     <string name="consent_acceptable_7">Share or distribute links, app configurations, backup files, or session data intended to facilitate phishing, credential theft, malware distribution, impersonation, copyright infringement, or other unlawful activity</string>
     <string name="consent_acceptable_reserve">We reserve the right to update, suspend, restrict, or discontinue Shellify or specific features at any time, particularly in cases involving security, abuse prevention, legal compliance, or violations of these terms.</string>
     <string name="consent_section_responsibility_title">Your responsibility</string>
-    <string name="consent_responsibility_1">You are solely responsible for the websites you access and the content you use through Shellify</string>
+    <string name="consent_responsibility_1">You are responsible for the websites you access and the content you use through Shellify</string>
     <string name="consent_responsibility_2">You are responsible for complying with the terms, policies, and applicable laws relating to any third-party website or service you use</string>
     <string name="consent_responsibility_3">You must be at least 13 years old, or the minimum digital age required in your jurisdiction</string>
     <string name="consent_responsibility_4">You are responsible for protecting backup files and passwords — backups may contain authenticated session data for third-party services</string>
@@ -295,8 +295,7 @@
     <string name="consent_privacy_desc">Shellify does not intentionally collect, store, or transmit your browsing activity. Browsing activity is processed locally on the device. Please review our Privacy Policy and Terms of Service for full details.</string>
     <string name="consent_read_privacy">Read our full Privacy Policy</string>
     <string name="consent_read_tos">Read our Terms of Service</string>
-    <string name="consent_contact_legal">Legal enquiries: legal@shellify.app</string>
-    <string name="consent_contact_abuse">Abuse reports: abuse@shellify.app</string>
+    <string name="consent_contact">Contact us: contact@shellify.app</string>
     <string name="consent_checkbox_label">I have read and agree to the Terms and Privacy Policy</string>
     <string name="consent_agree_button">I Agree &amp; Continue</string>
     <string name="consent_decline_button">Decline</string>

@@ -94,11 +94,19 @@ class WebViewActivity : FragmentActivity() {
 
     companion object {
         const val EXTRA_APP_ID = "app_id"
+        const val EXTRA_PREVIEW_URL = "preview_url"
+        const val EXTRA_PREVIEW_NAME = "preview_name"
 
         fun launchIntent(context: android.content.Context, appId: Long): Intent =
             Intent(context, WebViewActivity::class.java)
                 .putExtra(EXTRA_APP_ID, appId)
                 .setData(android.net.Uri.parse("pwaforge://app/$appId"))
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
+
+        fun previewIntent(context: android.content.Context, url: String, name: String): Intent =
+            Intent(context, WebViewActivity::class.java)
+                .putExtra(EXTRA_PREVIEW_URL, url)
+                .putExtra(EXTRA_PREVIEW_NAME, name)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
     }
 
@@ -118,12 +126,17 @@ class WebViewActivity : FragmentActivity() {
         isolationManager = app.isolationManager
 
         val appId = intent.getLongExtra(EXTRA_APP_ID, -1L)
-        if (appId == -1L) {
-            finish(); return
-        }
+        val previewUrl = intent.getStringExtra(EXTRA_PREVIEW_URL)
 
-        val pwaApp = runBlocking(Dispatchers.IO) { app.getWebAppById(appId) }
-            ?: run { finish(); return }
+        val pwaApp: WebApp = when {
+            previewUrl != null -> WebApp(
+                name = intent.getStringExtra(EXTRA_PREVIEW_NAME) ?: previewUrl,
+                url = previewUrl,
+            )
+            appId != -1L -> runBlocking(Dispatchers.IO) { app.getWebAppById(appId) }
+                ?: run { finish(); return }
+            else -> { finish(); return }
+        }
         currentAppFlow.value = pwaApp
 
         // Apply FLAG_SECURE before setContentView so the window is never exposed unprotected.

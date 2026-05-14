@@ -81,7 +81,7 @@ data class AddUiState(
     val duplicateError: String? = null,
     val saved: Boolean = false,
     // Non-null after save-and-run — signals screen to launch WebViewActivity
-    val launchAppId: Long? = null,
+    val previewUrl: String? = null,
     // Icon pack picker
     val showIconPackPicker: Boolean = false,
     val iconPackAvailable: Boolean = false,
@@ -328,12 +328,7 @@ class AddViewModel(
 
     fun run() {
         val url = validate() ?: return
-        _state.update { it.copy(isSaving = true) }
-        viewModelScope.launch {
-            if (isDuplicate()) return@launch
-            val savedId = persistApp(url)
-            _state.update { it.copy(isSaving = false, launchAppId = savedId) }
-        }
+        _state.update { it.copy(previewUrl = url) }
     }
 
     private suspend fun isDuplicate(): Boolean {
@@ -349,7 +344,7 @@ class AddViewModel(
         return true
     }
 
-    fun onLaunched() = _state.update { it.copy(launchAppId = null) }
+    fun onPreviewed() = _state.update { it.copy(previewUrl = null) }
 
     fun markShortcutCreated(app: WebApp) = viewModelScope.launch {
         saveWebApp(app.copy(hasLauncherShortcut = true))

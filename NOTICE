@@ -1,0 +1,33 @@
+NOTICE
+
+Copyright (c) 2026 Shellify. All rights reserved.
+
+────────────────────────────────────────────────────────────────────────────────
+TRADEMARK NOTICE
+────────────────────────────────────────────────────────────────────────────────
+
+"Shellify", the Shellify name, logo, and associated branding are proprietary
+trademarks of Shellify and are NOT licensed under the open-source license that
+governs the source code in this repository.
+
+You may not use the Shellify name, logo, or branding to:
+
+  • Identify or promote a product, service, or distribution derived from this
+    source code without prior written permission from Shellify.
+  • Suggest endorsement, sponsorship, or affiliation with Shellify.
+  • Create a confusingly similar name, logo, or brand identity.
+
+Permitted uses (no permission required):
+  • Referencing Shellify by name for factual, descriptive, or journalistic
+    purposes (e.g., "built on top of Shellify", "a fork of Shellify").
+  • Internal, non-public builds for personal or research use.
+
+For licensing inquiries regarding the Shellify brand, contact:
+  contact@shellify.app
+
+────────────────────────────────────────────────────────────────────────────────
+THIRD-PARTY COMPONENTS
+────────────────────────────────────────────────────────────────────────────────
+
+This software includes components from third-party projects. Their respective
+licenses and copyright notices are distributed alongside those components.
