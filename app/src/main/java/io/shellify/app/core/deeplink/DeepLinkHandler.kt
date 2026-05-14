@@ -26,10 +26,10 @@ object DeepLinkHandler {
             .build().toString()
 
     private fun encodeUrl(url: String): String =
-        Base64.encodeToString(url.toByteArray(), Base64.URL_SAFE or Base64.NO_WRAP)
+        Base64.encodeToString(url.toByteArray(), Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING)
 
     private fun decodeUrl(raw: String): String = try {
-        val decoded = String(Base64.decode(raw, Base64.URL_SAFE or Base64.NO_WRAP))
+        val decoded = String(Base64.decode(raw, Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING))
         if (decoded.startsWith("http")) decoded else raw
     } catch (_: Exception) {
         raw
