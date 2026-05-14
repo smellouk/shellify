@@ -104,11 +104,7 @@ fun AppNavigation(
     val onboardingDone by app.themeManager.onboardingDone.collectAsState(initial = null)
     if (consentGiven == null || onboardingDone == null) return
 
-    val startDestination = when {
-        consentGiven != true -> Screen.Consent.route
-        onboardingDone != true -> Screen.Onboarding.route
-        else -> Screen.Home.route
-    }
+    val startDestination = resolveStartDestination(consentGiven == true, onboardingDone == true)
 
     LaunchedEffect(Unit) {
         app.pendingDeepLink.collect { (url, name) ->
@@ -384,6 +380,13 @@ fun AppNavigation(
         }
     }
 }
+
+internal fun resolveStartDestination(consentGiven: Boolean, onboardingDone: Boolean): String =
+    when {
+        !consentGiven -> Screen.Consent.route
+        !onboardingDone -> Screen.Onboarding.route
+        else -> Screen.Home.route
+    }
 
 private fun NavHostController.navigateToTab(route: String) {
     navigate(route) {
