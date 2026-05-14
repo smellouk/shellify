@@ -10,7 +10,17 @@
     "plan_check": true,
     "verifier": true,
     "nyquist_validation": false,
-    "auto_advance": false
+    "auto_advance": false,
+    "worktree_isolation": true,
+    "node_repair": true,
+    "node_repair_budget": 2,
+    "subagent_timeout": 600,
+    "inline_plan_threshold": 3
+  },
+  "git": {
+    "base_branch": "main",
+    "phase_branch_template": "feature/phase-{phase}-{slug}",
+    "milestone_branch_template": "release/{milestone}"
   },
   "project": {
     "name": "Shellify",
