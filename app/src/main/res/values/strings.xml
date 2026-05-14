@@ -272,7 +272,7 @@
     <string name="consent_acceptable_3">Bypass paywalls, access restrictions, authentication systems, or digital protections</string>
     <string name="consent_acceptable_4">Distribute malware, harmful code, or unauthorized content</string>
     <string name="consent_acceptable_5">Engage in fraud, harassment, abuse, or other unlawful activity</string>
-    <string name="consent_acceptable_reserve">We reserve the right to update or discontinue Shellify at any time, including releasing updates that restrict functionality that violates these terms.</string>
+    <string name="consent_acceptable_reserve">We reserve the right to update, suspend, restrict, or discontinue Shellify or specific features at any time, particularly in cases involving security, abuse prevention, legal compliance, or violations of these terms.</string>
     <string name="consent_section_responsibility_title">Your responsibility</string>
     <string name="consent_responsibility_1">You are solely responsible for the websites you access and the content you use through Shellify</string>
     <string name="consent_responsibility_2">You are responsible for complying with the terms, policies, and applicable laws relating to any third-party website or service you use</string>

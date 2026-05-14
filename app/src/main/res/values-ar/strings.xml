@@ -268,7 +268,7 @@
     <string name="consent_acceptable_3">تجاوز الاشتراكات المدفوعة أو قيود الوصول أو أنظمة المصادقة أو الحمايات الرقمية</string>
     <string name="consent_acceptable_4">توزيع البرامج الضارة أو الأكواد الخطيرة أو المحتوى غير المُرخَّص</string>
     <string name="consent_acceptable_5">ممارسة الاحتيال أو التحرّش أو الإساءة أو أي نشاط غير مشروع آخر</string>
-    <string name="consent_acceptable_reserve">نحتفظ بالحق في تحديث شيليفاي أو إيقافه في أي وقت، بما في ذلك إصدار تحديثات تُقيّد الوظائف المخالفة لهذه الشروط.</string>
+    <string name="consent_acceptable_reserve">نحتفظ بالحق في تحديث شيليفاي أو تعليقه أو تقييده أو إيقافه، أو تقييد ميزات بعينها، في أي وقت، لا سيما في الحالات المتعلقة بالأمان أو منع الإساءة أو الامتثال القانوني أو انتهاك هذه الشروط.</string>
     <string name="consent_section_responsibility_title">مسؤوليتك</string>
     <string name="consent_responsibility_1">أنت المسؤول الوحيد عن المواقع التي تصل إليها والمحتوى الذي تستخدمه عبر شيليفاي</string>
     <string name="consent_responsibility_2">أنت مسؤول عن الامتثال للشروط والسياسات والقوانين المُطبَّقة المتعلقة بأي موقع أو خدمة طرف ثالث تستخدمها</string>
