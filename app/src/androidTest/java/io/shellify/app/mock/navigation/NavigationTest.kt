@@ -80,6 +80,16 @@ class NavigationTest {
         assert(Screen.Onboarding.route == "onboarding")
     }
 
+    @Test
+    fun consentRoute_isCorrect() {
+        assert(Screen.Consent.route == "consent")
+    }
+
+    @Test
+    fun licensesRoute_isCorrect() {
+        assert(Screen.Licenses.route == "licenses")
+    }
+
     // ─── Route factory methods ────────────────────────────────────────────────
 
     @Test

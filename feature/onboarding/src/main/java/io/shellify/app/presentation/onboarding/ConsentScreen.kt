@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -147,7 +148,11 @@ fun ConsentScreen(onAccepted: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Checkbox(checked = checked, onCheckedChange = { checked = it })
+                Checkbox(
+                    checked = checked,
+                    onCheckedChange = { checked = it },
+                    modifier = Modifier.testTag("consent_checkbox"),
+                )
                 Text(
                     stringResource(R.string.consent_checkbox_label),
                     style = MaterialTheme.typography.bodyMedium,
@@ -158,14 +163,18 @@ fun ConsentScreen(onAccepted: () -> Unit) {
             Button(
                 onClick = onAccepted,
                 enabled = checked,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("consent_agree_button"),
             ) {
                 Text(stringResource(R.string.consent_agree_button))
             }
 
             TextButton(
                 onClick = { (context as? Activity)?.finish() },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("consent_decline_button"),
             ) {
                 Text(
                     stringResource(R.string.consent_decline_button),
