@@ -133,7 +133,7 @@ class WebViewActivity : FragmentActivity() {
             pwaApp.themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() } ?: Color.BLACK
         )
 
-        val engineView = engine.createView(this, pwaApp, buildCallback(pwaApp, container))
+        val engineView = engine.createView(this, pwaApp, buildCallback({ currentAppFlow.value }, container))
 
         if (engine is SystemWebViewEngine) {
             val wv = (engine as SystemWebViewEngine).getWebView()
@@ -463,7 +463,7 @@ class WebViewActivity : FragmentActivity() {
         )
     }
 
-    private fun buildCallback(app: WebApp, container: FrameLayout): BrowserEngineCallback =
+    private fun buildCallback(currentApp: () -> WebApp?, container: FrameLayout): BrowserEngineCallback =
         object : BrowserEngineCallback {
             override fun onPageStarted(url: String?) {
                 url?.let { visitedUrls += it }
@@ -471,6 +471,7 @@ class WebViewActivity : FragmentActivity() {
 
             override fun onPageFinished(url: String?) {
                 url?.let { visitedUrls += it }
+                val app = currentApp() ?: return
                 if (app.translateEnabled) {
                     engine.evaluateJavascript("window.__pwaforgeTranslateLoaded = false;", null)
                     val script = TranslateBridge.buildScript(
@@ -502,14 +503,14 @@ class WebViewActivity : FragmentActivity() {
                 customView = view
                 engine.getView()?.visibility = View.GONE
                 container.addView(view)
-                applyWindowMode(app.copy(isFullscreen = true))
+                applyWindowMode((currentApp() ?: return).copy(isFullscreen = true))
             }
 
             override fun onHideCustomView() {
                 (customView?.parent as? FrameLayout)?.removeView(customView)
                 customView = null
                 engine.getView()?.visibility = View.VISIBLE
-                applyWindowMode(app)
+                currentApp()?.let { applyWindowMode(it) }
             }
 
             override fun onDownloadStart(
