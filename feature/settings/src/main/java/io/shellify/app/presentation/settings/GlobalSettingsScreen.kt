@@ -37,7 +37,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.Shortcut
 import androidx.compose.material.icons.automirrored.filled.Article
-import androidx.compose.material.icons.filled.NewReleases
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Backup
@@ -104,6 +103,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -135,7 +135,6 @@ import java.util.Date
 @Composable
 fun GlobalSettingsScreen(
     viewModel: GlobalSettingsViewModel,
-    onChangelog: () -> Unit = {},
     onLicenses: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -165,6 +164,7 @@ fun GlobalSettingsScreen(
             viewModel.repinShortcutsAfterRestore()
         }
     }
+    val uriHandler = LocalUriHandler.current
     val version = remember {
         @Suppress("DEPRECATION")
         runCatching {
@@ -1274,7 +1274,9 @@ fun GlobalSettingsScreen(
                     )
                     HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                     ListItem(
-                        modifier = Modifier.clickable { onChangelog() },
+                        modifier = Modifier.clickable {
+                            uriHandler.openUri("https://shellify.app/changelog")
+                        },
                         leadingContent = {
                             Box(
                                 modifier = Modifier
@@ -1288,7 +1290,7 @@ fun GlobalSettingsScreen(
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Icon(
-                                    Icons.Default.NewReleases,
+                                    Icons.Default.AutoAwesome,
                                     null,
                                     modifier = Modifier.size(20.dp),
                                     tint = MaterialTheme.colorScheme.primary
@@ -1303,7 +1305,7 @@ fun GlobalSettingsScreen(
                         },
                         trailingContent = {
                             Icon(
-                                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                Icons.Default.OpenInNew,
                                 null,
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )

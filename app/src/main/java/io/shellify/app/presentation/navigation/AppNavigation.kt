@@ -67,7 +67,6 @@ import io.shellify.app.presentation.settings.AppSettingsScreen
 import io.shellify.app.presentation.settings.AppSettingsViewModel
 import io.shellify.app.presentation.settings.GlobalSettingsScreen
 import io.shellify.app.presentation.settings.GlobalSettingsViewModel
-import io.shellify.app.presentation.settings.ChangelogScreen
 import io.shellify.app.presentation.settings.LicensesScreen
 import io.shellify.app.presentation.shortcuts.ShortcutsScreen
 import io.shellify.app.presentation.shortcuts.ShortcutsViewModel
@@ -327,19 +326,8 @@ fun AppNavigation(
                             onGeckoInstalled = { app.injectAndLoadGeckoView() },
                         )
                     },
-                    onChangelog = { navController.navigate(Screen.Changelog.route) },
                     onLicenses = { navController.navigate(Screen.Licenses.route) },
                 )
-            }
-
-            composable(
-                route = Screen.Changelog.route,
-                enterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn() },
-                exitTransition = { ExitTransition.None },
-                popEnterTransition = { EnterTransition.None },
-                popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut() },
-            ) {
-                ChangelogScreen(onBack = { navController.popBackStack() })
             }
 
             composable(
