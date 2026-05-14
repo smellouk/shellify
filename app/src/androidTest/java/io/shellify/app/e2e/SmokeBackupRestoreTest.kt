@@ -43,7 +43,7 @@ class SmokeBackupRestoreTest {
 
     @Test
     fun backupCrypto_encryptDecrypt_roundTrip() {
-        val original = "Hello, PWAForge backup!".toByteArray()
+        val original = "Hello, Shellify backup!".toByteArray()
         val password = "strong-backup-password"
 
         val encrypted = BackupCrypto.encrypt(original, password)

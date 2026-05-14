@@ -23,8 +23,8 @@ import javax.crypto.spec.GCMParameterSpec
 class CryptoManager(private val context: Context) {
 
     companion object {
-        private const val KEY_ALIAS = "pwaforge_master_key"
-        private const val PREFS_NAME = "pwaforge_crypto"
+        private const val KEY_ALIAS = "shellify_master_key"
+        private const val PREFS_NAME = "shellify_crypto"
         private const val PREF_DB_PASSPHRASE = "db_passphrase_enc"
         private const val ALGORITHM = "AES/GCM/NoPadding"
         private const val IV_LENGTH = 12

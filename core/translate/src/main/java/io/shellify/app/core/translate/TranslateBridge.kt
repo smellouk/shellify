@@ -14,8 +14,8 @@ object TranslateBridge {
 
     private fun buildScriptInternal(targetLang: String, autoTranslate: Boolean): String = """
 (function() {
-  if (window.__pwaforgeTranslateLoaded) return;
-  window.__pwaforgeTranslateLoaded = true;
+  if (window.__shellifyTranslateLoaded) return;
+  window.__shellifyTranslateLoaded = true;
 
   const TARGET = '${targetLang.replace("'", "\\'")}';
 
@@ -53,7 +53,7 @@ object TranslateBridge {
     }
   }
 
-  window.__pwaforgeTranslate = translatePage;
+  window.__shellifyTranslate = translatePage;
 
   ${if (autoTranslate) "translatePage();" else ""}
 })();

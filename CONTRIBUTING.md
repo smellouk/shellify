@@ -37,8 +37,8 @@ Be respectful and constructive. Harassment, hate speech, or personal attacks wil
 ### Setup
 
 ```bash
-git clone https://github.com/smellouk/PWAForge.git
-cd PWAForge
+git clone https://github.com/smellouk/shellify.git
+cd shellify
 ./gradlew assembleDebug
 ```
 

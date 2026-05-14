@@ -33,18 +33,6 @@ No other `TODO`, `FIXME`, or `HACK` markers exist in the Kotlin source. The code
 
 ## Technical Debt Areas
 
-### Legacy "pwaforge" Identifiers Embedded in Persistent State
-- Issue: The original app name "PwaForge" is baked into on-device persistent state and cannot be changed without a migration.
-- Files and values:
-  - `core/database/src/main/java/io/shellify/app/data/local/AppDatabase.kt:43` — database file `"pwaforge.db"`
-  - `core/crypto/src/main/java/io/shellify/app/core/crypto/CryptoManager.kt:26-27` — Keystore key alias `"pwaforge_master_key"`, SharedPreferences file `"pwaforge_crypto"`
-  - `core/backup/src/main/java/io/shellify/app/core/backup/BackupScheduler.kt:12` — WorkManager job name `"pwaforge_scheduled_backup"`
-  - `core/backup/src/main/java/io/shellify/app/core/backup/BackupManager.kt:48` — backup file prefix `"pwaforge_"`
-  - `core/translate/src/main/java/io/shellify/app/core/translate/TranslateBridge.kt:17-18,56` — injected JS global `window.__pwaforgeTranslateLoaded` / `window.__pwaforgeTranslate`
-  - `app/src/main/res/xml/backup_rules.xml`, `app/src/main/res/xml/data_extraction_rules.xml` — reference `pwaforge.db` and `pwaforge_crypto.xml` by name
-- Impact: For users upgrading from a build with the old name the database file and Keystore key are already created — renaming them requires a careful one-shot migration that decrypts with the old key and re-encrypts under the new one. Any oversight here destroys user data.
-- Fix approach: Decide intentionally whether to rename (requires migration plan) or leave as internal implementation detail (acceptable if the app package ID stays `io.shellify.app`).
-
 ### AppNavigation Function Suppresses Complexity Detector
 - Issue: `AppNavigation.kt` carries `@Suppress("CognitiveComplexMethod")` on a 452-line routing function.
 - File: `app/src/main/java/io/shellify/app/presentation/navigation/AppNavigation.kt:90`

@@ -45,7 +45,7 @@ class BackupManager(
                 val zipBytes = buildZipArchive()
                 val encrypted = BackupCrypto.encrypt(zipBytes, password)
                 val filename =
-                    "pwaforge_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.pwab"
+                    "shellify_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.pwab"
                 val dir = DocumentFile.fromTreeUri(context, directoryUri)
                     ?: error("Cannot open backup directory")
                 val file = dir.createFile("application/octet-stream", filename)

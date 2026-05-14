@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 
 object BackupScheduler {
 
-    private const val WORK_NAME = "pwaforge_scheduled_backup"
+    private const val WORK_NAME = "shellify_scheduled_backup"
 
     fun schedule(context: Context, schedule: BackupSchedule) {
         val wm = WorkManager.getInstance(context)

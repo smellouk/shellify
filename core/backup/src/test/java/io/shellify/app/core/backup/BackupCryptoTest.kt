@@ -8,7 +8,7 @@ import org.junit.Test
 class BackupCryptoTest {
 
     private val password = "correct-horse-battery-staple"
-    private val plaintext = "Hello, PWAForge backup!".toByteArray()
+    private val plaintext = "Hello, Shellify backup!".toByteArray()
 
     @Test
     fun `encrypt and decrypt round-trip produces original data`() {

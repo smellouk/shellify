@@ -3,7 +3,7 @@
     <cloud-backup>
         <exclude
             domain="sharedpref"
-            path="pwaforge_crypto.xml" />
+            path="shellify_crypto.xml" />
         <exclude
             domain="file"
             path="../datastore/pwa_password.preferences_pb" />
@@ -15,18 +15,18 @@
             path="../datastore/pwa_backup.preferences_pb" />
         <exclude
             domain="database"
-            path="pwaforge.db" />
+            path="shellify.db" />
         <exclude
             domain="database"
-            path="pwaforge.db-shm" />
+            path="shellify.db-shm" />
         <exclude
             domain="database"
-            path="pwaforge.db-wal" />
+            path="shellify.db-wal" />
     </cloud-backup>
     <device-transfer>
         <exclude
             domain="sharedpref"
-            path="pwaforge_crypto.xml" />
+            path="shellify_crypto.xml" />
         <exclude
             domain="file"
             path="../datastore/pwa_password.preferences_pb" />
@@ -38,12 +38,12 @@
             path="../datastore/pwa_backup.preferences_pb" />
         <exclude
             domain="database"
-            path="pwaforge.db" />
+            path="shellify.db" />
         <exclude
             domain="database"
-            path="pwaforge.db-shm" />
+            path="shellify.db-shm" />
         <exclude
             domain="database"
-            path="pwaforge.db-wal" />
+            path="shellify.db-wal" />
     </device-transfer>
 </data-extraction-rules>

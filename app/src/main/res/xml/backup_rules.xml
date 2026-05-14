@@ -8,7 +8,7 @@
          to avoid leaking ciphertext unnecessarily. -->
     <exclude
         domain="sharedpref"
-        path="pwaforge_crypto.xml" />
+        path="shellify_crypto.xml" />
 
     <!-- Password hash (PBKDF2) — exclude to prevent offline brute-force if backup is extracted. -->
     <exclude
@@ -28,11 +28,11 @@
     <!-- SQLCipher database — encrypted with a device-specific random passphrase. -->
     <exclude
         domain="database"
-        path="pwaforge.db" />
+        path="shellify.db" />
     <exclude
         domain="database"
-        path="pwaforge.db-shm" />
+        path="shellify.db-shm" />
     <exclude
         domain="database"
-        path="pwaforge.db-wal" />
+        path="shellify.db-wal" />
 </full-backup-content>

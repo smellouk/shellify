@@ -40,7 +40,7 @@ abstract class AppDatabase : RoomDatabase() {
             return Room.databaseBuilder(
                 context.applicationContext,
                 AppDatabase::class.java,
-                "pwaforge.db",
+                "shellify.db",
             )
                 .openHelperFactory(factory)
                 .build()

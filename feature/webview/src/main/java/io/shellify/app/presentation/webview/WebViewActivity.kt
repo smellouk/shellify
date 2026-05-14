@@ -100,7 +100,7 @@ class WebViewActivity : FragmentActivity() {
         fun launchIntent(context: android.content.Context, appId: Long): Intent =
             Intent(context, WebViewActivity::class.java)
                 .putExtra(EXTRA_APP_ID, appId)
-                .setData(android.net.Uri.parse("pwaforge://app/$appId"))
+                .setData(android.net.Uri.parse("shellify://app/$appId"))
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
 
         fun previewIntent(context: android.content.Context, url: String, name: String): Intent =
@@ -469,7 +469,7 @@ class WebViewActivity : FragmentActivity() {
                                             }
                                             if (on) {
                                                 engine.evaluateJavascript(
-                                                    "window.__pwaforgeTranslateLoaded = false;",
+                                                    "window.__shellifyTranslateLoaded = false;",
                                                     null
                                                 )
                                                 val script = TranslateBridge.buildScript(
@@ -575,7 +575,7 @@ class WebViewActivity : FragmentActivity() {
                 url?.let { visitedUrls += it }
                 val app = currentApp() ?: return
                 if (app.translateEnabled) {
-                    engine.evaluateJavascript("window.__pwaforgeTranslateLoaded = false;", null)
+                    engine.evaluateJavascript("window.__shellifyTranslateLoaded = false;", null)
                     val script = TranslateBridge.buildScript(
                         targetLang = app.translateTarget.code,
                         autoTranslate = true,
