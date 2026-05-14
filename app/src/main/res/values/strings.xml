@@ -118,7 +118,7 @@
     <string name="add_engine_gecko_downloading">Downloading in Settings… %d%%</string>
     <string name="add_engine_gecko_installing">Installing…</string>
     <string name="add_engine_gecko_error">Error — retry in Settings</string>
-    <string name="add_translate_engine_label">Translation Engine</string>
+    <string name="add_translate_instance_url">LibreTranslate Instance URL</string>
 
     <!-- WebView -->
     <string name="webview_reload">Reload</string>
@@ -319,6 +319,7 @@
     <!-- Translate -->
     <string name="translate_title">Translation settings</string>
     <string name="translate_target_language">Target language</string>
+    <string name="translate_instance_url">LibreTranslate instance URL</string>
     <string name="translate_auto">Auto-translate on page load</string>
     <string name="translate_auto_desc">Translate automatically after each page loads</string>
 

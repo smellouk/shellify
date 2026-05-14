@@ -17,7 +17,7 @@ import net.sqlcipher.database.SupportFactory
 
 @Database(
     entities = [WebAppEntity::class, CategoryEntity::class],
-    version = 9,
+    version = 10,
     exportSchema = true,
 )
 @TypeConverters(IconSourceConverter::class)
@@ -85,6 +85,12 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE web_apps ADD COLUMN libreTranslateUrl TEXT NOT NULL DEFAULT 'https://libretranslate.com'")
+            }
+        }
+
         fun getInstance(context: Context, crypto: CryptoManager): AppDatabase =
             instance ?: synchronized(this) {
                 instance ?: buildDatabase(context, crypto).also { instance = it }
@@ -101,7 +107,7 @@ abstract class AppDatabase : RoomDatabase() {
                 "pwaforge.db",
             )
                 .openHelperFactory(factory)
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
                 .build()
                 .also { passphrase.fill(0) }
         }

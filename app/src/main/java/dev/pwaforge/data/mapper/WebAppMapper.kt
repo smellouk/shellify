@@ -4,7 +4,6 @@ import dev.pwaforge.data.local.entity.WebAppEntity
 import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.domain.model.IconSource
 import dev.pwaforge.domain.model.LockType
-import dev.pwaforge.domain.model.TranslateEngine
 import dev.pwaforge.domain.model.TranslateLanguage
 import dev.pwaforge.domain.model.UserAgentMode
 import dev.pwaforge.domain.model.WebApp
@@ -28,7 +27,7 @@ fun WebAppEntity.toDomain(): WebApp = WebApp(
     adBlockCustomRules = adBlockCustomRules.split("\n").filter { it.isNotBlank() },
     translateEnabled = translateEnabled,
     translateTarget = TranslateLanguage.entries.find { it.code == translateTarget } ?: TranslateLanguage.ENGLISH,
-    translateEngine = runCatching { TranslateEngine.valueOf(translateEngine) }.getOrDefault(TranslateEngine.AUTO),
+    libreTranslateUrl = libreTranslateUrl,
     autoTranslateOnLoad = autoTranslateOnLoad,
     uaMode = runCatching { UserAgentMode.valueOf(uaMode) }.getOrDefault(UserAgentMode.CHROME_MOBILE),
     engineType = runCatching { EngineType.valueOf(engineType) }.getOrDefault(EngineType.SYSTEM_WEBVIEW),
@@ -59,7 +58,7 @@ fun WebApp.toEntity(): WebAppEntity = WebAppEntity(
     adBlockCustomRules = adBlockCustomRules.joinToString("\n"),
     translateEnabled = translateEnabled,
     translateTarget = translateTarget.code,
-    translateEngine = translateEngine.name,
+    libreTranslateUrl = libreTranslateUrl,
     autoTranslateOnLoad = autoTranslateOnLoad,
     uaMode = uaMode.name,
     engineType = engineType.name,

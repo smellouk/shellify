@@ -25,7 +25,7 @@ data class WebApp(
     // Translation
     val translateEnabled: Boolean = false,
     val translateTarget: TranslateLanguage = TranslateLanguage.ENGLISH,
-    val translateEngine: TranslateEngine = TranslateEngine.AUTO,
+    val libreTranslateUrl: String = "https://libretranslate.com",
     val autoTranslateOnLoad: Boolean = true,
     // Browser
     val uaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,
@@ -48,14 +48,6 @@ data class WebApp(
 
 enum class LockType { NONE, PASSWORD, SYSTEM }
 
-enum class TranslateEngine(val displayName: String) {
-    AUTO("Auto"),
-    GOOGLE("Google"),
-    MY_MEMORY("MyMemory"),
-    LIBRE_TRANSLATE("LibreTranslate"),
-    LINGVA("Lingva"),
-}
-
 enum class UserAgentMode(val label: String, val uaString: String?) {
     DEFAULT("System default", null),
     CHROME_MOBILE(
@@ -74,7 +66,7 @@ enum class UserAgentMode(val label: String, val uaString: String?) {
 
 enum class TranslateLanguage(val code: String, val displayName: String) {
     ENGLISH("en", "English"),
-    CHINESE("zh-CN", "Chinese (Simplified)"),
+    CHINESE("zh", "Chinese (Simplified)"),
     SPANISH("es", "Spanish"),
     FRENCH("fr", "French"),
     GERMAN("de", "German"),

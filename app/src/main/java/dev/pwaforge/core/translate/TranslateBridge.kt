@@ -1,18 +1,10 @@
 package dev.pwaforge.core.translate
 
-/**
- * Injects a lightweight JS translation bridge into the WebView.
- * Uses Google Translate's unofficial endpoint — no API key required.
- * Inspired by AppForge's TranslateBridge.
- */
 object TranslateBridge {
 
-    /**
-     * Returns JS to inject that adds a floating translate button and
-     * optionally auto-translates the page body text.
-     */
     fun buildScript(
         targetLang: String,
+        instanceUrl: String,
         autoTranslate: Boolean,
     ): String = """
 (function() {
@@ -20,16 +12,18 @@ object TranslateBridge {
   window.__pwaforgeTranslateLoaded = true;
 
   const TARGET = '${targetLang.replace("'", "\\'")}';
+  const INSTANCE = '${instanceUrl.trimEnd('/').replace("'", "\\'")}';
 
-  async function translateText(text) {
-    if (!text || !text.trim()) return text;
+  async function translateBatch(texts) {
     try {
-      const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl='
-        + encodeURIComponent(TARGET) + '&dt=t&q=' + encodeURIComponent(text);
-      const res = await fetch(url);
+      const res = await fetch(INSTANCE + '/translate', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({q: texts, source: 'auto', target: TARGET, format: 'text'}),
+      });
       const json = await res.json();
-      return json[0].map(function(x){ return x[0]; }).join('');
-    } catch(e) { return text; }
+      return Array.isArray(json.translatedText) ? json.translatedText : [json.translatedText];
+    } catch(e) { return texts; }
   }
 
   async function translatePage() {
@@ -47,13 +41,8 @@ object TranslateBridge {
 
     for (let i = 0; i < nodes.length; i += 50) {
       const chunk = nodes.slice(i, i + 50);
-      const texts = chunk.map(function(n){ return n.nodeValue; });
-      const joined = texts.join('\n​​\n');
-      const translated = await translateText(joined);
-      const parts = translated.split('\n​​\n');
-      chunk.forEach(function(n, j) {
-        if (parts[j]) n.nodeValue = parts[j];
-      });
+      const translated = await translateBatch(chunk.map(function(n){ return n.nodeValue; }));
+      chunk.forEach(function(n, j) { if (translated[j]) n.nodeValue = translated[j]; });
     }
   }
 

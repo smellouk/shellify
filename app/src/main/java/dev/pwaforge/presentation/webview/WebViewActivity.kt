@@ -383,6 +383,7 @@ class WebViewActivity : FragmentActivity() {
                                                 engine.evaluateJavascript("window.__pwaforgeTranslateLoaded = false;", null)
                                                 val script = TranslateBridge.buildScript(
                                                     targetLang = updated.translateTarget.code,
+                                                    instanceUrl = updated.libreTranslateUrl,
                                                     autoTranslate = true,
                                                 )
                                                 engine.evaluateJavascript(script, null)
@@ -476,6 +477,7 @@ class WebViewActivity : FragmentActivity() {
                     engine.evaluateJavascript("window.__pwaforgeTranslateLoaded = false;", null)
                     val script = TranslateBridge.buildScript(
                         targetLang = app.translateTarget.code,
+                        instanceUrl = app.libreTranslateUrl,
                         autoTranslate = true,
                     )
                     engine.evaluateJavascript(script, null)

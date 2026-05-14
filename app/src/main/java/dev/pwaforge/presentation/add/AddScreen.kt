@@ -112,7 +112,6 @@ import dev.pwaforge.domain.model.EngineType
 import dev.pwaforge.core.engine.GeckoInstallState
 import dev.pwaforge.core.shortcut.PwaShortcutManager
 import dev.pwaforge.domain.model.PwaManifest
-import dev.pwaforge.domain.model.TranslateEngine
 import dev.pwaforge.domain.model.TranslateLanguage
 import dev.pwaforge.domain.model.WebApp
 import dev.pwaforge.presentation.home.AppIcon
@@ -476,8 +475,6 @@ fun AddScreen(
                 Spacer(Modifier.height(Dimens.spaceLg))
                 LangDropdown(stringResource(R.string.add_translate_target_lang), state.translateTarget,
                     TranslateLanguage.entries, { it.displayName }, viewModel::setTranslateTarget)
-                Spacer(Modifier.height(Dimens.spaceMd))
-                EngineDropdown(state.translateEngine, viewModel::setTranslateEngine)
                 Spacer(Modifier.height(Dimens.spaceMd))
                 SubToggleRow(stringResource(R.string.add_translate_auto_load),
                     stringResource(R.string.add_translate_auto_load_desc),
@@ -1016,21 +1013,3 @@ private fun BrowserEngineCard(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun EngineDropdown(selected: TranslateEngine, onSelect: (TranslateEngine) -> Unit) {
-    var expanded by remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-        OutlinedTextField(value = selected.displayName, onValueChange = {}, readOnly = true,
-            label = { Text(stringResource(R.string.add_translate_engine_label)) },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            modifier = Modifier.fillMaxWidth().menuAnchor(MenuAnchorType.PrimaryNotEditable),
-            shape = RoundedCornerShape(Dimens.cornerLg))
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            TranslateEngine.entries.forEach { engine ->
-                DropdownMenuItem(text = { Text(engine.displayName) },
-                    onClick = { onSelect(engine); expanded = false })
-            }
-        }
-    }
-}

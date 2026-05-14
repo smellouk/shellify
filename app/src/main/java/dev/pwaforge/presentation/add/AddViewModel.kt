@@ -20,7 +20,6 @@ import dev.pwaforge.core.pwa.FaviconFetcher
 import dev.pwaforge.core.pwa.PwaAnalyzer
 import dev.pwaforge.core.theme.ThemeManager
 import dev.pwaforge.domain.model.PwaManifest
-import dev.pwaforge.domain.model.TranslateEngine
 import dev.pwaforge.domain.model.TranslateLanguage
 import dev.pwaforge.domain.model.IconSource
 import dev.pwaforge.domain.model.LockType
@@ -68,7 +67,7 @@ data class AddUiState(
     // Translation
     val translateEnabled: Boolean = false,
     val translateTarget: TranslateLanguage = TranslateLanguage.ENGLISH,
-    val translateEngine: TranslateEngine = TranslateEngine.AUTO,
+    val libreTranslateUrl: String = "https://libretranslate.com",
     val autoTranslateOnLoad: Boolean = true,
     // Browser
     val uaMode: UserAgentMode = UserAgentMode.CHROME_MOBILE,
@@ -136,7 +135,7 @@ class AddViewModel(
                         adBlockCustomRules = app.adBlockCustomRules,
                         translateEnabled = app.translateEnabled,
                         translateTarget = app.translateTarget,
-                        translateEngine = app.translateEngine,
+                        libreTranslateUrl = app.libreTranslateUrl,
                         autoTranslateOnLoad = app.autoTranslateOnLoad,
                         uaMode = app.uaMode,
                         engineType = app.engineType,
@@ -186,7 +185,7 @@ class AddViewModel(
     // Translation
     fun setTranslate(v: Boolean) = _state.update { it.copy(translateEnabled = v) }
     fun setTranslateTarget(v: TranslateLanguage) = _state.update { it.copy(translateTarget = v) }
-    fun setTranslateEngine(v: TranslateEngine) = _state.update { it.copy(translateEngine = v) }
+    fun setLibreTranslateUrl(v: String) = _state.update { it.copy(libreTranslateUrl = v) }
     fun setAutoTranslateOnLoad(v: Boolean) = _state.update { it.copy(autoTranslateOnLoad = v) }
 
     // Browser
@@ -372,7 +371,7 @@ class AddViewModel(
             adBlockCustomRules = s.adBlockCustomRules,
             translateEnabled = s.translateEnabled,
             translateTarget = s.translateTarget,
-            translateEngine = s.translateEngine,
+            libreTranslateUrl = s.libreTranslateUrl,
             autoTranslateOnLoad = s.autoTranslateOnLoad,
             uaMode = s.uaMode,
             engineType = s.engineType,
