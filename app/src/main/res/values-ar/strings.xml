@@ -232,6 +232,9 @@
     <string name="global_settings_last_backup_headline">آخر نسخ احتياطي</string>
     <string name="global_settings_backup_now">نسخ احتياطي الآن</string>
     <string name="global_settings_import_backup">استيراد نسخة احتياطية</string>
+    <string name="global_settings_backup_session_warning_title">تحتوي النسخة الاحتياطية على بيانات حساسة</string>
+    <string name="global_settings_backup_session_warning_body">قد تحتوي النسخ الاحتياطية على ملفات تعريف الارتباط أو بيانات الجلسة التي تُتيح الوصول إلى مواقع وحسابات الأطراف الثالثة. احتفظ بملف النسخة الاحتياطية وكلمة المرور في مكان آمن — فأي شخص يمتلكهما معاً قد يتمكن من الوصول إلى جلساتك المحفوظة.</string>
+    <string name="global_settings_backup_scheduled_note">تُحفَظ النسخ الاحتياطية المجدولة في المجلد الذي اخترته فحسب، ولا تُرسَل أي بيانات عبر الشبكة. يمكنك تعطيل النسخ الاحتياطي التلقائي في أي وقت.</string>
     <string name="global_settings_section_data">البيانات</string>
     <string name="global_settings_clear_all_data_headline">مسح جميع بيانات التطبيقات</string>
     <string name="global_settings_clear_all_data_desc">إزالة ملفات تعريف الارتباط والتخزين لجميع التطبيقات</string>
@@ -271,11 +274,14 @@
     <string name="consent_acceptable_5">ممارسة الاحتيال أو التحرّش أو الإساءة أو أي نشاط غير مشروع آخر</string>
     <string name="consent_acceptable_6">انتحال هوية أفراد أو منظمات أو علامات تجارية أو خدمات رسمية</string>
     <string name="consent_acceptable_7">مشاركة روابط أو توزيعها بقصد التصيّد الاحتيالي أو سرقة بيانات الاعتماد أو توزيع البرامج الضارة أو ممارسة أي نشاط غير مشروع</string>
+    <string name="consent_acceptable_8">مشاركة ملفات النسخ الاحتياطي أو بيانات الجلسة بطرق تنتهك حقوق الأطراف الثالثة أو متطلبات أمان الحسابات أو القانون المُطبَّق</string>
     <string name="consent_acceptable_reserve">نحتفظ بالحق في تحديث شيليفاي أو تعليقه أو تقييده أو إيقافه، أو تقييد ميزات بعينها، في أي وقت، لا سيما في الحالات المتعلقة بالأمان أو منع الإساءة أو الامتثال القانوني أو انتهاك هذه الشروط.</string>
     <string name="consent_section_responsibility_title">مسؤوليتك</string>
     <string name="consent_responsibility_1">أنت المسؤول الوحيد عن المواقع التي تصل إليها والمحتوى الذي تستخدمه عبر شيليفاي</string>
     <string name="consent_responsibility_2">أنت مسؤول عن الامتثال للشروط والسياسات والقوانين المُطبَّقة المتعلقة بأي موقع أو خدمة طرف ثالث تستخدمها</string>
     <string name="consent_responsibility_3">يجب أن يكون عمرك 13 عاماً على الأقل، أو الحد الأدنى للسن الرقمي المطلوب في نطاق اختصاصك القضائي</string>
+    <string name="consent_responsibility_4">أنت مسؤول عن حماية ملفات النسخ الاحتياطي وكلمات المرور — إذ قد تحتوي النسخ الاحتياطية على بيانات جلسات موثّقة لخدمات الأطراف الثالثة</string>
+    <string name="consent_responsibility_5">أنت مسؤول عن التأكد من أن استخدام بيانات الجلسة المُصدَّرة أو المُستعادة يتوافق مع شروط وسياسات الأطراف الثالثة المُطبَّقة</string>
     <string name="consent_section_legal_title">تحديد المسؤولية</string>
     <string name="consent_legal_intro">يُقدَّم شيليفاي "كما هو" و"حسب التوفّر" دون أي ضمانات من أي نوع. بالقدر الأقصى الذي يسمح به القانون، نتنصّل من المسؤولية عن:</string>
     <string name="consent_legal_1">محتوى أو خدمات الأطراف الثالثة</string>

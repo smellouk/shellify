@@ -232,6 +232,9 @@
     <string name="global_settings_last_backup_headline">Dernière sauvegarde</string>
     <string name="global_settings_backup_now">Sauvegarder maintenant</string>
     <string name="global_settings_import_backup">Importer une sauvegarde</string>
+    <string name="global_settings_backup_session_warning_title">La sauvegarde contient des données sensibles</string>
+    <string name="global_settings_backup_session_warning_body">Les sauvegardes peuvent contenir des cookies ou des données de session donnant accès à des sites et comptes tiers. Gardez votre fichier de sauvegarde et votre mot de passe en sécurité — quiconque possède les deux peut accéder à vos sessions enregistrées.</string>
+    <string name="global_settings_backup_scheduled_note">Les sauvegardes planifiées sont enregistrées uniquement dans le dossier que vous avez sélectionné. Aucune donnée n\'est transmise sur le réseau. Vous pouvez désactiver la sauvegarde automatique à tout moment.</string>
     <string name="global_settings_section_data">Données</string>
     <string name="global_settings_clear_all_data_headline">Effacer toutes les données des applications</string>
     <string name="global_settings_clear_all_data_desc">Supprime les cookies et le stockage de toutes les applications</string>
@@ -271,11 +274,14 @@
     <string name="consent_acceptable_5">Se livrer à la fraude, au harcèlement, à des abus ou à toute activité illicite</string>
     <string name="consent_acceptable_6">Usurper l\'identité d\'individus, d\'organisations, de marques ou de services officiels</string>
     <string name="consent_acceptable_7">Partager ou distribuer des liens à des fins d\'hameçonnage, de vol d\'identifiants, de diffusion de logiciels malveillants ou d\'activité illégale</string>
+    <string name="consent_acceptable_8">Partager des fichiers de sauvegarde ou des données de session d\'une manière violant les droits de tiers, les exigences de sécurité des comptes ou la loi applicable</string>
     <string name="consent_acceptable_reserve">Nous nous réservons le droit de mettre à jour, suspendre, restreindre ou interrompre Shellify ou certaines fonctionnalités à tout moment, notamment en cas de problème de sécurité, de prévention des abus, de conformité légale ou de violation de ces conditions.</string>
     <string name="consent_section_responsibility_title">Votre responsabilité</string>
     <string name="consent_responsibility_1">Vous êtes seul responsable des sites web auxquels vous accédez et du contenu que vous utilisez via Shellify</string>
     <string name="consent_responsibility_2">Vous êtes responsable du respect des conditions, politiques et lois applicables à tout site ou service tiers que vous utilisez</string>
     <string name="consent_responsibility_3">Vous devez avoir au moins 13 ans, ou l\'âge numérique minimum requis dans votre juridiction</string>
+    <string name="consent_responsibility_4">Vous êtes responsable de la protection de vos fichiers de sauvegarde et mots de passe — les sauvegardes peuvent contenir des données de session authentifiées pour des services tiers</string>
+    <string name="consent_responsibility_5">Vous êtes responsable de vous assurer que l\'utilisation des données de session exportées ou restaurées est conforme aux conditions et politiques applicables des tiers</string>
     <string name="consent_section_legal_title">Limitation de responsabilité</string>
     <string name="consent_legal_intro">Shellify est fourni "tel quel" et "selon disponibilité" sans garantie d\'aucune sorte. Dans la mesure maximale permise par la loi, nous déclinons toute responsabilité pour :</string>
     <string name="consent_legal_1">Les contenus ou services tiers</string>

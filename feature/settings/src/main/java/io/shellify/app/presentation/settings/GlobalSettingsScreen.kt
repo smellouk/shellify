@@ -149,6 +149,7 @@ fun GlobalSettingsScreen(
         if (geckoInstallState is GeckoInstallState.Installed) viewModel.checkForGeckoUpdate()
     }
     var showScheduleDialog by remember { mutableStateOf(false) }
+    var showBackupWarning by remember { mutableStateOf(false) }
     val backupPwdTitle = stringResource(R.string.global_settings_backup_password_dialog_title)
     val backupPwdDesc = stringResource(R.string.global_settings_backup_password_dialog_desc)
     val importPwdTitle = stringResource(R.string.global_settings_import_password_dialog_title)
@@ -1000,6 +1001,17 @@ fun GlobalSettingsScreen(
                                     ) { Text(stringResource(R.string.common_change)) }
                                 },
                             )
+                            if (state.backupSchedule != BackupSchedule.NONE) {
+                                Text(
+                                    stringResource(R.string.global_settings_backup_scheduled_note),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(
+                                        horizontal = Dimens.spaceLg,
+                                        vertical = Dimens.spaceXxs,
+                                    ),
+                                )
+                            }
                             if (state.backupLastTime > 0L) {
                                 HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                                 ListItem(
@@ -1051,7 +1063,7 @@ fun GlobalSettingsScreen(
                                 verticalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
                             ) {
                                 Button(
-                                    onClick = viewModel::backupNow,
+                                    onClick = { showBackupWarning = true },
                                     enabled = canBackup && !state.backupRunning,
                                     modifier = Modifier.fillMaxWidth(),
                                 ) {
@@ -1471,6 +1483,25 @@ fun GlobalSettingsScreen(
             }
             Spacer(Modifier.height(Dimens.spaceXl))
         }
+    }
+
+    if (showBackupWarning) {
+        AlertDialog(
+            onDismissRequest = { showBackupWarning = false },
+            title = { Text(stringResource(R.string.global_settings_backup_session_warning_title)) },
+            text = { Text(stringResource(R.string.global_settings_backup_session_warning_body)) },
+            confirmButton = {
+                Button(onClick = {
+                    showBackupWarning = false
+                    viewModel.backupNow()
+                }) { Text(stringResource(R.string.global_settings_backup_now)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBackupWarning = false }) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
+        )
     }
 
     if (state.showRemovePasswordWarning) {

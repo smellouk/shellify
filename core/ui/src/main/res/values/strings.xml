@@ -236,6 +236,9 @@
     <string name="global_settings_last_backup_headline">Last backup</string>
     <string name="global_settings_backup_now">Backup Now</string>
     <string name="global_settings_import_backup">Import Backup</string>
+    <string name="global_settings_backup_session_warning_title">Backup contains sensitive data</string>
+    <string name="global_settings_backup_session_warning_body">Backups may contain cookies or session data that provide access to third-party websites and accounts. Keep your backup file and password secure — anyone with both may be able to access your saved sessions.</string>
+    <string name="global_settings_backup_scheduled_note">Scheduled backups are saved only to your selected folder. No data is transmitted over the network. You can disable auto-backup at any time.</string>
     <string name="global_settings_section_data">Data</string>
     <string name="global_settings_clear_all_data_headline">Clear all app data</string>
     <string name="global_settings_clear_all_data_desc">Removes cookies and storage for all apps</string>
@@ -275,11 +278,14 @@
     <string name="consent_acceptable_5">Engage in fraud, harassment, abuse, or other unlawful activity</string>
     <string name="consent_acceptable_6">Impersonate individuals, organizations, brands, or official services</string>
     <string name="consent_acceptable_7">Share or distribute links intended for phishing, credential theft, malware distribution, or unlawful activity</string>
+    <string name="consent_acceptable_8">Share backup files or session data in ways that violate third-party rights, account security requirements, or applicable law</string>
     <string name="consent_acceptable_reserve">We reserve the right to update, suspend, restrict, or discontinue Shellify or specific features at any time, particularly in cases involving security, abuse prevention, legal compliance, or violations of these terms.</string>
     <string name="consent_section_responsibility_title">Your responsibility</string>
     <string name="consent_responsibility_1">You are solely responsible for the websites you access and the content you use through Shellify</string>
     <string name="consent_responsibility_2">You are responsible for complying with the terms, policies, and applicable laws relating to any third-party website or service you use</string>
     <string name="consent_responsibility_3">You must be at least 13 years old, or the minimum digital age required in your jurisdiction</string>
+    <string name="consent_responsibility_4">You are responsible for protecting backup files and passwords — backups may contain authenticated session data for third-party services</string>
+    <string name="consent_responsibility_5">You are responsible for ensuring that use of exported or restored session data complies with applicable third-party terms and policies</string>
     <string name="consent_section_legal_title">Limitation of liability</string>
     <string name="consent_legal_intro">Shellify is provided "as is" and "as available" without warranties of any kind. To the maximum extent permitted by law, we disclaim liability for:</string>
     <string name="consent_legal_1">Third-party content or services</string>
