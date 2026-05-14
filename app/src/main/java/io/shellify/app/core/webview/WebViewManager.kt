@@ -21,7 +21,7 @@ object WebViewManager {
             domStorageEnabled = true
             databaseEnabled = true
             allowFileAccess = false
-            allowContentAccess = true
+            allowContentAccess = false
             useWideViewPort = true
             loadWithOverviewMode = true
             setSupportZoom(true)

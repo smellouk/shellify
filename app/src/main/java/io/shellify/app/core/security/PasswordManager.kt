@@ -6,6 +6,8 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.CoroutineScope
@@ -18,6 +20,8 @@ import kotlinx.coroutines.flow.map
 import java.io.File
 
 private val Context.passwordStore by preferencesDataStore(name = "pwa_password")
+
+private const val ATTEMPT_EXPIRY_MS = 24 * 60 * 60 * 1000L  // 24 h
 
 class PasswordManager(private val context: Context) {
 
@@ -49,6 +53,43 @@ class PasswordManager(private val context: Context) {
     suspend fun restorePasswordHash(hash: String) {
         context.passwordStore.edit { it[keyPasswordHash] = hash }
     }
+
+    // ── Failed-attempt tracking ───────────────────────────────────────────────
+    // Counts are persisted so they survive process death between attempts.
+    // Counts older than ATTEMPT_EXPIRY_MS are treated as zero.
+
+    private fun attemptsKey(appId: Long) = intPreferencesKey("lock_fails_$appId")
+    private fun attemptsTimeKey(appId: Long) = longPreferencesKey("lock_fails_time_$appId")
+
+    suspend fun getFailedAttempts(appId: Long): Int {
+        val prefs = context.passwordStore.data.first()
+        val count = prefs[attemptsKey(appId)] ?: return 0
+        val time  = prefs[attemptsTimeKey(appId)] ?: 0L
+        return if (System.currentTimeMillis() - time > ATTEMPT_EXPIRY_MS) 0 else count
+    }
+
+    /** Increments the counter and returns the new value. */
+    suspend fun recordFailedAttempt(appId: Long): Int {
+        var newCount = 0
+        context.passwordStore.edit { prefs ->
+            val existing = prefs[attemptsKey(appId)] ?: 0
+            val time = prefs[attemptsTimeKey(appId)] ?: 0L
+            val expired = System.currentTimeMillis() - time > ATTEMPT_EXPIRY_MS
+            newCount = if (expired) 1 else existing + 1
+            prefs[attemptsKey(appId)] = newCount
+            prefs[attemptsTimeKey(appId)] = System.currentTimeMillis()
+        }
+        return newCount
+    }
+
+    suspend fun clearFailedAttempts(appId: Long) {
+        context.passwordStore.edit { prefs ->
+            prefs.remove(attemptsKey(appId))
+            prefs.remove(attemptsTimeKey(appId))
+        }
+    }
+
+    // ── Backup / restore ──────────────────────────────────────────────────────
 
     /** Reads a restored DataStore file and applies its contents to the live DataStore instance. */
     suspend fun reloadFromFile(restoredFile: File) {

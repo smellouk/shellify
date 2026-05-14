@@ -73,6 +73,7 @@ import io.shellify.app.domain.model.EngineType
 import io.shellify.app.core.engine.GeckoViewEngine
 import io.shellify.app.core.engine.SystemWebViewEngine
 import io.shellify.app.core.isolation.IsolationManager
+import io.shellify.app.core.security.isLegacyHash
 import io.shellify.app.core.security.showSystemLockPrompt
 import io.shellify.app.core.security.verifyPassword
 import kotlinx.coroutines.flow.first
@@ -122,6 +123,17 @@ class WebViewActivity : FragmentActivity() {
         val pwaApp = runBlocking(Dispatchers.IO) { app.webAppRepository.getById(appId) }
             ?: run { finish(); return }
         currentAppFlow.value = pwaApp
+
+        // Apply FLAG_SECURE before setContentView so the window is never exposed unprotected.
+        val screenshotProtection = runBlocking { app.passwordManager.screenshotProtection.first() }
+        if (screenshotProtection) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        // Track live changes (e.g., user toggles the setting while the activity is visible).
+        scope.launch {
+            app.passwordManager.screenshotProtection.collect { on ->
+                if (on) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            }
+        }
 
         engine = when {
             pwaApp.engineType == EngineType.GECKOVIEW && app.geckoEngineManager.isInstalled() ->
@@ -192,6 +204,8 @@ class WebViewActivity : FragmentActivity() {
     }
 
     private fun showPasswordDialog(app: ShellifyApplication, pwaApp: WebApp) {
+        // Load persisted count so the wipe limit survives process death between attempts.
+        val persistedAttempts = runBlocking { app.passwordManager.getFailedAttempts(pwaApp.id) }
         val overlay = ComposeView(this).apply {
             setContent {
                 val themeMode by app.themeManager.themeMode.collectAsState(ThemeMode.SYSTEM)
@@ -199,7 +213,7 @@ class WebViewActivity : FragmentActivity() {
                 val hash by app.passwordManager.passwordHash.collectAsState(initial = null)
                 var input by remember { mutableStateOf("") }
                 var visible by remember { mutableStateOf(false) }
-                var failedAttempts by remember { mutableStateOf(0) }
+                var failedAttempts by remember { mutableStateOf(persistedAttempts) }
                 val maxAttempts = 3
                 val remaining = maxAttempts - failedAttempts
                 val wipe by app.passwordManager.wipeOnFailedAttempts.collectAsState(initial = false)
@@ -246,11 +260,19 @@ class WebViewActivity : FragmentActivity() {
                             TextButton(onClick = {
                                 val h = hash
                                 if (h != null && verifyPassword(input, h)) {
+                                    scope.launch(Dispatchers.IO) {
+                                        app.passwordManager.clearFailedAttempts(pwaApp.id)
+                                        // Transparently upgrade a legacy SHA-256 hash to PBKDF2.
+                                        if (isLegacyHash(h)) app.passwordManager.setPassword(input)
+                                    }
                                     container.removeView(this@apply)
                                     startLoading(pwaApp)
                                 } else {
                                     input = ""
                                     failedAttempts++
+                                    scope.launch(Dispatchers.IO) {
+                                        app.passwordManager.recordFailedAttempt(pwaApp.id)
+                                    }
                                     if (wipe && failedAttempts >= maxAttempts) {
                                         wipeAndUnlock(app, pwaApp)
                                     }
@@ -273,15 +295,20 @@ class WebViewActivity : FragmentActivity() {
 
     private fun showSystemLockWithWipe(app: ShellifyApplication, pwaApp: WebApp) {
         val maxAttempts = 3
-        var failedAttempts = 0
+        // Load persisted count so the wipe limit survives process death between attempts.
+        var failedAttempts = runBlocking { app.passwordManager.getFailedAttempts(pwaApp.id) }
 
         fun prompt() {
             showSystemLockPrompt(
                 activity = this,
                 title = getString(R.string.webview_lock_prompt_title, pwaApp.name),
-                onSuccess = { startLoading(pwaApp) },
+                onSuccess = {
+                    scope.launch(Dispatchers.IO) { app.passwordManager.clearFailedAttempts(pwaApp.id) }
+                    startLoading(pwaApp)
+                },
                 onFailed = {
                     failedAttempts++
+                    scope.launch(Dispatchers.IO) { app.passwordManager.recordFailedAttempt(pwaApp.id) }
                     val wipe = runBlocking { app.passwordManager.wipeOnFailedAttempts.first() }
                     if (wipe && failedAttempts >= maxAttempts) {
                         wipeAndUnlock(app, pwaApp)

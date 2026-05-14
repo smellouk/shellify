@@ -5,7 +5,14 @@ object TranslateBridge {
     fun buildScript(
         targetLang: String,
         autoTranslate: Boolean,
-    ): String = """
+    ): String {
+        // Restrict to IETF-style codes (letters and hyphens only, max 10 chars) so the
+        // value is safe to embed in a JS string literal even if the call site ever changes.
+        val safeLang = targetLang.filter { it.isLetter() || it == '-' }.take(10)
+        return buildScriptInternal(safeLang, autoTranslate)
+    }
+
+    private fun buildScriptInternal(targetLang: String, autoTranslate: Boolean): String = """
 (function() {
   if (window.__pwaforgeTranslateLoaded) return;
   window.__pwaforgeTranslateLoaded = true;

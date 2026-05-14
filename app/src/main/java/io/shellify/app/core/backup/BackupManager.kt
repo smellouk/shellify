@@ -223,30 +223,24 @@ class BackupManager(
 
                         entry.name.startsWith("icons/") -> {
                             val name = entry.name.removePrefix("icons/")
-                            if (name.isNotBlank()) {
-                                val dir = File(context.filesDir, "icons").also { it.mkdirs() }
-                                File(dir, name).writeBytes(bytes)
-                            }
+                            val dir = File(context.filesDir, "icons").also { it.mkdirs() }
+                            dir.safeResolve(name)?.writeBytes(bytes)
                         }
 
                         entry.name.startsWith("icon_packs/") -> {
                             val name = entry.name.removePrefix("icon_packs/")
-                            if (name.isNotBlank()) {
-                                val dir = File(context.filesDir, "icon_packs").also { it.mkdirs() }
-                                File(dir, name).writeBytes(bytes)
-                            }
+                            val dir = File(context.filesDir, "icon_packs").also { it.mkdirs() }
+                            dir.safeResolve(name)?.writeBytes(bytes)
                         }
 
                         entry.name.startsWith("datastore/") -> {
                             val name = entry.name.removePrefix("datastore/")
-                            if (name.isNotBlank()) {
-                                val dir = File(context.filesDir.parent!!, "datastore").also { it.mkdirs() }
-                                val file = File(dir, name).also { it.writeBytes(bytes) }
-                                // Reload in-memory state for the backup password (device-specific
-                                // Keystore-encrypted value that can't go into settings.json).
-                                when (name) {
-                                    "pwa_backup.preferences_pb" -> backupSettings.reloadFromFile(file)
-                                }
+                            val dir = File(context.filesDir.parent!!, "datastore").also { it.mkdirs() }
+                            val file = dir.safeResolve(name)?.also { it.writeBytes(bytes) }
+                            // Reload in-memory state for the backup password (device-specific
+                            // Keystore-encrypted value that can't go into settings.json).
+                            if (file != null && name == "pwa_backup.preferences_pb") {
+                                backupSettings.reloadFromFile(file)
                             }
                         }
 
@@ -255,10 +249,8 @@ class BackupManager(
 
                         entry.name.startsWith("shared_prefs/") -> {
                             val name = entry.name.removePrefix("shared_prefs/")
-                            if (name.isNotBlank()) {
-                                val dir = File(context.filesDir.parent!!, "shared_prefs").also { it.mkdirs() }
-                                File(dir, name).writeBytes(bytes)
-                            }
+                            val dir = File(context.filesDir.parent!!, "shared_prefs").also { it.mkdirs() }
+                            dir.safeResolve(name)?.writeBytes(bytes)
                         }
 
                         entry.name == "cookies.json" -> {
@@ -269,8 +261,9 @@ class BackupManager(
                         entry.name.startsWith("webview/") &&
                         Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
                             val relative = entry.name.removePrefix("webview/")
-                            if (relative.isNotBlank()) {
-                                val target = File(context.filesDir.parent!!, "app_webview/$relative")
+                            val baseDir = File(context.filesDir.parent!!, "app_webview")
+                            val target = baseDir.safeResolve(relative)
+                            if (target != null) {
                                 target.parentFile?.mkdirs()
                                 target.writeBytes(bytes)
                             }
@@ -361,7 +354,12 @@ class BackupManager(
         db.beginTransaction()
         try {
             sql.lineSequence().filter { it.isNotBlank() }.forEach { stmt ->
-                runCatching { db.execSQL(stmt) }
+                val trimmed = stmt.trim()
+                // Only allow INSERT OR REPLACE statements into known tables — no arbitrary SQL.
+                if (!trimmed.startsWith("INSERT OR REPLACE INTO `")) return@forEach
+                val table = trimmed.removePrefix("INSERT OR REPLACE INTO `").substringBefore("`")
+                if (table !in RESTORE_ALLOWED_TABLES) return@forEach
+                runCatching { db.execSQL(trimmed) }
             }
             db.setTransactionSuccessful()
         } finally {
@@ -382,5 +380,20 @@ class BackupManager(
         walkTopDown().filter { it.isFile }.forEach { file ->
             runCatching { action(file, file.relativeTo(this).path) }
         }
+    }
+
+    /**
+     * Resolves [name] relative to this directory and returns the File only if it stays
+     * inside this directory — i.e., rejects path traversal sequences like "../../etc".
+     */
+    private fun File.safeResolve(name: String): File? {
+        if (name.isBlank()) return null
+        val target = File(this, name)
+        val base = canonicalPath + File.separator
+        return if (target.canonicalPath.startsWith(base)) target else null
+    }
+
+    companion object {
+        private val RESTORE_ALLOWED_TABLES = setOf("web_apps", "categories")
     }
 }

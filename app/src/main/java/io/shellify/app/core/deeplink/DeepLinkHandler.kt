@@ -10,7 +10,8 @@ object DeepLinkHandler {
         if (!isCustom && !isHttps) return null
         val rawUrl = uri.getQueryParameter("url")?.takeIf { it.isNotBlank() } ?: return null
         val name = uri.getQueryParameter("name") ?: ""
-        return decodeUrl(rawUrl) to name
+        val url = decodeUrl(rawUrl) ?: return null   // reject non-https or decode failures
+        return url to name
     }
 
     fun buildCustomScheme(url: String, name: String): String =
@@ -28,10 +29,13 @@ object DeepLinkHandler {
     private fun encodeUrl(url: String): String =
         Base64.encodeToString(url.toByteArray(), Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING)
 
-    private fun decodeUrl(raw: String): String = try {
+    /**
+     * Decodes a base64url-encoded URL and returns it only if it uses https.
+     * Returns null on decode failure or when the decoded value is not an https URL —
+     * the caller should silently drop the deeplink in that case.
+     */
+    private fun decodeUrl(raw: String): String? = runCatching {
         val decoded = String(Base64.decode(raw, Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING))
-        if (decoded.startsWith("http")) decoded else raw
-    } catch (_: Exception) {
-        raw
-    }
+        decoded.takeIf { it.startsWith("https://") }
+    }.getOrNull()
 }

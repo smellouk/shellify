@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Excludes sensitive files from ADB / cloud backup (pre-API-31).
+  These files either contain secrets or are device-specific and useless on other devices.
+-->
+<full-backup-content>
+    <!-- Encrypted database passphrase — Keystore key never leaves the device so restoring
+         this ciphertext on another device would be undecryptable anyway, but exclude it
+         to avoid leaking ciphertext unnecessarily. -->
+    <exclude domain="sharedpref" path="pwaforge_crypto.xml" />
+
+    <!-- Password hash (PBKDF2) — exclude to prevent offline brute-force if backup is extracted. -->
+    <exclude domain="file" path="../datastore/pwa_password.preferences_pb" />
+
+    <!-- Encrypted cookie jars — useless without the Keystore key, but exclude for hygiene. -->
+    <exclude domain="file" path="../datastore/pwa_cookie_store.preferences_pb" />
+
+    <!-- Encrypted backup password — device-specific Keystore encryption, meaningless elsewhere. -->
+    <exclude domain="file" path="../datastore/pwa_backup.preferences_pb" />
+
+    <!-- SQLCipher database — encrypted with a device-specific random passphrase. -->
+    <exclude domain="database" path="pwaforge.db" />
+    <exclude domain="database" path="pwaforge.db-shm" />
+    <exclude domain="database" path="pwaforge.db-wal" />
+</full-backup-content>
