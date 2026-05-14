@@ -245,6 +245,7 @@
     <string name="global_settings_section_about">À propos</string>
     <string name="global_settings_version_headline">Version</string>
     <string name="licenses_title">Licences open source</string>
+    <string name="changelog_title">Journal des modifications</string>
     <string name="global_settings_ua_dialog_title">Agent utilisateur par défaut</string>
     <string name="global_settings_schedule_dialog_title">Planification de sauvegarde automatique</string>
     <string name="global_settings_remove_password_title">Supprimer le mot de passe de l\'application ?</string>

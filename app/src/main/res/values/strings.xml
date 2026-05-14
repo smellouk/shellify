@@ -249,6 +249,7 @@
     <string name="global_settings_section_about">About</string>
     <string name="global_settings_version_headline">Version</string>
     <string name="licenses_title">Open Source Licenses</string>
+    <string name="changelog_title">Changelog</string>
     <string name="global_settings_ua_dialog_title">Default user agent</string>
     <string name="global_settings_schedule_dialog_title">Auto-backup schedule</string>
     <string name="global_settings_remove_password_title">Remove app password?</string>

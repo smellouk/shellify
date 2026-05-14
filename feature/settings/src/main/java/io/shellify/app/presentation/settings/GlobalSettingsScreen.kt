@@ -36,7 +36,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.filled.Shortcut
-import androidx.compose.material.icons.filled.Article
+import androidx.compose.material.icons.automirrored.filled.Article
+import androidx.compose.material.icons.filled.NewReleases
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Backup
@@ -134,6 +135,7 @@ import java.util.Date
 @Composable
 fun GlobalSettingsScreen(
     viewModel: GlobalSettingsViewModel,
+    onChangelog: () -> Unit = {},
     onLicenses: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -1272,6 +1274,43 @@ fun GlobalSettingsScreen(
                     )
                     HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                     ListItem(
+                        modifier = Modifier.clickable { onChangelog() },
+                        leadingContent = {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(
+                                        MaterialTheme.colorScheme.primaryContainer.copy(
+                                            alpha = 0.4f
+                                        )
+                                    ),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    Icons.Default.NewReleases,
+                                    null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        },
+                        headlineContent = {
+                            Text(
+                                stringResource(R.string.changelog_title),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        },
+                        trailingContent = {
+                            Icon(
+                                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                    )
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
+                    ListItem(
                         modifier = Modifier.clickable { onLicenses() },
                         leadingContent = {
                             Box(
@@ -1286,7 +1325,7 @@ fun GlobalSettingsScreen(
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Icon(
-                                    Icons.Default.Article,
+                                    Icons.AutoMirrored.Filled.Article,
                                     null,
                                     modifier = Modifier.size(20.dp),
                                     tint = MaterialTheme.colorScheme.primary
