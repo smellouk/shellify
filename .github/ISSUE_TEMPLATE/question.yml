@@ -1,0 +1,24 @@
+name: Question / Discussion
+description: Ask a question about using or contributing to Shellify
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before opening a question, please check the [README](../README.md) and existing issues.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: What would you like to know?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What are you trying to accomplish? Any relevant background helps.
+    validations:
+      required: false

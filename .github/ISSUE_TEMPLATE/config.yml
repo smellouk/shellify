@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Email
+    url: mailto:contact@shellify.app
+    about: For private security disclosures or other sensitive matters, contact us directly.

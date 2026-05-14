@@ -1,0 +1,64 @@
+name: Task / Work Item
+description: Internal engineering task — refactor, technical debt, infrastructure, or maintenance work
+labels: ["task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for engineering tasks that are not user-facing bugs or feature requests.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What needs to be done and why?
+      placeholder: Describe the task...
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: How do we know this task is done?
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Build system / Gradle
+        - CI / CD
+        - Architecture / Refactor
+        - Testing
+        - Performance
+        - Security
+        - Dependencies / Upgrades
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Low
+        - Medium
+        - High
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Links, references, relevant code paths, etc.
+    validations:
+      required: false

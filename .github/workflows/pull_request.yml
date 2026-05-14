@@ -1,0 +1,144 @@
+name: Pull Request
+
+on:
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+
+  lint:
+    name: Android Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Run Lint
+        run: ./gradlew lintDebug
+      - name: Upload Lint reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-reports
+          path: '**/build/reports/lint-results-*.html'
+          if-no-files-found: ignore
+
+  detekt:
+    name: Detekt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Run Detekt
+        run: ./gradlew detekt
+      - name: Upload Detekt reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: detekt-reports
+          path: '**/build/reports/detekt/'
+          if-no-files-found: ignore
+
+  unit-tests:
+    name: Unit Tests & Konsist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Run unit tests
+        run: ./gradlew testDebugUnitTest
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports
+          path: '**/build/reports/tests/'
+          if-no-files-found: ignore
+
+  screenshot-tests:
+    name: Screenshot Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Run screenshot verification
+        run: ./gradlew verifyRoborazziDebug
+      - name: Upload screenshot diffs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-diffs
+          path: '**/build/outputs/roborazzi/'
+          if-no-files-found: ignore
+
+  # Uncomment to enable instrumented tests on a real emulator.
+  # Note: adds ~15-20 min to CI time.
+  #
+  # android-tests:
+  #   name: Instrumented Tests
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-java@v4
+  #       with:
+  #         distribution: temurin
+  #         java-version: 17
+  #     - uses: gradle/actions/setup-gradle@v4
+  #     - name: Run instrumented tests
+  #       uses: reactivecircus/android-emulator-runner@v2
+  #       with:
+  #         api-level: 34
+  #         arch: x86_64
+  #         target: google_apis
+  #         script: ./gradlew connectedDebugAndroidTest
+  #     - name: Upload instrumented test reports
+  #       if: always()
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: android-test-reports
+  #         path: '**/build/reports/androidTests/'
+  #         if-no-files-found: ignore
+
+  summary:
+    name: PR Summary
+    runs-on: ubuntu-latest
+    needs: [lint, detekt, unit-tests, screenshot-tests]
+    if: always()
+    steps:
+      - name: Write workflow summary
+        run: |
+          echo "## Pull Request Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Result |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔍 Android Lint | ${{ needs.lint.result == 'success' && '✅ Passed' || needs.lint.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧹 Detekt | ${{ needs.detekt.result == 'success' && '✅ Passed' || needs.detekt.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧪 Unit Tests & Konsist | ${{ needs.unit-tests.result == 'success' && '✅ Passed' || needs.unit-tests.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 📸 Screenshot Tests | ${{ needs.screenshot-tests.result == 'success' && '✅ Passed' || needs.screenshot-tests.result == 'skipped' && '⏭️ Skipped' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ needs.lint.result }}" != "success" || "${{ needs.detekt.result }}" != "success" || "${{ needs.unit-tests.result }}" != "success" || "${{ needs.screenshot-tests.result }}" != "success" ]]; then
+            echo "> [!WARNING]" >> $GITHUB_STEP_SUMMARY
+            echo "> One or more checks failed. Download the artifacts above for details." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "> [!NOTE]" >> $GITHUB_STEP_SUMMARY
+            echo "> All checks passed. This PR is ready for review." >> $GITHUB_STEP_SUMMARY
+          fi
