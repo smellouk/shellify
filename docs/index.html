@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shellify — Turn any website into your own app</title>
+<meta name="description" content="Shellify wraps websites in isolated WebView containers with per-app ad blocking, biometric lock, and encrypted backup. Local-first. No cloud. No tracking.">
+<meta property="og:title" content="Shellify — Turn any website into your own app">
+<meta property="og:description" content="Local-first Android PWA launcher. Per-app isolation, ad blocking, biometric lock, and AES-256 encrypted backup. No accounts, no cloud, no tracking.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="assets/site.css">
+<style>
+/* ── Hero: Split layout ───────────────────────────── */
+.hero {
+  padding: 80px 0 64px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 64px;
+  align-items: center;
+}
+.hero-text .badge { margin-bottom: 24px; }
+.hero-text h1 {
+  font-size: clamp(2rem, 4.5vw, 3.25rem);
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+  margin-bottom: 20px;
+}
+.hero-text h1 em {
+  font-style: normal;
+  background: linear-gradient(125deg, var(--primary) 0%, var(--secondary) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-text p {
+  color: var(--text-muted);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  max-width: 480px;
+  margin-bottom: 32px;
+}
+.hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+/* ── App screenshot ─────────────────────────────────── */
+.phone-wrap {
+  display: flex; justify-content: center;
+  flex-shrink: 0; align-items: center;
+}
+.app-screenshot {
+  height: 480px;
+  width: auto;
+  filter: drop-shadow(0 16px 48px rgba(0,0,0,0.6))
+          drop-shadow(0 0 40px rgba(124,77,255,0.35));
+  animation: float 5s ease-in-out infinite;
+  user-select: none;
+}
+[data-theme="light"] .app-screenshot {
+  filter: drop-shadow(0 16px 48px rgba(0,0,0,0.22))
+          drop-shadow(0 0 32px rgba(98,0,238,0.2));
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-10px); }
+}
+
+/* ── Tech strip ──────────────────────────────────────── */
+.strip-section { padding: 48px 0; }
+
+/* ── Features ────────────────────────────────────────── */
+.features { padding: 80px 0; }
+.features-heading {
+  text-align: center;
+  margin-bottom: 56px;
+}
+.features-heading h2 {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+  font-weight: 800; letter-spacing: -0.03em; margin-bottom: 12px;
+}
+.features-heading p { color: var(--text-muted); max-width: 440px; margin: 0 auto; }
+
+.feature-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 64px; align-items: center;
+  padding: 48px 0;
+  border-bottom: 1px solid var(--border);
+}
+.feature-row:last-child { border-bottom: none; }
+.feature-row.flip { direction: rtl; }
+.feature-row.flip > * { direction: ltr; }
+.feature-visual {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 40px 24px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 12px;
+  min-height: 180px;
+  transition: all 0.2s ease;
+}
+.feature-visual:hover {
+  border-color: var(--border-hover);
+  box-shadow: var(--glow-primary);
+}
+.feature-visual .icon { color: var(--primary); display: flex; }
+.feature-visual .vis-label { font-size: 11px; color: var(--text-subtle); font-family: var(--font-mono); }
+.feature-text h3 {
+  font-size: 1.375rem; font-weight: 700;
+  letter-spacing: -0.02em; margin-bottom: 12px;
+}
+.feature-text p {
+  color: var(--text-muted); line-height: 1.75; margin-bottom: 16px;
+}
+.feature-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--secondary-dim); border: 1px solid rgba(0,229,204,0.2);
+  color: var(--secondary); padding: 4px 12px;
+  border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 600;
+}
+[data-theme="light"] .feature-pill {
+  background: var(--secondary-dim); border-color: rgba(0,123,101,0.2);
+}
+
+/* ── Privacy section ─────────────────────────────────── */
+.privacy-section { padding: 80px 0; }
+.privacy-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  padding: 56px;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 64px; align-items: center;
+  transition: background 0.25s ease, border-color 0.25s ease;
+  position: relative; overflow: hidden;
+}
+.privacy-card::before {
+  content: '';
+  position: absolute; top: 0; right: 0;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, var(--secondary-dim) 0%, transparent 70%);
+  pointer-events: none;
+}
+.privacy-card h2 {
+  font-size: clamp(1.5rem, 2.5vw, 2rem);
+  font-weight: 800; letter-spacing: -0.03em;
+  margin-bottom: 16px; line-height: 1.2;
+}
+.privacy-card h2 span { color: var(--secondary); }
+.privacy-card > .privacy-text > p { color: var(--text-muted); margin-bottom: 24px; line-height: 1.75; }
+.privacy-list { display: flex; flex-direction: column; gap: 10px; }
+.privacy-item {
+  display: flex; align-items: flex-start; gap: 10px; font-size: 0.9375rem;
+}
+.privacy-check { color: var(--secondary); display: flex; flex-shrink: 0; margin-top: 2px; }
+
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.stat {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 20px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+.stat:hover { border-color: var(--secondary); }
+.stat-val { font-size: 2rem; font-weight: 900; color: var(--secondary); display: block; }
+.stat-lbl { font-size: 0.6875rem; color: var(--text-subtle); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* ── CTA ─────────────────────────────────────────────── */
+.cta-section {
+  padding: 80px 0;
+  text-align: center;
+  position: relative;
+}
+.cta-section::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 50% 70% at 50% 50%, var(--primary-dim) 0%, transparent 70%);
+  pointer-events: none;
+}
+.cta-section h2 {
+  font-size: clamp(1.75rem, 3.5vw, 2.75rem);
+  font-weight: 900; letter-spacing: -0.03em; margin-bottom: 16px;
+}
+.cta-section p { color: var(--text-muted); font-size: 1.0625rem; margin-bottom: 32px; }
+.cta-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; gap: 40px; padding: 56px 0 48px; }
+  .phone-wrap { display: none; }
+  .feature-row, .feature-row.flip { grid-template-columns: 1fr; gap: 24px; direction: ltr; }
+  .feature-visual { min-height: 120px; }
+  .privacy-card { grid-template-columns: 1fr; gap: 32px; padding: 36px; }
+}
+@media (max-width: 600px) {
+  .hero-text h1 { font-size: 2rem; }
+  .privacy-card { padding: 24px; }
+  .privacy-card::before { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="site-nav" role="navigation" aria-label="Main">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-logo">Shellify</a>
+    <div class="nav-links">
+      <a href="#features" class="nav-hide-mobile">Features</a>
+      <a href="#privacy" class="nav-hide-mobile">Privacy</a>
+      <a href="privacy.html" class="nav-hide-mobile">Privacy Policy</a>
+      <a href="terms.html" class="nav-hide-mobile">Terms</a>
+      <button class="theme-toggle" id="theme-btn" aria-label="Toggle theme" title="Toggle dark/light mode"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+      <a href="https://github.com/smellouk/shellify" class="btn-github" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<main>
+<section class="wrap">
+  <div class="hero">
+    <div class="hero-text">
+      <span class="badge"><span class="badge-dot"></span> Local-first · No cloud · No tracking</span>
+      <h1>Turn any website into an <em>isolated app</em></h1>
+      <p>Shellify wraps websites in individual WebView containers with per-app ad blocking, biometric lock, and encrypted backup — all stored on your device. No account required.</p>
+      <div class="hero-actions">
+        <a href="https://github.com/smellouk/shellify/releases" class="btn-primary"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download APK</a>
+        <a href="https://github.com/smellouk/shellify" class="btn-ghost">View on GitHub →</a>
+      </div>
+    </div>
+
+    <div class="phone-wrap" aria-hidden="true">
+      <img
+        id="app-screenshot"
+        class="app-screenshot"
+        src="assets/app-screenshot-dark.png"
+        alt="Shellify home screen — app grid with lock and ad-block indicators"
+        width="1080" height="2340"
+        loading="eager"
+        decoding="async"
+      >
+    </div>
+  </div>
+</section>
+
+<!-- Tech strip -->
+<div class="tech-strip strip-section">
+  <div class="wrap">
+    <p class="tech-strip-label">Built with love</p>
+    <div class="tech-badges">
+      <span class="tech-badge"><span class="dot dot-kotlin"></span> Kotlin</span>
+      <span class="tech-badge"><span class="dot dot-compose"></span> Jetpack Compose</span>
+      <span class="tech-badge"><span class="dot dot-claude"></span> Claude</span>
+    </div>
+  </div>
+</div>
+
+<!-- Features -->
+<section id="features" class="features">
+  <div class="wrap">
+    <div class="features-heading">
+      <h2>Everything you need. Nothing you don't.</h2>
+      <p>Every feature designed to keep your data on your device.</p>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-visual">
+        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+        <span class="vis-label">per-app-isolation</span>
+      </div>
+      <div class="feature-text">
+        <h3>Per-app isolation</h3>
+        <p>Each web app gets its own cookie jar, local storage, and dedicated WebView profile on Android 13+. No cross-site tracking between your apps — by design, not by accident.</p>
+        <span class="feature-pill">Android 13+ WebView profiles</span>
+      </div>
+    </div>
+
+    <div class="feature-row flip">
+      <div class="feature-visual">
+        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></span>
+        <span class="vis-label">argon2id + aes-256-gcm</span>
+      </div>
+      <div class="feature-text">
+        <h3>Encrypted everywhere</h3>
+        <p>Database encrypted with SQLCipher (AES-256). Per-app cookie jars encrypted between sessions (AES-256-GCM). Backup files protected by Argon2id + AES-256-GCM. Cryptographic keys backed by Android Keystore (hardware-backed where available).</p>
+        <span class="feature-pill">Hardware-backed keys</span>
+      </div>
+    </div>
+
+    <div class="feature-row">
+      <div class="feature-visual">
+        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></span>
+        <span class="vis-label">built-in ad blocker</span>
+      </div>
+      <div class="feature-text">
+        <h3>Built-in ad blocking</h3>
+        <p>Per-app content blocker with custom rule support. Clean browsing experience without needing a separate app or browser extension. Toggle it on or off per app at any time.</p>
+        <span class="feature-pill">Custom rules per app</span>
+      </div>
+    </div>
+
+    <div class="feature-row flip">
+      <div class="feature-visual">
+        <span class="icon"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+        <span class="vis-label">system webview · geckoview</span>
+      </div>
+      <div class="feature-text">
+        <h3>Two browser engines</h3>
+        <p>Use Android System WebView for speed or optionally download Mozilla GeckoView for an independent engine. Switchable per app without reinstalling. User-agent can also be set per app.</p>
+        <span class="feature-pill">Switch engines per app</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Privacy section -->
+<section id="privacy" class="privacy-section">
+  <div class="wrap">
+    <div class="privacy-card">
+      <div class="privacy-text">
+        <h2>No backend.<br><span>No compromise.</span></h2>
+        <p>Shellify has no server infrastructure. It doesn't collect data, create accounts, or know you exist. Everything lives on your device, encrypted, always.</p>
+        <div class="privacy-list">
+          <div class="privacy-item"><span class="privacy-check"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> No personal data collected, ever</div>
+          <div class="privacy-item"><span class="privacy-check"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> No user accounts or identifiers created</div>
+          <div class="privacy-item"><span class="privacy-check"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> No analytics or crash-reporting SDKs</div>
+          <div class="privacy-item"><span class="privacy-check"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> All data encrypted at rest on your device</div>
+          <div class="privacy-item"><span class="privacy-check"><svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span> Open source — inspect every line yourself</div>
+        </div>
+        <div style="margin-top:24px">
+          <a href="privacy.html" class="btn-ghost" style="font-size:0.875rem; padding:8px 18px;">Read the Privacy Policy →</a>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat"><span class="stat-val">0</span><div class="stat-lbl">servers we run</div></div>
+        <div class="stat"><span class="stat-val">256</span><div class="stat-lbl">AES-GCM bits</div></div>
+        <div class="stat"><span class="stat-val">0</span><div class="stat-lbl">user accounts</div></div>
+        <div class="stat"><span class="stat-val">100%</span><div class="stat-lbl">open source</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="wrap">
+    <h2>Your apps. Your rules.</h2>
+    <p>Free, open-source, and always will be.</p>
+    <div class="cta-actions">
+      <a href="https://github.com/smellouk/shellify/releases" class="btn-primary"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Download for Android</a>
+      <a href="https://github.com/smellouk/shellify" class="btn-ghost"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Star on GitHub</a>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="footer-inner">
+      <span class="footer-logo">Shellify</span>
+      <div class="footer-links">
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="terms.html">Terms of Service</a>
+        <a href="https://github.com/smellouk/shellify" rel="noopener">GitHub</a>
+        <a href="mailto:contact@shellify.app">Contact</a>
+      </div>
+      <span class="footer-copy">© 2026 Shellify · Apache 2.0</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ── Theme toggle ──────────────────────────────────────
+(function() {
+  const root       = document.documentElement;
+  const btn        = document.getElementById('theme-btn');
+  const screenshot = document.getElementById('app-screenshot');
+  const ICON_MOON = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  const ICON_SUN  = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>';
+
+  function applyTheme(t) {
+    root.dataset.theme = t;
+    btn.innerHTML = t === 'dark' ? ICON_MOON : ICON_SUN;
+    if (screenshot) screenshot.src = `assets/app-screenshot-${t}.png`;
+    try { localStorage.setItem('shellify-theme', t); } catch(e) {}
+  }
+
+  // Initialise from stored preference or system
+  const stored = (() => { try { return localStorage.getItem('shellify-theme'); } catch(e) { return null; } })();
+  const system = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  applyTheme(stored || system);
+
+  btn.addEventListener('click', () => applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
+})();
+</script>
+</body>
+</html>
