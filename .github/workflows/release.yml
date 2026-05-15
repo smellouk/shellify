@@ -98,7 +98,7 @@ jobs:
   update-site:
     name: Update GitHub Pages
     runs-on: ubuntu-latest
-    needs: [changelog]
+    needs: [build]
     steps:
       - uses: actions/checkout@v6
         with:
