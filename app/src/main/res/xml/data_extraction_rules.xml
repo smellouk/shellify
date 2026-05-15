@@ -6,13 +6,13 @@
             path="shellify_crypto.xml" />
         <exclude
             domain="file"
-            path="../datastore/pwa_password.preferences_pb" />
+            path="datastore/pwa_password.preferences_pb" />
         <exclude
             domain="file"
-            path="../datastore/pwa_cookie_store.preferences_pb" />
+            path="datastore/pwa_cookie_store.preferences_pb" />
         <exclude
             domain="file"
-            path="../datastore/pwa_backup.preferences_pb" />
+            path="datastore/pwa_backup.preferences_pb" />
         <exclude
             domain="database"
             path="shellify.db" />
@@ -29,13 +29,13 @@
             path="shellify_crypto.xml" />
         <exclude
             domain="file"
-            path="../datastore/pwa_password.preferences_pb" />
+            path="datastore/pwa_password.preferences_pb" />
         <exclude
             domain="file"
-            path="../datastore/pwa_cookie_store.preferences_pb" />
+            path="datastore/pwa_cookie_store.preferences_pb" />
         <exclude
             domain="file"
-            path="../datastore/pwa_backup.preferences_pb" />
+            path="datastore/pwa_backup.preferences_pb" />
         <exclude
             domain="database"
             path="shellify.db" />

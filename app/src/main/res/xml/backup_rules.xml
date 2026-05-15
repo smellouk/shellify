@@ -13,17 +13,17 @@
     <!-- Password hash (PBKDF2) — exclude to prevent offline brute-force if backup is extracted. -->
     <exclude
         domain="file"
-        path="../datastore/pwa_password.preferences_pb" />
+        path="datastore/pwa_password.preferences_pb" />
 
     <!-- Encrypted cookie jars — useless without the Keystore key, but exclude for hygiene. -->
     <exclude
         domain="file"
-        path="../datastore/pwa_cookie_store.preferences_pb" />
+        path="datastore/pwa_cookie_store.preferences_pb" />
 
     <!-- Encrypted backup password — device-specific Keystore encryption, meaningless elsewhere. -->
     <exclude
         domain="file"
-        path="../datastore/pwa_backup.preferences_pb" />
+        path="datastore/pwa_backup.preferences_pb" />
 
     <!-- SQLCipher database — encrypted with a device-specific random passphrase. -->
     <exclude

@@ -92,6 +92,8 @@
     <string name="add_translate_target_lang">Translation Target Language</string>
     <string name="add_translate_auto_load">Auto Translate on Load</string>
     <string name="add_translate_auto_load_desc">Automatically translate after page loads without manual click</string>
+    <string name="add_translate_show_button">Show translate button</string>
+    <string name="add_translate_show_button_desc">Show floating translate button at bottom right</string>
     <string name="add_feature_fullscreen">Fullscreen Mode</string>
     <string name="add_fullscreen_status_bar">Show Status Bar</string>
     <string name="add_fullscreen_status_bar_desc">Show status bar in fullscreen mode, can fix navigation bar issues</string>
@@ -119,6 +121,7 @@
     <string name="add_engine_gecko_installing">Installing…</string>
     <string name="add_engine_gecko_error">Error — retry in Settings</string>
     <string name="settings_engine_gecko_missing">GeckoView not installed</string>
+    <string name="add_translate_engine_label">Translation engine</string>
 
     <!-- WebView -->
     <string name="webview_reload">Reload</string>
@@ -231,6 +234,7 @@
     <string name="global_settings_select_folder_cd">Select folder</string>
     <string name="global_settings_backup_schedule_headline">Auto-backup schedule</string>
     <string name="global_settings_schedule_disabled">Disabled</string>
+    <string name="global_settings_schedule_daily">Daily</string>
     <string name="global_settings_schedule_weekly">Weekly</string>
     <string name="global_settings_schedule_monthly">Monthly</string>
     <string name="global_settings_last_backup_headline">Last backup</string>
@@ -374,6 +378,8 @@
     <string name="translate_target_language">Target language</string>
     <string name="translate_auto">Auto-translate on page load</string>
     <string name="translate_auto_desc">Translate automatically after each page loads</string>
+    <string name="translate_show_button">Show translate button in app</string>
+    <string name="translate_show_button_desc">Floating button inside WebView</string>
 
     <!-- UA modes -->
     <string name="ua_default">System default</string>
