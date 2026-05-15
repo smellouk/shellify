@@ -16,3 +16,4 @@ keystore.properties
 .DS_Store
 sketches/
 release.properties
+app/release/

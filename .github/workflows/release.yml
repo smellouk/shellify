@@ -24,6 +24,22 @@ jobs:
       - name: Decode keystore
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > ${{ runner.temp }}/keystore.jks
 
+      - name: Guard keystore fingerprint
+        env:
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+        run: |
+          FINGERPRINT=$(keytool -list -v \
+            -keystore "${{ runner.temp }}/keystore.jks" \
+            -storetype PKCS12 \
+            -storepass "$STORE_PASSWORD" \
+            | grep "SHA256:" | awk '{print $2}')
+          echo "Keystore SHA-256: $FINGERPRINT"
+          EXPECTED="EF:A3:C6:37:40:77:87:EE:97:18:58:7C:DE:FE:3F:86:02:E2:41:05:49:BE:DE:71:8F:4E:4D:74:EB:0C:23:21"
+          if [ "$FINGERPRINT" != "$EXPECTED" ]; then
+            echo "::error::Keystore fingerprint mismatch. Expected $EXPECTED but got $FINGERPRINT."
+            exit 1
+          fi
+
       - name: Build release APK
         run: ./gradlew assembleRelease
         env:
@@ -42,13 +58,11 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: release-apk
-          path: app/build/outputs/apk/release/*.apk
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: release-aab
-          path: app/build/outputs/bundle/release/*.aab
+          name: release-artifacts
+          path: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/bundle/release/*.aab
+            app/build/outputs/mapping/release/mapping.txt
 
   changelog:
     name: Generate Changelog
@@ -127,12 +141,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v8
         with:
-          name: release-apk
-          path: artifacts/
-
-      - uses: actions/download-artifact@v8
-        with:
-          name: release-aab
+          name: release-artifacts
           path: artifacts/
 
       - uses: actions/download-artifact@v8
