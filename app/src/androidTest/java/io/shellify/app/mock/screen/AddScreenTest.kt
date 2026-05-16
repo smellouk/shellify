@@ -64,10 +64,10 @@ class AddScreenTest {
     }
 
     @Test
-    fun topBar_showsEditAppTitle_whenNameIsPopulated() {
+    fun topBar_showsCreateAppTitle_whenFormIsPreFilled() {
         setAddScreen(AddUiState(name = "My App", url = "https://example.com"))
         composeTestRule
-            .onNodeWithText("Edit App")
+            .onNodeWithText("Create App")
             .assertIsDisplayed()
     }
 
