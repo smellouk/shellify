@@ -76,6 +76,8 @@
     <string name="add_analyze_site_cd">تحليل الموقع</string>
     <string name="add_fetch_icon_cd">جلب الأيقونة</string>
     <string name="add_choose_image_cd">اختيار صورة</string>
+    <string name="add_icon_pack_picker_title">أيقونات العلامات التجارية</string>
+    <string name="add_icon_pack_search_hint">ابحث عن الأيقونات…</string>
     <string name="add_theme_color">لون السمة</string>
     <string name="add_theme_color_not_set">غير محدد</string>
     <string name="add_feature_adblock">حجب الإعلانات</string>
@@ -142,9 +144,12 @@
     <string name="webview_control_fullscreen">ملء الشاشة</string>
     <string name="webview_control_applock">قفل التطبيق</string>
     <string name="webview_applock_disabled_hint">عيِّن كلمة مرور في الإعدادات للتفعيل</string>
+    <string name="webview_sheet_title">الميزات</string>
 
     <!-- App Settings (per-app) -->
     <string name="settings_title">إعدادات التطبيق</string>
+    <string name="settings_app_info">معلومات التطبيق</string>
+    <string name="settings_features">الميزات</string>
     <string name="settings_display">العرض</string>
     <string name="settings_fullscreen">ملء الشاشة</string>
     <string name="settings_ua_mode">هوية المتصفح</string>
@@ -162,6 +167,8 @@
     <string name="settings_applock">قفل التطبيق</string>
     <string name="settings_lock_password">كلمة مرور التطبيق (تُعيَّن في الإعدادات)</string>
     <string name="settings_lock_system">قفل النظام (بصمة / رمز PIN)</string>
+    <string name="settings_disable_lock_title">تعطيل قفل التطبيق</string>
+    <string name="settings_disable_lock_body">أدخل كلمة مرورك الحالية لتعطيل قفل التطبيق.</string>
     <string name="settings_danger_zone">منطقة الخطر</string>
     <string name="settings_clear_data">مسح بيانات التطبيق</string>
     <string name="settings_delete_app">حذف التطبيق</string>
@@ -229,6 +236,7 @@
     <string name="global_settings_schedule_disabled">معطَّل</string>
     <string name="global_settings_schedule_daily">يومي</string>
     <string name="global_settings_schedule_weekly">أسبوعي</string>
+    <string name="global_settings_schedule_monthly">شهري</string>
     <string name="global_settings_last_backup_headline">آخر نسخ احتياطي</string>
     <string name="global_settings_backup_now">نسخ احتياطي الآن</string>
     <string name="global_settings_import_backup">استيراد نسخة احتياطية</string>
@@ -303,6 +311,8 @@
     <string name="global_settings_backup_password_dialog_desc">تشفِّر كلمة المرور هذه ملف النسخ الاحتياطي. احتفظ بها بأمان — ستحتاجها للاستعادة.</string>
     <string name="global_settings_import_password_dialog_title">أدخل كلمة مرور النسخ الاحتياطي</string>
     <string name="global_settings_import_password_dialog_desc">أدخل كلمة المرور المستخدمة عند إنشاء هذه النسخة الاحتياطية.</string>
+    <string name="global_settings_restore_confirm_title">استعادة النسخة الاحتياطية؟</string>
+    <string name="global_settings_restore_confirm_body">سيؤدي هذا إلى استبدال جميع بيانات التطبيق الحالية — التطبيقات والفئات والإعدادات والأيقونات — بمحتويات ملف النسخة الاحتياطية. لا يمكن التراجع عن هذا الإجراء.</string>
     <string name="global_settings_delete_all_apps_confirm_title">حذف جميع التطبيقات؟</string>
     <string name="global_settings_delete_all_apps_confirm_body">سيؤدي هذا إلى حذف جميع التطبيقات وبيانات WebView وجميع اختصارات المشغِّل نهائياً. لا يمكن التراجع عن هذا الإجراء.</string>
     <string name="global_settings_delete_all_categories_confirm_title">حذف جميع الفئات؟</string>
@@ -358,6 +368,10 @@
     <string name="shortcuts_menu_remove">إزالة</string>
     <string name="shortcuts_empty_title">لا توجد اختصارات بعد</string>
     <string name="shortcuts_empty_desc">الاختصارات التي تضيفها من إعدادات التطبيق تظهر هنا. أعد تسميتها أو غيّر أيقوناتها أو احذفها في أي وقت.</string>
+    <string name="shortcuts_change_icon_title">تغيير الأيقونة</string>
+    <string name="shortcuts_icon_from_source">من المصدر</string>
+    <string name="shortcuts_icon_from_gallery">من المعرض</string>
+    <string name="shortcuts_icon_from_pack">من حزمة الأيقونات</string>
 
     <!-- Translate -->
     <string name="translate_title">إعدادات الترجمة</string>

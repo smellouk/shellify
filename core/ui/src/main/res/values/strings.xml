@@ -214,6 +214,8 @@
     <string name="global_settings_gecko_download_failed">Download failed: %s</string>
     <string name="global_settings_gecko_sha_verified">SHA-256 verified — matches Mozilla\'s release</string>
     <string name="global_settings_gecko_sha_unverified">Integrity not verified — reinstall to verify</string>
+    <string name="global_settings_gecko_safe_browsing_title">Safe Browsing</string>
+    <string name="global_settings_gecko_safe_browsing_desc">Sends hashed URLs to Google to check for phishing and malware. Only available when GeckoView engine is selected.</string>
     <string name="global_settings_section_security">Security</string>
     <string name="global_settings_app_password_headline">App password</string>
     <string name="global_settings_password_set">Password is set</string>
