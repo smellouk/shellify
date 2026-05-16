@@ -27,6 +27,7 @@
 | `ThemeMode.kt` | `ThemeMode` enum (`SYSTEM`, `LIGHT`, `DARK`) — shared between `core:ui` and `core:theme` to avoid circular dependency. |
 | `ThemeRevealAnimation.kt` | Circular reveal clip Composable for animated theme transitions (Material motion spec). |
 | `res/values/strings.xml` | Canonical English string resources. All feature modules inherit this via the module dependency; they only declare strings unique to their feature. |
+| `res/drawable/ic_app_logo_fg.xml` | App logo foreground vector (white + violet shapes) — used in the `HomeScreen` TopAppBar with a circular primary-color background to match the launcher icon appearance. |
 
 ### Shared component catalogue
 
