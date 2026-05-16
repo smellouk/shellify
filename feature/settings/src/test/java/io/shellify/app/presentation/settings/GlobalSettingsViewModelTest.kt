@@ -65,6 +65,7 @@ class GlobalSettingsViewModelTest {
         every { themeManager.accentColor } returns MutableStateFlow(null)
         every { themeManager.defaultUaMode } returns MutableStateFlow(UserAgentMode.CHROME_MOBILE)
         every { themeManager.defaultEngineType } returns MutableStateFlow(EngineType.SYSTEM_WEBVIEW)
+        every { themeManager.geckoSafeBrowsing } returns MutableStateFlow(false)
         every { passwordManager.passwordHash } returns MutableStateFlow(null)
         every { passwordManager.wipeOnFailedAttempts } returns MutableStateFlow(false)
         every { passwordManager.screenshotProtection } returns MutableStateFlow(false)
@@ -211,6 +212,61 @@ class GlobalSettingsViewModelTest {
         assertTrue(viewModel.uiState.value.showBackupPasswordDialog)
         viewModel.dismissBackupPasswordDialog()
         assertFalse(viewModel.uiState.value.showBackupPasswordDialog)
+    }
+
+    @Test
+    fun `setGeckoSafeBrowsing delegates to themeManager`() = runTest {
+        viewModel.setGeckoSafeBrowsing(true)
+        advanceUntilIdle()
+        coVerify(exactly = 1) { themeManager.setGeckoSafeBrowsing(true) }
+    }
+
+    @Test
+    fun `geckoSafeBrowsing state reflects themeManager flow`() = runTest {
+        val flow = MutableStateFlow(false)
+        every { themeManager.geckoSafeBrowsing } returns flow
+        val vm = GlobalSettingsViewModel(
+            themeManager = themeManager,
+            isolationManager = isolationManager,
+            getWebApps = getWebApps,
+            saveWebApp = saveWebApp,
+            deleteAllAppsUseCase = deleteAllAppsUseCase,
+            deleteAllCategoriesUseCase = deleteAllCategoriesUseCase,
+            passwordManager = passwordManager,
+            backupSettings = backupSettings,
+            backupManager = backupManager,
+            context = context,
+            geckoEngineManager = geckoEngineManager,
+            simpleIconsManager = simpleIconsManager,
+        )
+        advanceUntilIdle()
+        assertFalse(vm.uiState.value.geckoSafeBrowsing)
+
+        flow.value = true
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.geckoSafeBrowsing)
+    }
+
+    @Test
+    fun `setGeckoSafeBrowsing applies to geckoEngineManager immediately on init`() = runTest {
+        every { themeManager.geckoSafeBrowsing } returns MutableStateFlow(true)
+        val vm = GlobalSettingsViewModel(
+            themeManager = themeManager,
+            isolationManager = isolationManager,
+            getWebApps = getWebApps,
+            saveWebApp = saveWebApp,
+            deleteAllAppsUseCase = deleteAllAppsUseCase,
+            deleteAllCategoriesUseCase = deleteAllCategoriesUseCase,
+            passwordManager = passwordManager,
+            backupSettings = backupSettings,
+            backupManager = backupManager,
+            context = context,
+            geckoEngineManager = geckoEngineManager,
+            simpleIconsManager = simpleIconsManager,
+        )
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.geckoSafeBrowsing)
+        coVerify(atLeast = 1) { geckoEngineManager.applySafeBrowsing(true) }
     }
 
     @Test
