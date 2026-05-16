@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#6650A4</color>
+    <color name="ic_launcher_background">#1C1B1F</color>
+    <color name="ic_accent">#8060E1</color>
+    <color name="ic_base_layer">@android:color/white</color>
+    <color name="ic_overlay">@android:color/white</color>
 </resources>
