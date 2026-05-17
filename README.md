@@ -2,7 +2,7 @@
 
 # Shellify
 
-<img src="docs/icon.png" alt="Shellify icon" width="96" height="96" />
+<img src="docs/icon.webp" alt="Shellify icon" width="96" height="96" />
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org)
