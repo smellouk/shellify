@@ -133,10 +133,10 @@ fun ConsentScreen(onAccepted: () -> Unit) {
             )
 
             Column(modifier = Modifier.padding(top = Dimens.spaceXxs)) {
-                TextButton(onClick = { uriHandler.openUri("https://shellify.app/privacy") }) {
+                TextButton(onClick = { uriHandler.openUri("https://shellify.app/privacy.html") }) {
                     Text(stringResource(R.string.consent_read_privacy))
                 }
-                TextButton(onClick = { uriHandler.openUri("https://shellify.app/terms") }) {
+                TextButton(onClick = { uriHandler.openUri("https://shellify.app/terms.html") }) {
                     Text(stringResource(R.string.consent_read_tos))
                 }
                 TextButton(onClick = { uriHandler.openUri("mailto:contact@shellify.app") }) {

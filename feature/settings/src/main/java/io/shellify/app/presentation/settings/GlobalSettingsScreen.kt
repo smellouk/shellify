@@ -1333,7 +1333,7 @@ fun GlobalSettingsScreen(
                     HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                     ListItem(
                         modifier = Modifier.clickable {
-                            uriHandler.openUri("https://shellify.app/changelog")
+                            uriHandler.openUri("https://shellify.app/changelog.html")
                         },
                         leadingContent = {
                             Box(
@@ -1372,7 +1372,7 @@ fun GlobalSettingsScreen(
                     HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                     ListItem(
                         modifier = Modifier.clickable {
-                            uriHandler.openUri("https://shellify.app/privacy")
+                            uriHandler.openUri("https://shellify.app/privacy.html")
                         },
                         leadingContent = {
                             Box(
