@@ -129,7 +129,7 @@ h3.release-category {
 
 <nav class="site-nav" role="navigation" aria-label="Main">
   <div class="nav-inner">
-    <a href="index.html" class="nav-logo" style="display:flex;align-items:center;gap:8px;"><img src="icon.webp" alt="" width="48" height="48" style="border-radius:10px;">Shellify</a>
+    <a href="index.html" class="nav-logo" style="display:flex;align-items:center;gap:8px;"><img src="icon.png" alt="" width="48" height="48" style="border-radius:10px;">Shellify</a>
     <div class="nav-links">
       <a href="index.html" class="nav-hide-mobile">Home</a>
       <a href="privacy.html" class="nav-hide-mobile">Privacy Policy</a>
@@ -149,6 +149,7 @@ h3.release-category {
 
   <aside class="toc" aria-label="Table of contents">
     <div class="toc-title">Releases</div>
+    <a class="toc-link" href="#v-1-1-0">1.1.0 — 2026-05-17</a>
     <a class="toc-link" href="#v-1-0-0">1.0.0 — 2026-05-17</a>
     <div class="toc-sep"></div>
     <div class="toc-alt">
@@ -171,6 +172,36 @@ h3.release-category {
 
     <div class="doc-note doc-note-teal">
       <strong>Auto-generated</strong> from conventional commits using <a href="https://git-cliff.org" rel="noopener">git-cliff</a>. Each entry reflects a tagged release.
+    </div>
+
+    <div class="doc-section" id="v-1-1-0">
+      <h2><span class="release-version">1.1.0</span><span class="release-date">2026-05-17</span></h2>
+<h3 class="release-category">Bug Fixes</h3>
+<ul>
+<li><strong>core:engine</strong>: Upgrade GeckoView to 140.x and guard against version mismatch</li>
+<li><strong>core:database</strong>: Enable schema export and add migration test</li>
+<li><strong>app</strong>: Keep GeckoView classes from R8 to prevent native SIGSEGV in release</li>
+</ul>
+<h3 class="release-category">Documentation</h3>
+<ul>
+<li>Revert LICENSE copyright to Apache template placeholder</li>
+<li>Correct and expand technical debt in CONCERNS.md and CLAUDE.md</li>
+<li><strong>privacy</strong>: Update logo image reference from icon.png to icon.webp</li>
+</ul>
+<h3 class="release-category">Features</h3>
+<ul>
+<li><strong>feature:onboarding</strong>: Add versioned consent with update re-consent screen</li>
+</ul>
+<h3 class="release-category">Maintenance</h3>
+<ul>
+<li><strong>site</strong>: Regenerate legal pages for v1.0.0</li>
+<li><strong>deps</strong>: Bump actions/checkout from 4 to 6 (#5)</li>
+<li><strong>deps</strong>: Bump actions/download-artifact from 4 to 8 (#3)</li>
+<li><strong>deps</strong>: Bump actions/upload-artifact from 4 to 7 (#4)</li>
+<li><strong>deps</strong>: Bump softprops/action-gh-release from 2 to 3 (#2)</li>
+<li><strong>deps</strong>: Bump amannn/action-semantic-pull-request from 5 to 6 (#1)</li>
+<li><strong>main</strong>: Skip workflow for github-actions bot pushes</li>
+</ul>
     </div>
 
     <div class="doc-section" id="v-1-0-0">
