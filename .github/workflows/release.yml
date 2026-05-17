@@ -132,7 +132,7 @@ jobs:
           path: .
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           name: Shellify ${{ needs.changelog.outputs.version }}
           body_path: RELEASE_NOTES.md
