@@ -349,7 +349,7 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                 IconOptionCard(
                     icon = Icons.Default.AutoAwesome,
                     label = stringResource(R.string.shortcuts_icon_from_pack),
-                    enabled = !isRefreshing,
+                    enabled = !isRefreshing && state.isIconPackAvailable,
                     modifier = Modifier.weight(1f),
                     onClick = { viewModel.openIconPackPicker() },
                 )
@@ -612,7 +612,8 @@ private fun IconOptionCard(
     enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
-    val bgTint = iconTint.copy(alpha = 0.15f)
+    val effectiveTint = if (enabled) iconTint else iconTint.copy(alpha = 0.38f)
+    val bgTint = effectiveTint.copy(alpha = 0.15f)
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(Dimens.cornerXl),
@@ -642,7 +643,7 @@ private fun IconOptionCard(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = iconTint,
+                    tint = effectiveTint,
                     modifier = Modifier
                         .size(Dimens.sizeMd)
                         .then(iconModifier),

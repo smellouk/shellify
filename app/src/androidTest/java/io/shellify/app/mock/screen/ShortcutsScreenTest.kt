@@ -1,6 +1,8 @@
 package io.shellify.app.mock.screen
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -139,5 +141,78 @@ class ShortcutsScreenTest {
         composeTestRule
             .onNodeWithText("Remove shortcut?")
             .assertIsDisplayed()
+    }
+
+    // ─── Change icon sheet ────────────────────────────────────────────────────
+
+    @Test
+    fun changeIconSheet_isDisplayedWhenIconSheetTargetIsSet() {
+        val app = FakeData.webApp(id = 1L, name = "GitHub", url = "https://github.com")
+        val item = ShortcutItem(app = app, shortcutId = "pwa_github", label = "GitHub")
+        setShortcutsScreen(
+            ShortcutsUiState(
+                items = listOf(item),
+                isLoading = false,
+                iconSheetTarget = item,
+                isIconPackAvailable = true,
+            )
+        )
+        composeTestRule
+            .onNodeWithText("Change icon")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun changeIconSheet_fromIconPackButton_isDisplayed() {
+        val app = FakeData.webApp(id = 1L, name = "GitHub", url = "https://github.com")
+        val item = ShortcutItem(app = app, shortcutId = "pwa_github", label = "GitHub")
+        setShortcutsScreen(
+            ShortcutsUiState(
+                items = listOf(item),
+                isLoading = false,
+                iconSheetTarget = item,
+                isIconPackAvailable = true,
+            )
+        )
+        composeTestRule
+            .onNodeWithText("From icon pack")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun changeIconSheet_fromIconPackButton_isNotClickableWhenPackNotAvailable() {
+        val app = FakeData.webApp(id = 1L, name = "GitHub", url = "https://github.com")
+        val item = ShortcutItem(app = app, shortcutId = "pwa_github", label = "GitHub")
+        setShortcutsScreen(
+            ShortcutsUiState(
+                items = listOf(item),
+                isLoading = false,
+                iconSheetTarget = item,
+                isIconPackAvailable = false,
+            )
+        )
+        composeTestRule
+            .onNodeWithText("From icon pack")
+            .assertIsDisplayed()
+        composeTestRule
+            .onNodeWithText("From icon pack")
+            .assertIsNotEnabled()
+    }
+
+    @Test
+    fun changeIconSheet_fromIconPackButton_isClickableWhenPackAvailable() {
+        val app = FakeData.webApp(id = 1L, name = "GitHub", url = "https://github.com")
+        val item = ShortcutItem(app = app, shortcutId = "pwa_github", label = "GitHub")
+        setShortcutsScreen(
+            ShortcutsUiState(
+                items = listOf(item),
+                isLoading = false,
+                iconSheetTarget = item,
+                isIconPackAvailable = true,
+            )
+        )
+        composeTestRule
+            .onNodeWithText("From icon pack")
+            .assertIsEnabled()
     }
 }

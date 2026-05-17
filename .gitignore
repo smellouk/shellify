@@ -1,3 +1,4 @@
+memory/
 *.iml
 .gradle/
 .idea/

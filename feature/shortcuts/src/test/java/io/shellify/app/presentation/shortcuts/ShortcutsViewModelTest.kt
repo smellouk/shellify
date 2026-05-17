@@ -6,14 +6,19 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
+import io.shellify.app.core.iconpack.SimpleIconsManager
+import io.shellify.app.core.iconpack.SimpleIconsState
 import io.shellify.app.core.pwa.FaviconFetcher
 import io.shellify.app.core.pwa.PwaAnalyzer
 import io.shellify.app.core.shortcut.PwaShortcutManager
+import io.shellify.app.core.shortcut.ShortcutIconBuilder
+import io.shellify.app.core.shortcut.SvgIconRenderer
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.domain.usecase.GetWebAppsUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -37,6 +42,7 @@ class ShortcutsViewModelTest {
     private val saveWebApp = mockk<SaveWebAppUseCase>()
     private val analyzer = mockk<PwaAnalyzer>(relaxed = true)
     private val faviconFetcher = mockk<FaviconFetcher>(relaxed = true)
+    private val simpleIconsManager = mockk<SimpleIconsManager>(relaxed = true)
 
     private val testApp = WebApp(id = 1L, name = "Gmail", url = "https://gmail.com", isolationId = "iso-gmail")
     private val testItem = ShortcutItem(app = testApp, shortcutId = "pwa_iso-gmail", label = "Gmail")
@@ -46,20 +52,23 @@ class ShortcutsViewModelTest {
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
-        mockkObject(PwaShortcutManager)
+        mockkObject(PwaShortcutManager, SvgIconRenderer, ShortcutIconBuilder)
         every { getWebApps() } returns flowOf(listOf(testApp))
-        // getPinnedShortcuts is called on Dispatchers.IO; mock it so no Android framework crash
         every { PwaShortcutManager.getPinnedShortcuts(any()) } returns emptyList()
         every { PwaShortcutManager.removeShortcut(any(), any()) } returns Unit
         every { PwaShortcutManager.createShortcut(any(), any()) } returns true
         every { PwaShortcutManager.rename(any(), any(), any()) } returns true
+        every { PwaShortcutManager.changeIcon(any(), any(), any(), any()) } returns true
+        every { ShortcutIconBuilder.build(any(), any()) } returns mockk(relaxed = true)
+        coEvery { SvgIconRenderer.render(any(), any(), any(), any(), any()) } returns null
+        every { simpleIconsManager.state } returns MutableStateFlow(SimpleIconsState.NotImported)
         coEvery { saveWebApp(any()) } returns 1L
-        viewModel = ShortcutsViewModel(context, getWebApps, saveWebApp, analyzer, faviconFetcher)
+        viewModel = ShortcutsViewModel(context, getWebApps, saveWebApp, analyzer, faviconFetcher, simpleIconsManager)
     }
 
     @After
     fun tearDown() {
-        unmockkObject(PwaShortcutManager)
+        unmockkObject(PwaShortcutManager, SvgIconRenderer, ShortcutIconBuilder)
         Dispatchers.resetMain()
     }
 
@@ -156,4 +165,21 @@ class ShortcutsViewModelTest {
         assertFalse(viewModel.uiState.value.showIconPackPicker)
         assertTrue(viewModel.uiState.value.packIcons.isEmpty())
     }
+
+    // ── isIconPackAvailable ───────────────────────────────────────────────────
+
+    @Test
+    fun `isIconPackAvailable is false when SimpleIconsManager state is NotImported`() {
+        every { simpleIconsManager.state } returns MutableStateFlow(SimpleIconsState.NotImported)
+        val vm = ShortcutsViewModel(context, getWebApps, saveWebApp, analyzer, faviconFetcher, simpleIconsManager)
+        assertFalse(vm.uiState.value.isIconPackAvailable)
+    }
+
+    @Test
+    fun `isIconPackAvailable is true when SimpleIconsManager state is Imported`() {
+        every { simpleIconsManager.state } returns MutableStateFlow(SimpleIconsState.Imported(iconCount = 3000))
+        val vm = ShortcutsViewModel(context, getWebApps, saveWebApp, analyzer, faviconFetcher, simpleIconsManager)
+        assertTrue(vm.uiState.value.isIconPackAvailable)
+    }
+
 }

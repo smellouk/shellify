@@ -89,4 +89,5 @@ class ShortcutsScreenScreenshotTest {
         }
         composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
+
 }

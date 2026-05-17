@@ -7,7 +7,9 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.shellify.app.core.iconpack.SimpleIconEntry
+import io.shellify.app.core.iconpack.SimpleIconsManager
 import io.shellify.app.core.iconpack.SimpleIconsReader
+import io.shellify.app.core.iconpack.SimpleIconsState
 import io.shellify.app.core.pwa.FaviconFetcher
 import io.shellify.app.core.pwa.PwaAnalyzer
 import io.shellify.app.core.shortcut.PwaShortcutManager
@@ -48,6 +50,7 @@ data class ShortcutsUiState(
     val packIcons: List<SimpleIconEntry> = emptyList(),
     val iconPickerQuery: String = "",
     val isLoadingIconPack: Boolean = false,
+    val isIconPackAvailable: Boolean = false,
 )
 
 class ShortcutsViewModel(
@@ -56,9 +59,14 @@ class ShortcutsViewModel(
     private val saveWebApp: SaveWebAppUseCase,
     private val analyzer: PwaAnalyzer,
     private val faviconFetcher: FaviconFetcher,
+    private val simpleIconsManager: SimpleIconsManager,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(ShortcutsUiState())
+    private val _state = MutableStateFlow(
+        ShortcutsUiState(
+            isIconPackAvailable = simpleIconsManager.state.value is SimpleIconsState.Imported,
+        )
+    )
     val uiState: StateFlow<ShortcutsUiState> = _state
 
     init {
@@ -177,10 +185,13 @@ class ShortcutsViewModel(
         val item = _state.value.iconSheetTarget ?: return
         _state.update { it.copy(showIconPackPicker = false, iconSheetTarget = null) }
         viewModelScope.launch(Dispatchers.IO) {
+            val effectiveBg = item.app.themeColor
+                ?.let { runCatching { android.graphics.Color.parseColor(it) }.getOrNull() }
+                ?: bgColorArgb
             val iconSource = SvgIconRenderer.render(
                 context = context,
                 slug = entry.slug,
-                bgColorArgb = bgColorArgb,
+                bgColorArgb = effectiveBg,
                 isolationId = item.app.isolationId,
                 existingIconPath = item.app.iconPath,
             ) ?: return@launch

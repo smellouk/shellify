@@ -2,12 +2,13 @@
 
 # Shellify
 
+<img src="docs/icon.png" alt="Shellify icon" width="96" height="96" />
+
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/Kotlin-Multiplatform-7F52FF.svg?logo=kotlin&logoColor=white)](https://kotlinlang.org)
-[![Min SDK](https://img.shields.io/badge/Min%20SDK-23%20(Android%206.0)-3DDC84.svg?logo=android&logoColor=white)](https://developer.android.com/about/versions/marshmallow)
+[![Min SDK](https://img.shields.io/badge/Min%20SDK-26%20(Android%208.0)-3DDC84.svg?logo=android&logoColor=white)](https://developer.android.com/about/versions/oreo)
 [![Target SDK](https://img.shields.io/badge/Target%20SDK-36%20(Android%2015)-3DDC84.svg?logo=android&logoColor=white)](https://developer.android.com/about/versions/15)
 [![Main](https://github.com/smellouk/shellify/actions/workflows/main.yml/badge.svg)](https://github.com/smellouk/shellify/actions/workflows/main.yml)
-[![Pull Request](https://github.com/smellouk/shellify/actions/workflows/pull_request.yml/badge.svg)](https://github.com/smellouk/shellify/actions/workflows/pull_request.yml)
 
 **Turn any website into an isolated, ad-free app on your home screen.**
 
@@ -66,9 +67,9 @@ SHA-1: 75:F2:73:AF:01:93:EF:08:F3:F2:2F:8C:B2:EA:FE:8B:BC:A0:27:73
 | Android Studio | Ladybug or newer |
 | JDK | 17 |
 | Gradle | wrapper included |
-| Android SDK | Compile SDK 36, Min SDK 23 |
+| Android SDK | Compile SDK 36, Min SDK 26 |
 
-Minimum device: **Android 6.0 (API 23)**
+Minimum device: **Android 8.0 (API 26)**
 Target: **Android 15 (API 36)**
 
 ---

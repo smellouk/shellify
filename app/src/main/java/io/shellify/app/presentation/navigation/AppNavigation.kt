@@ -265,6 +265,7 @@ fun AppNavigation(
                             saveWebApp = app.saveWebApp,
                             analyzer = app.pwaAnalyzer,
                             faviconFetcher = app.faviconFetcher,
+                            simpleIconsManager = app.simpleIconsManager,
                         )
                     },
                 )

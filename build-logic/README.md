@@ -24,7 +24,7 @@ Without convention plugins, every module would repeat the same 30-line AGP confi
 
 The plugins enforce:
 
-- `compileSdk = 36`, `minSdk = 23`, `targetSdk = 36` (app only) across the board
+- `compileSdk = 36`, `minSdk = 26`, `targetSdk = 36` (app only) across the board
 - `JavaVersion.VERSION_17` source/target compatibility
 - `kotlinOptions.jvmTarget = "17"`
 - A consistent default test instrumentation runner
