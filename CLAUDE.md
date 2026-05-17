@@ -195,17 +195,17 @@ Changelog is auto-generated from commits on `v*` tag push via git-cliff.
 
 ## Known Gotchas
 
-**Database version mismatch** — `AppDatabase.kt` declares `version = 1` but the exported schema file is `12.json`. Any schema bump requires explicit `Migration` objects for all gaps. `exportSchema = false` is currently set — do not add migrations until this is resolved.
+**Database schema tracking disabled** — `AppDatabase.kt` declares `version = 1` with `exportSchema = false`. No schema files are generated, so there is no migration history to diff against. Any schema bump requires explicit `Migration` objects for all version gaps. Do not change the schema until `exportSchema = true` is re-enabled and a clean baseline is committed. See `.planning/codebase/CONCERNS.md`.
 
-**GeckoView is arm64-only** — The Gradle dependency declares only `geckoview-arm64-v8a`. GeckoView engine features will crash silently on non-arm64 devices. Guard any GeckoView code with an ABI check.
+**GeckoView Gradle dependency is arm64-only** — `libs.versions.toml` declares only `geckoview-arm64-v8a` for the compile-time API. At runtime, `GeckoEngineManager` detects `Build.SUPPORTED_ABIS` and downloads the correct ABI artifact (arm64-v8a, armeabi-v7a, x86_64, x86). Native `.so` files are excluded from the APK and downloaded on demand. Do not add a bundled non-arm64 geckoview dependency without updating the download and preload logic.
 
 **`AppNavigation.kt` is monolithic** — The single `NavHost` composable is 452 lines with a suppressed complexity warning. Adding new routes here is fine; refactoring it is a separate task.
 
 **`GlobalSettingsScreen.kt` (2,222 lines) and `OnboardingScreen.kt` (1,989 lines)** — Known large files. When editing, target the specific section; do not reorganize the whole file unless that's the explicit task.
 
-**Three independent `OkHttpClient` instances** — `FaviconFetcher`, `SimpleIconsManager`, and `GeckoEngineManager` each create their own client. Do not add a fourth; if adding networking, reuse one of the existing clients until a shared `core/network` module is created.
+**Four independent `OkHttpClient` instances** — `FaviconFetcher`, `SimpleIconsManager`, `GeckoEngineManager`, and `PwaAnalyzer` each create their own client with separate connection pools and timeouts. Do not add a fifth; if adding networking, reuse one of the existing clients until a shared `core:network` module is created. See `.planning/codebase/CONCERNS.md`.
 
-**Third-party cookies are globally enabled** — `WebViewManager` sets `setAcceptThirdPartyCookies(webView, true)` for all apps. This is a known trade-off for OAuth/SSO flows; do not change it without a per-app toggle.
+**Third-party cookies are globally enabled** — `WebViewManager` sets `setAcceptThirdPartyCookies(webView, true)` for all apps. This is a known trade-off for OAuth/SSO flows; do not change it without a per-app toggle. See `.planning/codebase/CONCERNS.md`.
 
 **Lint `abortOnError = false`** — Lint issues never fail the build. Do not rely on lint to catch regressions; use detekt and Konsist instead.
 

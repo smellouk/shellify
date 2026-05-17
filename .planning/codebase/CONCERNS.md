@@ -13,11 +13,11 @@
 - Current mitigation: `shellify://` custom scheme works as a primary fallback.
 - Fix: Host the `assetlinks.json` with the release certificate SHA-256 fingerprint. Low effort, unblocks HTTPS-based sharing (SMS, email, QR codes).
 
-### Database Version Mismatch
-- Risk: Schema file and the Room `@Database` annotation are out of sync — the exported schema at `app/schemas/io.shellify.app.data.local.AppDatabase/12.json` represents version 12, but `AppDatabase.kt` declares `version = 1`.
-- Files: `core/database/src/main/java/io/shellify/app/data/local/AppDatabase.kt:18`, `app/schemas/io.shellify.app.data.local.AppDatabase/12.json`
-- Impact: If the schema is ever bumped in code without a matching migration, Room will crash on existing installs. The `exportSchema = false` flag additionally means Room does not write a schema JSON during build, so future audits cannot track incremental changes.
-- Fix: Set `exportSchema = true`, align the `version` constant with the highest schema file number, and add explicit `Migration` objects for every version gap.
+### Database Schema Tracking Disabled
+- Risk: `AppDatabase.kt` declares `version = 1` with `exportSchema = false`. Schema export is disabled — Room generates no schema JSON files during build, so there is no migration history and no baseline to diff against.
+- Files: `core/database/src/main/java/io/shellify/app/data/local/AppDatabase.kt:18-19`
+- Impact: Any schema change (add column, rename column, add table) without a matching `Migration` object will crash on upgrade for users with existing data. There is no machine-readable schema file to verify a migration is correct. The `app/build.gradle.kts:22` KSP argument `room.schemaLocation` already points to the right output directory — only `exportSchema = true` is missing.
+- Fix: Set `exportSchema = true` in `AppDatabase.kt`, run `./gradlew assembleDebug` to generate the baseline `1.json`, commit it. From that point every version bump requires an explicit `Migration`. This debt **blocks** the per-app third-party cookie toggle (which needs a new column on `WebAppEntity`).
 
 ---
 
@@ -50,13 +50,14 @@ No other `TODO`, `FIXME`, or `HACK` markers exist in the Kotlin source. The code
 - Fix: One composable file per onboarding step/page.
 
 ### Multiple Independent OkHttpClient Instances
-- Issue: Three separate `OkHttpClient` instances are created independently — each with its own thread pool and connection pool.
+- Issue: Four separate `OkHttpClient` instances are created independently — each with its own thread pool and connection pool.
 - Files:
   - `core/pwa/src/main/java/io/shellify/app/core/pwa/FaviconFetcher.kt:19`
+  - `core/pwa/src/main/java/io/shellify/app/core/pwa/PwaAnalyzer.kt:166` (created in `companion object { fun create() }`)
   - `core/iconpack/src/main/java/io/shellify/app/core/iconpack/SimpleIconsManager.kt:41`
-  - `core/engine/src/main/java/io/shellify/app/core/engine/GeckoEngineManager.kt:73`
-- Impact: Each instance holds 5 idle connection threads by default. Three instances = up to 15 idle threads consuming memory. No connection reuse between fetch operations.
-- Fix: Create a single shared `OkHttpClient` (e.g., in `core/pwa` or a new `core/network`) and inject it via the DI graph.
+  - `core/engine/src/main/java/io/shellify/app/core/engine/GeckoEngineManager.kt:73` (read timeout 120s for AAR download)
+- Impact: Each instance holds 5 idle connection threads by default. Four instances = up to 20 idle threads consuming memory. No connection reuse between fetch operations.
+- Fix: Create a single shared `OkHttpClient` in a new `core:network` module and inject it via the DI graph in `ShellifyApplication`. `GeckoEngineManager`'s long read timeout (120s for AAR download) can be satisfied with `sharedClient.newBuilder().readTimeout(120, TimeUnit.SECONDS).build()` — this shares the connection pool without creating an independent client. Do not add a fifth instance before this is resolved.
 
 ### Mixed Storage Primitives (SharedPreferences alongside DataStore)
 - Issue: Several modules still use raw `SharedPreferences` instead of the project-wide DataStore approach.
@@ -134,9 +135,9 @@ No other `TODO`, `FIXME`, or `HACK` markers exist in the Kotlin source. The code
 ### Third-Party Cookies Enabled Globally
 - Risk: `WebViewManager` enables `setAcceptThirdPartyCookies(webView, true)` for all apps unconditionally.
 - File: `core/engine/src/main/java/io/shellify/app/core/webview/WebViewManager.kt:43`
-- Justification in code: "third-party cookies needed for OAuth / SSO flows"
-- Problem: This is a blanket setting rather than a per-app opt-in. Apps that do not use OAuth still receive cross-site tracking cookies, which undermines the isolation model.
-- Recommendation: Default to `false`; expose a per-app "Allow third-party cookies" toggle in `AppSettingsScreen` and only enable it for apps where the user opts in.
+- Justification: OAuth and SSO flows rely on cross-domain cookie redirects (e.g., signing in via Google or GitHub). Blocking third-party cookies breaks these flows silently — the user sees a blank page or infinite redirect with no error.
+- Problem: This is a blanket override rather than a per-app opt-in. Apps that do not use OAuth still accept cross-site tracking cookies, undermining the per-app isolation model.
+- Fix: Add a `allowThirdPartyCookies: Boolean` field to `WebApp` (default `true` for backward compatibility), expose it as a toggle in per-app settings, and pass it through to `setAcceptThirdPartyCookies`. **Blocked by the database schema debt** — the new column requires `exportSchema = true` and a proper `Migration` in place first.
 
 ### Production Logs Not Gated Behind BuildConfig.DEBUG
 - Risk: All `Log.i/d/w/e` calls in `core/engine/` fire in release builds.
