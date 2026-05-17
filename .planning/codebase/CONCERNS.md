@@ -13,11 +13,9 @@
 - Current mitigation: `shellify://` custom scheme works as a primary fallback.
 - Fix: Host the `assetlinks.json` with the release certificate SHA-256 fingerprint. Low effort, unblocks HTTPS-based sharing (SMS, email, QR codes).
 
-### Database Schema Tracking Disabled
-- Risk: `AppDatabase.kt` declares `version = 1` with `exportSchema = false`. Schema export is disabled — Room generates no schema JSON files during build, so there is no migration history and no baseline to diff against.
-- Files: `core/database/src/main/java/io/shellify/app/data/local/AppDatabase.kt:18-19`
-- Impact: Any schema change (add column, rename column, add table) without a matching `Migration` object will crash on upgrade for users with existing data. There is no machine-readable schema file to verify a migration is correct. The `app/build.gradle.kts:22` KSP argument `room.schemaLocation` already points to the right output directory — only `exportSchema = true` is missing.
-- Fix: Set `exportSchema = true` in `AppDatabase.kt`, run `./gradlew assembleDebug` to generate the baseline `1.json`, commit it. From that point every version bump requires an explicit `Migration`. This debt **blocks** the per-app third-party cookie toggle (which needs a new column on `WebAppEntity`).
+### ~~Database Schema Tracking Disabled~~ ✅ RESOLVED (2026-05-17)
+- `exportSchema = true` set in `AppDatabase.kt`. Baseline `1.json` generated and committed under `core/database/schemas/`. KSP arg moved to top-level in `core/database/build.gradle.kts`; stale arg removed from `app/build.gradle.kts`. `DatabaseMigrationTest` added in `core/database/src/androidTest/` to validate schema and foreign-key behaviour at CI time.
+- ~~Blocks the per-app third-party cookie toggle~~ — now unblocked.
 
 ---
 
@@ -69,10 +67,8 @@ No other `TODO`, `FIXME`, or `HACK` markers exist in the Kotlin source. The code
 - Impact: Inconsistent persistence layer; SharedPreferences writes block the main thread on older devices; no type safety.
 - Fix: Migrate `LocaleHelper` and `SimpleIconsManager` to DataStore Preferences. `GeckoEngineManager` stores binary install state — DataStore is appropriate there too.
 
-### Room Schema Export Disabled
-- File: `core/database/src/main/java/io/shellify/app/data/local/AppDatabase.kt:19` — `exportSchema = false`
-- Impact: Room does not generate schema JSON files during build. Without them, it is impossible to audit migration correctness with Room's built-in `MigrationTestHelper`, and schema drift goes undetected.
-- Fix: Set `exportSchema = true` and configure `ksp { arg("room.schemaLocation", ...) }` in `core/database/build.gradle.kts` (the `app` module already has this KSP arg, which applies to the wrong compilation unit).
+### ~~Room Schema Export Disabled~~ ✅ RESOLVED (2026-05-17)
+- See "Database Schema Tracking Disabled" above. Schema export enabled; `DatabaseMigrationTest` now validates schema via `MigrationTestHelper`.
 
 ---
 
@@ -137,7 +133,7 @@ No other `TODO`, `FIXME`, or `HACK` markers exist in the Kotlin source. The code
 - File: `core/engine/src/main/java/io/shellify/app/core/webview/WebViewManager.kt:43`
 - Justification: OAuth and SSO flows rely on cross-domain cookie redirects (e.g., signing in via Google or GitHub). Blocking third-party cookies breaks these flows silently — the user sees a blank page or infinite redirect with no error.
 - Problem: This is a blanket override rather than a per-app opt-in. Apps that do not use OAuth still accept cross-site tracking cookies, undermining the per-app isolation model.
-- Fix: Add a `allowThirdPartyCookies: Boolean` field to `WebApp` (default `true` for backward compatibility), expose it as a toggle in per-app settings, and pass it through to `setAcceptThirdPartyCookies`. **Blocked by the database schema debt** — the new column requires `exportSchema = true` and a proper `Migration` in place first.
+- Fix: Add a `allowThirdPartyCookies: Boolean` field to `WebApp` (default `true` for backward compatibility), expose it as a toggle in per-app settings, and pass it through to `setAcceptThirdPartyCookies`. Previously blocked by database schema debt — that is now resolved (2026-05-17), so this is ready to implement.
 
 ### Production Logs Not Gated Behind BuildConfig.DEBUG
 - Risk: All `Log.i/d/w/e` calls in `core/engine/` fire in release builds.
@@ -190,8 +186,8 @@ No other `TODO`, `FIXME`, or `HACK` markers exist in the Kotlin source. The code
 - Impact: The most security-sensitive and integration-heavy code (crypto, backup, isolation) has the least test coverage. Regressions here are likely to go undetected.
 - Priority: High for `CryptoManager` and `BackupManager` (data integrity risk); medium for `IsolationManager` and `PwaAnalyzer`.
 
-### `core/database` Has `exportSchema = false` — Migration Safety Net Missing
-- Described above under Technical Debt. Flagged again here as an improvement: enabling schema export and wiring `MigrationTestHelper` in an instrumented test would catch schema mismatches at CI time rather than production runtime.
+### ~~`core/database` Has `exportSchema = false` — Migration Safety Net Missing~~ ✅ RESOLVED (2026-05-17)
+- Schema export enabled and `DatabaseMigrationTest` wired. See "Database Schema Tracking Disabled" under Known Issues.
 
 ---
 

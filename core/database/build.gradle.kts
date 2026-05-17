@@ -3,11 +3,18 @@ plugins {
     id("shellify.ksp")
 }
 
+// Must be top-level (not inside android {}) for Room's KSP processor to pick it up.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 android {
     namespace = "io.shellify.core.database"
 
-    ksp {
-        arg("room.schemaLocation", "$projectDir/schemas")
+    sourceSets {
+        // Expose the generated schema JSON files as assets in the androidTest APK so
+        // MigrationTestHelper can read them when validating migration correctness.
+        getByName("androidTest").assets.srcDirs("$projectDir/schemas")
     }
 }
 
@@ -28,9 +35,13 @@ dependencies {
     implementation(libs.androidx.sqlite.ktx)
 }
 
-
 dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
+
+    androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.test.ext.junit)
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.room.testing)
 }

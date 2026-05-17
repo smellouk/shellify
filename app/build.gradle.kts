@@ -18,10 +18,6 @@ plugins {
     alias(libs.plugins.roborazzi)
 }
 
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-}
-
 detekt {
     config.setFrom("${rootDir}/config/detekt/detekt.yml")
     buildUponDefaultConfig = true

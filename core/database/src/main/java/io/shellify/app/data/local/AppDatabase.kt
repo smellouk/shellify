@@ -16,7 +16,7 @@ import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 @Database(
     entities = [WebAppEntity::class, CategoryEntity::class],
     version = 1,
-    exportSchema = false,
+    exportSchema = true,
 )
 @TypeConverters(IconSourceConverter::class)
 abstract class AppDatabase : RoomDatabase() {
