@@ -2,7 +2,7 @@
 
 Do not add Co-Authored-By lines to git commits.
 
-When creating a new directory or adding/editing files in an existing directory that has no README.md, create one. When editing a directory that already has a README.md, check whether your changes make any content stale and update it.
+**README rule:** Before working in any directory, read its README.md if one exists. When your changes affect a directory, update its README.md to reflect them. When creating a new directory, create a README.md.
 
 Shellify. Wraps websites in isolated WebView containers with per-app ad blocking, biometric lock, and encrypted backup. Local-first, no cloud, no analytics.
 
@@ -169,6 +169,7 @@ val timeout = 5000
 ## Testing
 
 - **Unit tests:** JUnit 4 + MockK — required for all use cases, mappers, and utilities
+- **Instrumented tests:** ALL live in `app/src/androidTest/` — never in feature modules
 - **Compose UI tests:** Required for new screens (at least one Roborazzi screenshot test)
 - **Architecture tests:** Konsist — runs automatically with `testDebugUnitTest`; do not suppress failures
 - **DB tests:** Room in-memory database via `MigrationTestHelper`

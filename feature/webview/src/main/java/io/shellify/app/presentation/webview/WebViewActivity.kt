@@ -65,6 +65,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.activity.OnBackPressedCallback
+import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.FragmentActivity
 import io.shellify.app.presentation.webview.WebViewServiceProvider
 import io.shellify.app.core.engine.BrowserEngine
@@ -97,6 +99,12 @@ class WebViewActivity : FragmentActivity() {
         const val EXTRA_PREVIEW_URL = "preview_url"
         const val EXTRA_PREVIEW_NAME = "preview_name"
 
+        @VisibleForTesting
+        var engineFactory: (() -> BrowserEngine)? = null
+
+        @VisibleForTesting
+        var pageFinishedCallback: (() -> Unit)? = null
+
         fun launchIntent(context: android.content.Context, appId: Long): Intent =
             Intent(context, WebViewActivity::class.java)
                 .putExtra(EXTRA_APP_ID, appId)
@@ -119,6 +127,9 @@ class WebViewActivity : FragmentActivity() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val visitedUrls = mutableSetOf<String>()
 
+    @VisibleForTesting
+    fun navigateTo(url: String) = engine.loadUrl(url)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -139,10 +150,10 @@ class WebViewActivity : FragmentActivity() {
         }
         currentAppFlow.value = pwaApp
 
-        // Apply FLAG_SECURE before setContentView so the window is never exposed unprotected.
-        val screenshotProtection = runBlocking { app.passwordManager.screenshotProtection.first() }
-        if (screenshotProtection) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-        // Track live changes (e.g., user toggles the setting while the activity is visible).
+        // Collect screenshot-protection flag reactively. DataStore emits the current value
+        // immediately on first collection, so FLAG_SECURE is applied before any frame is drawn.
+        // runBlocking on the main thread was removed — it deadlocked in test environments where
+        // the DataStore flow never emitted while the main thread was blocked.
         scope.launch {
             app.passwordManager.screenshotProtection.collect { on ->
                 if (on) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
@@ -150,12 +161,18 @@ class WebViewActivity : FragmentActivity() {
             }
         }
 
-        engine = when {
+        engine = engineFactory?.invoke() ?: when {
             pwaApp.engineType == EngineType.GECKOVIEW && app.geckoEngineManager.isInstalled() ->
                 GeckoViewEngine(this, app.geckoEngineManager)
 
             else -> SystemWebViewEngine(app.adBlocker)
         }
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (engine.canGoBack()) engine.goBack() else finish()
+            }
+        })
 
         container = FrameLayout(this)
         container.setBackgroundColor(
@@ -573,6 +590,7 @@ class WebViewActivity : FragmentActivity() {
 
             override fun onPageFinished(url: String?) {
                 url?.let { visitedUrls += it }
+                pageFinishedCallback?.invoke()
                 val app = currentApp() ?: return
                 if (app.translateEnabled) {
                     engine.evaluateJavascript("window.__shellifyTranslateLoaded = false;", null)
@@ -674,13 +692,6 @@ class WebViewActivity : FragmentActivity() {
         val icon: Bitmap? =
             app.iconPath?.let { runCatching { BitmapFactory.decodeFile(it) }.getOrNull() }
         setTaskDescription(ActivityManager.TaskDescription(app.name, icon))
-    }
-
-    @Deprecated("Deprecated in Java")
-    @Suppress("DEPRECATION")
-    override fun onBackPressed() {
-        if (engine.canGoBack()) engine.goBack()
-        else super.onBackPressed()
     }
 
     override fun onDestroy() {
