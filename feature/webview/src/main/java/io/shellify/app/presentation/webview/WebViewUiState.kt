@@ -7,6 +7,7 @@ data class WebViewUiState(
     val error: WebLoadError? = null,
     val isRetrying: Boolean = false,
     val authState: AuthState = AuthState.Loading,
+    val isPageLoaded: Boolean = false,
 )
 
 sealed interface AuthState {

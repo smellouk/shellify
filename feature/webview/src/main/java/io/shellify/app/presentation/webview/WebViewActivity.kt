@@ -366,7 +366,7 @@ class WebViewActivity : FragmentActivity() {
                 val dynamicColor by app.themeManager.dynamicColor.collectAsState(true)
                 val state by viewModel.uiState.collectAsState()
                 val pwaApp = state.app ?: return@setContent
-                if (!pwaApp.showControlCenter) return@setContent
+                if (!pwaApp.showControlCenter || !state.isPageLoaded) return@setContent
                 val passwordHash by app.passwordManager.passwordHash.collectAsState(initial = null)
 
                 ShellifyTheme(

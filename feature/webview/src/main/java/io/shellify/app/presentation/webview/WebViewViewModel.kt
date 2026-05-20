@@ -70,7 +70,7 @@ class WebViewViewModel(
     }
 
     fun onPageFinished(url: String?) {
-        _uiState.update { it.copy(isRetrying = false) }
+        _uiState.update { it.copy(isRetrying = false, isPageLoaded = true) }
         if (!loadFailed) {
             _uiState.update { it.copy(error = null) }
         }
@@ -80,12 +80,12 @@ class WebViewViewModel(
 
     fun onError(code: Int, desc: String) {
         loadFailed = true
-        _uiState.update { it.copy(error = WebLoadError.from(code, desc)) }
+        _uiState.update { it.copy(error = WebLoadError.from(code, desc), isPageLoaded = true) }
     }
 
     fun onSslError(error: String) {
         loadFailed = true
-        _uiState.update { it.copy(error = WebLoadError.SslError) }
+        _uiState.update { it.copy(error = WebLoadError.SslError, isPageLoaded = true) }
     }
 
     fun onRetry() {
