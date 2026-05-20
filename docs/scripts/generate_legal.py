@@ -7,6 +7,7 @@ Run from the repository root:
 """
 import html
 import re
+from datetime import datetime
 from pathlib import Path
 
 ROOT           = Path(__file__).resolve().parent.parent.parent
@@ -524,6 +525,7 @@ def gen_privacy(last_updated: str, sections: list[tuple[int, str, str]]) -> str:
         ),
         toc_html=_toc(sections, [
             (f"{_SVG_DOC} Terms of Service", "terms.html"),
+            (f"{_SVG_CLOCK} Changelog", "changelog.html"),
             ("← Back to Shellify",  "index.html"),
         ]),
         sections=_sections_html(sections),
@@ -548,14 +550,16 @@ def gen_terms(last_updated: str, sections: list[tuple[int, str, str]]) -> str:
         ),
         toc_html=_toc(sections, [
             (f"{_SVG_LOCK} Privacy Policy", "privacy.html"),
+            (f"{_SVG_CLOCK} Changelog", "changelog.html"),
             ("← Back to Shellify", "index.html"),
         ]),
         sections=_sections_html(sections),
     )
 
 
-_SVG_LOCK = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
-_SVG_DOC  = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>'
+_SVG_LOCK  = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>'
+_SVG_DOC   = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>'
+_SVG_CLOCK = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
 
 
 def _changelog_toc(releases: list[tuple[str, str, str]], alt: list[tuple[str, str]]) -> str:
@@ -591,8 +595,16 @@ def _changelog_sections_html(releases: list[tuple[str, str, str]]) -> str:
     return "\n\n".join(parts)
 
 
+def _format_date(iso: str) -> str:
+    """Convert YYYY-MM-DD to 'Month DD, YYYY'. Returns the input unchanged if not parseable."""
+    try:
+        return datetime.strptime(iso, "%Y-%m-%d").strftime("%B %-d, %Y")
+    except ValueError:
+        return iso
+
+
 def gen_changelog(releases: list[tuple[str, str, str]]) -> str:
-    latest_date = next((d for _, d, _ in releases if d), "—")
+    latest_date = _format_date(next((d for _, d, _ in releases if d), "—"))
     return _page(
         page_title="Changelog — Shellify",
         meta_desc="Full release history for Shellify. Auto-generated from conventional commits.",
