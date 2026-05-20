@@ -123,6 +123,9 @@
     <string name="add_engine_gecko_installing">Installing…</string>
     <string name="add_engine_gecko_error">Error — retry in Settings</string>
     <string name="settings_engine_gecko_missing">GeckoView not installed</string>
+    <string name="add_url_error_blank">Please enter a URL</string>
+    <string name="add_url_error_http">Use HTTPS instead of HTTP</string>
+    <string name="add_name_error_blank">Please enter a name</string>
 
     <!-- WebView -->
     <string name="webview_reload">Reload</string>

@@ -87,6 +87,8 @@ class AddViewModelTest {
         context = context,
         prefilledUrl = url,
         prefilledName = name,
+        // Patterns.WEB_URL is null in JVM unit tests; replicate its key invariants here
+        isUrlValid = { it.startsWith("https://") && it.contains('.') && !it.contains(' ') },
     )
 
     @Test
@@ -185,20 +187,116 @@ class AddViewModelTest {
     }
 
     @Test
-    fun `analyze with blank url sets isAnalyzing and clears analyzeError`() = runTest {
-        val manifest = mockk<PwaManifest>(relaxed = true)
-        every { manifest.name } returns null
-        every { manifest.bestIconUrl(any()) } returns null
-        coEvery { analyzer.analyze(any()) } returns manifest
-        coEvery { faviconFetcher.fetch(any(), any(), any()) } returns null
-
+    fun `analyze with blank url sets urlError and does not proceed`() = runTest {
         val vm = newVm()
-        // blank URL gets prepended with https:// so analyze proceeds
         vm.analyze()
         advanceUntilIdle()
-        // No urlError — blank URL is treated as https:// and analysis runs
-        assertNull(vm.uiState.value.urlError)
+        assertNotNull(vm.uiState.value.urlError)
         assertFalse(vm.uiState.value.isAnalyzing)
+    }
+
+    @Test
+    fun `analyze with http url sets urlError`() = runTest {
+        val vm = newVm()
+        vm.setUrl("http://example.com")
+        vm.analyze()
+        assertNotNull(vm.uiState.value.urlError)
+        assertFalse(vm.uiState.value.isAnalyzing)
+    }
+
+    @Test
+    fun `analyze with invalid url sets urlError`() = runTest {
+        val vm = newVm()
+        vm.setUrl("not a valid url with spaces")
+        vm.analyze()
+        assertNotNull(vm.uiState.value.urlError)
+        assertFalse(vm.uiState.value.isAnalyzing)
+    }
+
+    @Test
+    fun `analyze with number-only input sets urlError`() = runTest {
+        val vm = newVm()
+        vm.setUrl("1111111")
+        vm.analyze()
+        assertNotNull(vm.uiState.value.urlError)
+        assertFalse(vm.uiState.value.isAnalyzing)
+    }
+
+    // ── fetchIcon validation ───────────────────────────────────────────────────
+
+    @Test
+    fun `fetchIcon with blank url sets urlError and does not fetch`() = runTest {
+        val vm = newVm()
+        vm.fetchIcon()
+        advanceUntilIdle()
+        assertNotNull(vm.uiState.value.urlError)
+        assertFalse(vm.uiState.value.isFetchingIcon)
+    }
+
+    @Test
+    fun `fetchIcon with http url sets urlError and does not fetch`() = runTest {
+        val vm = newVm()
+        vm.setUrl("http://example.com")
+        vm.fetchIcon()
+        advanceUntilIdle()
+        assertNotNull(vm.uiState.value.urlError)
+        assertFalse(vm.uiState.value.isFetchingIcon)
+    }
+
+    @Test
+    fun `fetchIcon with invalid url sets urlError and does not fetch`() = runTest {
+        val vm = newVm()
+        vm.setUrl("not a valid url with spaces")
+        vm.fetchIcon()
+        advanceUntilIdle()
+        assertNotNull(vm.uiState.value.urlError)
+        assertFalse(vm.uiState.value.isFetchingIcon)
+    }
+
+    // ── save / validate edge cases ─────────────────────────────────────────────
+
+    @Test
+    fun `save with http url sets urlError and does not save`() = runTest {
+        val vm = newVm()
+        vm.setName("App")
+        vm.setUrl("http://example.com")
+        vm.save()
+        advanceUntilIdle()
+        assertNotNull(vm.uiState.value.urlError)
+        assertFalse(vm.uiState.value.saved)
+    }
+
+    @Test
+    fun `save with invalid url sets urlError and does not save`() = runTest {
+        val vm = newVm()
+        vm.setName("App")
+        vm.setUrl("not a valid url with spaces")
+        vm.save()
+        advanceUntilIdle()
+        assertNotNull(vm.uiState.value.urlError)
+        assertFalse(vm.uiState.value.saved)
+    }
+
+    @Test
+    fun `save normalizes url without scheme to https`() = runTest {
+        coEvery { getWebAppById(1L) } returns WebApp(id = 1L, name = "App", url = "https://example.com")
+        val vm = newVm()
+        vm.setName("App")
+        vm.setUrl("example.com")
+        vm.save()
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.saved)
+        assertNull(vm.uiState.value.urlError)
+    }
+
+    @Test
+    fun `run with http url sets urlError and does not preview`() {
+        val vm = newVm()
+        vm.setName("App")
+        vm.setUrl("http://example.com")
+        vm.run()
+        assertNotNull(vm.uiState.value.urlError)
+        assertNull(vm.uiState.value.previewUrl)
     }
 
     @Test
@@ -282,6 +380,7 @@ class AddViewModelTest {
             simpleIconsManager = simpleIconsManager,
             passwordManager = passwordManager,
             context = context,
+            isUrlValid = { it.startsWith("https://") && it.contains('.') && !it.contains(' ') },
         )
         advanceUntilIdle()
         assertFalse(vm.uiState.value.isLoading)

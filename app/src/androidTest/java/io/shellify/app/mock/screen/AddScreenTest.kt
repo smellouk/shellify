@@ -139,6 +139,38 @@ class AddScreenTest {
             .assertIsDisplayed()
     }
 
+    @Test
+    fun urlError_blankUrl_showsResourceString() {
+        setAddScreen(AddUiState(urlError = context.getString(CoreUiR.string.add_url_error_blank)))
+        composeTestRule
+            .onNodeWithText(context.getString(CoreUiR.string.add_url_error_blank))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun urlError_httpScheme_showsResourceString() {
+        setAddScreen(AddUiState(url = "http://example.com", urlError = context.getString(CoreUiR.string.add_url_error_http)))
+        composeTestRule
+            .onNodeWithText(context.getString(CoreUiR.string.add_url_error_http))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun urlError_invalidUrl_showsResourceString() {
+        setAddScreen(AddUiState(url = "not-a-url", urlError = context.getString(CoreUiR.string.error_invalid_url)))
+        composeTestRule
+            .onNodeWithText(context.getString(CoreUiR.string.error_invalid_url))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun nameError_blank_showsResourceString() {
+        setAddScreen(AddUiState(url = "https://example.com", nameError = context.getString(CoreUiR.string.add_name_error_blank)))
+        composeTestRule
+            .onNodeWithText(context.getString(CoreUiR.string.add_name_error_blank))
+            .assertIsDisplayed()
+    }
+
     // ─── Settings section ─────────────────────────────────────────────────────
 
     @Test

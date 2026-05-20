@@ -3,9 +3,11 @@ package io.shellify.app.presentation.add
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import io.shellify.app.core.shortcut.SvgIconRenderer
+import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import io.shellify.app.core.shortcut.SvgIconRenderer
+import io.shellify.core.ui.R
 import coil.ImageLoader
 import coil.decode.SvgDecoder
 import coil.request.ImageRequest
@@ -108,6 +110,7 @@ class AddViewModel(
     private val passwordManager: PasswordManager,
     private val prefilledUrl: String = "",
     private val prefilledName: String = "",
+    private val isUrlValid: (String) -> Boolean = { Patterns.WEB_URL.matcher(it).matches() },
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -241,10 +244,7 @@ class AddViewModel(
 
     /** Fetches only the icon for the current URL without running full PWA analysis. */
     fun fetchIcon() {
-        val url = _state.value.url.trim().let { if (!it.startsWith("http")) "https://$it" else it }
-        if (url.isBlank()) {
-            _state.update { it.copy(urlError = "Enter a URL first") }; return
-        }
+        val url = normalizeAndValidateUrl(_state.value.url) ?: return
         _state.update { it.copy(isFetchingIcon = true) }
         viewModelScope.launch {
             val iconUrl = runCatching { analyzer.analyze(url).bestIconUrl(url) }.getOrNull()
@@ -261,11 +261,7 @@ class AddViewModel(
     }
 
     fun analyze() {
-        val rawUrl =
-            _state.value.url.trim().let { if (!it.startsWith("http")) "https://$it" else it }
-        if (rawUrl.isBlank()) {
-            _state.update { it.copy(urlError = "Please enter a URL") }; return
-        }
+        val rawUrl = normalizeAndValidateUrl(_state.value.url) ?: return
         _state.update { it.copy(isAnalyzing = true, analyzeError = null, url = rawUrl) }
         viewModelScope.launch {
             val manifest = runCatching { analyzer.analyze(rawUrl) }.getOrNull()
@@ -283,7 +279,7 @@ class AddViewModel(
                 _state.update {
                     it.copy(
                         isAnalyzing = false,
-                        analyzeError = "Could not read site info. You can still save manually.",
+                        analyzeError = context.getString(R.string.error_analyze_failed),
                         pendingIconPath = iconPath
                     )
                 }
@@ -313,18 +309,31 @@ class AddViewModel(
 
     // ── Validation ────────────────────────────────────────────────────────────
 
+    private fun normalizeAndValidateUrl(raw: String): String? {
+        val trimmed = raw.trim()
+        if (trimmed.isBlank()) {
+            _state.update { it.copy(urlError = context.getString(R.string.add_url_error_blank)) }
+            return null
+        }
+        val normalized = if (!trimmed.startsWith("http")) "https://$trimmed" else trimmed
+        if (normalized.startsWith("http://")) {
+            _state.update { it.copy(urlError = context.getString(R.string.add_url_error_http)) }
+            return null
+        }
+        if (!isUrlValid(normalized)) {
+            _state.update { it.copy(urlError = context.getString(R.string.error_invalid_url)) }
+            return null
+        }
+        return normalized
+    }
+
     private fun validate(): String? {
-        val s = _state.value
-        val url = s.url.trim()
-        if (url.isBlank()) {
-            _state.update { it.copy(urlError = "Please enter a URL") }
+        val url = normalizeAndValidateUrl(_state.value.url) ?: return null
+        if (_state.value.name.isBlank()) {
+            _state.update { it.copy(nameError = context.getString(R.string.add_name_error_blank)) }
             return null
         }
-        if (s.name.isBlank()) {
-            _state.update { it.copy(nameError = "Please enter a name") }
-            return null
-        }
-        return if (url.startsWith("http")) url else "https://$url"
+        return url
     }
 
     // ── Save ──────────────────────────────────────────────────────────────────
