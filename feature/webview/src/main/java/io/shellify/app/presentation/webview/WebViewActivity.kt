@@ -427,8 +427,10 @@ class WebViewActivity : FragmentActivity() {
                             scope.launch(Dispatchers.IO) { app.saveWebApp(updated) }
                         },
                         onClearData = {
-                            scope.launch(Dispatchers.IO) { app.isolationManager.clearData(pwaApp.isolationId) }
-                            engine.loadUrl(pwaApp.url)
+                            scope.launch {
+                                app.isolationManager.clearData(pwaApp.isolationId)
+                                engine.loadUrl(pwaApp.url)
+                            }
                         },
                     )
                 }

@@ -5,6 +5,10 @@ import android.webkit.WebView
 import androidx.annotation.RequiresApi
 import androidx.webkit.ProfileStore
 import androidx.webkit.WebViewCompat
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.resume
 
 /**
  * API 33+ isolation: each PWA gets its own named WebView profile.
@@ -24,10 +28,21 @@ object WebViewProfileManager {
         // we silently fall back — CookieJarManager handles the API < 33 path.
     }
 
-    fun deleteProfile(isolationId: String) {
+    suspend fun deleteProfile(isolationId: String) {
+        val profileName = "pwa_$isolationId"
+        val store = runCatching { ProfileStore.getInstance() }.getOrNull() ?: return
         runCatching {
-            val store = ProfileStore.getInstance()
-            store.deleteProfile("pwa_$isolationId")
+            withContext(Dispatchers.IO) { store.deleteProfile(profileName) }
+        }.onFailure {
+            // Profile is in use by a live WebView — clear its data in-place and await completion.
+            runCatching {
+                val profile = store.getOrCreateProfile(profileName)
+                profile.webStorage.deleteAllData()
+                suspendCancellableCoroutine { cont ->
+                    profile.cookieManager.removeAllCookies { cont.resume(Unit) }
+                }
+                profile.cookieManager.flush()
+            }
         }
     }
 }
