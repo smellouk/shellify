@@ -262,6 +262,7 @@ class WebViewActivity : FragmentActivity() {
     }
 
     private fun showPasswordDialog(app: WebViewServiceProvider, pwaApp: WebApp) {
+        val pwaAccentColor = pwaApp.themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() }
         // Load persisted count so the wipe limit survives process death between attempts.
         val persistedAttempts = runBlocking { app.passwordManager.getFailedAttempts(pwaApp.id) }
         val overlay = ComposeView(this).apply {
@@ -290,6 +291,7 @@ class WebViewActivity : FragmentActivity() {
                 ShellifyTheme(
                     themeMode = themeMode,
                     dynamicColor = dynamicColor,
+                    accentColor = pwaAccentColor,
                     controlStatusBar = false
                 ) {
                     AlertDialog(
@@ -416,10 +418,12 @@ class WebViewActivity : FragmentActivity() {
             setContent {
                 val themeMode by app.themeManager.themeMode.collectAsState(ThemeMode.SYSTEM)
                 val dynamicColor by app.themeManager.dynamicColor.collectAsState(true)
+                val currentApp by currentAppFlow.collectAsState()
+                val accentColor = currentApp?.themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() }
                 val error by errorFlow.collectAsState()
                 val isRetrying by isRetryingFlow.collectAsState()
                 if (error == null) return@setContent
-                ShellifyTheme(themeMode = themeMode, dynamicColor = dynamicColor, controlStatusBar = false) {
+                ShellifyTheme(themeMode = themeMode, dynamicColor = dynamicColor, accentColor = accentColor, controlStatusBar = false) {
                     WebViewErrorScreen(
                         error = error!!,
                         isRetrying = isRetrying,
@@ -453,6 +457,7 @@ class WebViewActivity : FragmentActivity() {
                 ShellifyTheme(
                     themeMode = themeMode,
                     dynamicColor = dynamicColor,
+                    accentColor = pwaApp.themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() },
                     controlStatusBar = false
                 ) {
                     var showSheet by remember { mutableStateOf(false) }
