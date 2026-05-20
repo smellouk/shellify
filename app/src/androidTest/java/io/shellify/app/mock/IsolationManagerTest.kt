@@ -5,6 +5,7 @@ import android.os.Build
 import android.webkit.CookieManager
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.SdkSuppress
 import io.mockk.mockk
 import io.mockk.verify
 import io.shellify.app.core.crypto.CryptoManager
@@ -13,7 +14,6 @@ import io.shellify.app.core.isolation.IsolationManager
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertTrue
-import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -38,6 +38,8 @@ class IsolationManagerTest {
             geckoEngineManager = geckoEngineManager,
         )
         manager.cookieJarManager.deleteFor(ISOLATION_ID)
+        CookieManager.getInstance().removeAllCookies(null)
+        CookieManager.getInstance().flush()
     }
 
     @After
@@ -57,10 +59,8 @@ class IsolationManagerTest {
     }
 
     @Test
+    @SdkSuppress(maxSdkVersion = Build.VERSION_CODES.S_V2) // CookieJarManager is only used on API < 33; WebView Profiles handle isolation above
     fun clearData_removesStoredCookieJar() = runTest {
-        // CookieJarManager (DataStore-based) is only used on API < 33.
-        // On API 33+ isolation is handled by WebView Profiles, so this path is unreachable.
-        assumeTrue(Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
 
         // Store a cookie jar for this isolation ID, then clear it.
         val cm = CookieManager.getInstance()

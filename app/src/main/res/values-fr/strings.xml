@@ -469,6 +469,9 @@
     <string name="error_invalid_url">Veuillez entrer une URL valide</string>
     <string name="error_analyze_failed">Impossible de lire les informations du site. Vous pouvez toujours enregistrer manuellement.</string>
     <string name="error_shortcut_failed">Impossible de créer le raccourci</string>
+    <string name="add_url_error_blank">Veuillez entrer une URL</string>
+    <string name="add_url_error_http">Utilisez HTTPS plutôt que HTTP</string>
+    <string name="add_name_error_blank">Veuillez entrer un nom</string>
 
     <!-- Settings — Control center -->
     <string name="settings_control_center">Afficher le centre de contrôle</string>

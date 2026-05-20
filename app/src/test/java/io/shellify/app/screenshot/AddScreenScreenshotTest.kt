@@ -88,4 +88,46 @@ class AddScreenScreenshotTest {
         }
         composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
+
+    @Test
+    fun urlError_httpScheme() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                AddScreen(
+                    viewModel = buildVm(AddUiState(url = "http://example.com", urlError = "Use HTTPS instead of HTTP")),
+                    onSaved = {},
+                    onBack = {},
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun urlError_blankUrl() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                AddScreen(
+                    viewModel = buildVm(AddUiState(url = "", urlError = "Please enter a URL")),
+                    onSaved = {},
+                    onBack = {},
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun nameError_blank() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                AddScreen(
+                    viewModel = buildVm(AddUiState(url = "https://example.com", nameError = "Please enter a name")),
+                    onSaved = {},
+                    onBack = {},
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
 }

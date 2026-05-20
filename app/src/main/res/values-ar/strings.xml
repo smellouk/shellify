@@ -469,6 +469,9 @@
     <string name="error_invalid_url">يرجى إدخال رابط صحيح</string>
     <string name="error_analyze_failed">تعذَّر قراءة معلومات الموقع. يمكنك الحفظ يدوياً.</string>
     <string name="error_shortcut_failed">تعذَّر إنشاء الاختصار</string>
+    <string name="add_url_error_blank">يرجى إدخال رابط</string>
+    <string name="add_url_error_http">استخدم HTTPS بدلاً من HTTP</string>
+    <string name="add_name_error_blank">يرجى إدخال اسم</string>
 
     <!-- Settings — Control center -->
     <string name="settings_control_center">عرض مركز التحكم</string>
