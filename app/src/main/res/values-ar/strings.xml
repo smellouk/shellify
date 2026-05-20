@@ -149,7 +149,7 @@
     <!-- App Settings (per-app) -->
     <string name="settings_title">إعدادات التطبيق</string>
     <string name="settings_app_info">معلومات التطبيق</string>
-    <string name="settings_features">الميزات</string>
+    <string name="settings_control_center_title">مركز التحكم</string>
     <string name="settings_display">العرض</string>
     <string name="settings_fullscreen">ملء الشاشة</string>
     <string name="settings_ua_mode">هوية المتصفح</string>
@@ -467,4 +467,20 @@
     <string name="error_invalid_url">يرجى إدخال رابط صحيح</string>
     <string name="error_analyze_failed">تعذَّر قراءة معلومات الموقع. يمكنك الحفظ يدوياً.</string>
     <string name="error_shortcut_failed">تعذَّر إنشاء الاختصار</string>
+
+    <!-- Settings — Control center -->
+    <string name="settings_control_center">عرض مركز التحكم</string>
+
+    <!-- WebView errors -->
+    <string name="webview_error_retry">إعادة المحاولة</string>
+    <string name="webview_error_no_internet_title">لا يوجد اتصال بالإنترنت</string>
+    <string name="webview_error_no_internet_body">شغّل Wi-Fi أو بيانات الهاتف وأعد المحاولة.</string>
+    <string name="webview_error_unreachable_title">تعذَّر الوصول إلى الصفحة</string>
+    <string name="webview_error_unreachable_body">تعذَّر العثور على الخادم. تحقق من الرابط أو أعد المحاولة لاحقاً.</string>
+    <string name="webview_error_ssl_title">الاتصال غير آمن</string>
+    <string name="webview_error_ssl_body">تحتوي هذه الصفحة على مشكلة أمنية وقد حظرها Shellify لحمايتك.</string>
+    <string name="webview_error_timeout_title">انتهت مهلة الطلب</string>
+    <string name="webview_error_timeout_body">استغرق الخادم وقتاً طويلاً للاستجابة. أعد المحاولة لاحقاً.</string>
+    <string name="webview_error_generic_title">فشل تحميل الصفحة</string>
+    <string name="webview_error_generic_body">حدث خطأ ما. أعد المحاولة.</string>
 </resources>

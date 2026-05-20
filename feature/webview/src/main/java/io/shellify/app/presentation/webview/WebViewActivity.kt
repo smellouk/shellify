@@ -140,6 +140,8 @@ class WebViewActivity : FragmentActivity() {
     @VisibleForTesting
     var splashOverlay: View? = null
     private val currentAppFlow = MutableStateFlow<WebApp?>(null)
+    private val errorFlow = MutableStateFlow<WebLoadError?>(null)
+    private val isRetryingFlow = MutableStateFlow(false)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val visitedUrls = mutableSetOf<String>()
 
@@ -403,8 +405,36 @@ class WebViewActivity : FragmentActivity() {
                 isolationManager.restoreSession(pwaApp.isolationId)
             }
             engine.loadUrl(pwaApp.url)
+            addErrorOverlay()
             addControlsOverlay()
         }
+    }
+
+    private fun addErrorOverlay() {
+        val app = application as WebViewServiceProvider
+        val overlay = ComposeView(this).apply {
+            setContent {
+                val themeMode by app.themeManager.themeMode.collectAsState(ThemeMode.SYSTEM)
+                val dynamicColor by app.themeManager.dynamicColor.collectAsState(true)
+                val error by errorFlow.collectAsState()
+                val isRetrying by isRetryingFlow.collectAsState()
+                if (error == null) return@setContent
+                ShellifyTheme(themeMode = themeMode, dynamicColor = dynamicColor, controlStatusBar = false) {
+                    WebViewErrorScreen(
+                        error = error!!,
+                        isRetrying = isRetrying,
+                        onRetry = {
+                            isRetryingFlow.value = true
+                            engine.reload()
+                        },
+                    )
+                }
+            }
+        }
+        container.addView(overlay, FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT,
+        ))
     }
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -602,11 +632,20 @@ class WebViewActivity : FragmentActivity() {
         container: FrameLayout
     ): BrowserEngineCallback =
         object : BrowserEngineCallback {
+            private var loadFailed = false
+
             override fun onPageStarted(url: String?) {
+                if (url?.startsWith("about:") == true) return
+                loadFailed = false
                 url?.let { visitedUrls += it }
             }
 
             override fun onPageFinished(url: String?) {
+                isRetryingFlow.value = false
+                if (!loadFailed) {
+                    errorFlow.value = null
+                    engine.getView()?.visibility = View.VISIBLE
+                }
                 url?.let { visitedUrls += it }
                 pageFinishedCallback?.invoke()
                 hideSplash()
@@ -628,8 +667,18 @@ class WebViewActivity : FragmentActivity() {
 
             override fun onTitleChanged(title: String?) {}
             override fun onIconReceived(icon: Bitmap?) {}
-            override fun onError(errorCode: Int, description: String) { hideSplash() }
-            override fun onSslError(error: String) { hideSplash() }
+            override fun onError(errorCode: Int, description: String) {
+                loadFailed = true
+                engine.getView()?.visibility = View.INVISIBLE
+                hideSplash()
+                errorFlow.value = WebLoadError.from(errorCode, description)
+            }
+            override fun onSslError(error: String) {
+                loadFailed = true
+                engine.getView()?.visibility = View.INVISIBLE
+                hideSplash()
+                errorFlow.value = WebLoadError.SslError
+            }
 
             override fun onExternalLink(url: String) {
                 runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }

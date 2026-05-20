@@ -14,6 +14,7 @@ import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoSessionSettings
 import org.mozilla.geckoview.GeckoView
 import org.mozilla.geckoview.StorageController
+import org.mozilla.geckoview.WebRequestError
 import org.mozilla.geckoview.WebResponse
 
 class GeckoViewEngine(
@@ -142,6 +143,20 @@ class GeckoViewEngine(
             ): GeckoResult<GeckoSession>? {
                 loadUrl(uri)
                 return null
+            }
+
+            override fun onLoadError(
+                session: GeckoSession,
+                uri: String?,
+                error: WebRequestError,
+            ): GeckoResult<String>? {
+                val description = uri ?: error.toString()
+                if (error.category == WebRequestError.ERROR_CATEGORY_SECURITY) {
+                    cb.onSslError(description)
+                } else {
+                    cb.onError(error.code, description)
+                }
+                return GeckoResult.fromValue(null)
             }
         }
 

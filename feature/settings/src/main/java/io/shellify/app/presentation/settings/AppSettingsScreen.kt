@@ -365,8 +365,8 @@ fun AppSettingsScreen(
                 }
             }
 
-            // ── Features ─────────────────────────────────────────────────────
-            SectionLabel(stringResource(R.string.settings_features))
+            // ── Control center ───────────────────────────────────────────────
+            SectionLabel(stringResource(R.string.settings_control_center_title))
             SurfaceCard {
                 ToggleListItem(
                     label = stringResource(R.string.settings_control_center),

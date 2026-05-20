@@ -3,7 +3,10 @@ package io.shellify.app.core.engine
 import android.content.Context
 import android.graphics.Bitmap
 import android.view.View
+import android.net.http.SslError
+import android.webkit.SslErrorHandler
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -42,6 +45,25 @@ class SystemWebViewEngine(private val adBlocker: AdBlocker) : BrowserEngine {
 
             override fun onPageFinished(view: WebView, url: String) =
                 callback.onPageFinished(url)
+
+            override fun onReceivedError(
+                view: WebView,
+                request: WebResourceRequest,
+                error: WebResourceError,
+            ) {
+                if (request.isForMainFrame) {
+                    callback.onError(error.errorCode, error.description.toString())
+                }
+            }
+
+            override fun onReceivedSslError(
+                view: WebView,
+                handler: SslErrorHandler,
+                error: SslError,
+            ) {
+                handler.cancel()
+                callback.onSslError(error.toString())
+            }
         }
 
         wv.webChromeClient = object : WebChromeClient() {

@@ -6,6 +6,8 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import io.shellify.app.R
 import io.shellify.app.core.engine.GeckoEngineManager
 import io.shellify.app.core.engine.GeckoInstallState
 import io.shellify.app.presentation.settings.AppSettingsScreen
@@ -31,6 +33,8 @@ class AppSettingsScreenTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    private val context get() = InstrumentationRegistry.getInstrumentation().targetContext
 
     private fun buildViewModel(uiState: AppSettingsUiState): AppSettingsViewModel {
         val geckoManager = mockk<GeckoEngineManager>(relaxed = true)
@@ -94,11 +98,11 @@ class AppSettingsScreenTest {
     }
 
     @Test
-    fun populatedState_showsFeaturesSection() {
+    fun populatedState_showsControlCenterSection() {
         val app = FakeData.webApp(id = 1L, name = "Figma", url = "https://figma.com")
         setAppSettingsScreen(AppSettingsUiState(app = app, isLoading = false))
         composeTestRule
-            .onNodeWithText("Features")
+            .onNodeWithText(context.getString(R.string.settings_control_center_title))
             .assertIsDisplayed()
     }
 

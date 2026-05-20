@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import io.shellify.app.R
 import io.shellify.app.core.engine.BrowserEngine
 import io.shellify.app.core.engine.BrowserEngineCallback
 import io.shellify.app.domain.model.EngineType
@@ -78,7 +79,7 @@ class WebViewControlCenterTest {
         ActivityScenario.launch<WebViewActivity>(launchIntent()).use {
             engineReady.await(5, TimeUnit.SECONDS)
             composeTestRule.waitForIdle()
-            composeTestRule.onNodeWithContentDescription("Control center").assertIsDisplayed()
+            composeTestRule.onNodeWithContentDescription(context.getString(R.string.webview_controls_fab_cd)).assertIsDisplayed()
         }
     }
 
@@ -88,7 +89,7 @@ class WebViewControlCenterTest {
         ActivityScenario.launch<WebViewActivity>(launchIntent()).use {
             engineReady.await(5, TimeUnit.SECONDS)
             composeTestRule.waitForIdle()
-            composeTestRule.onNodeWithContentDescription("Control center", useUnmergedTree = true)
+            composeTestRule.onNodeWithContentDescription(context.getString(R.string.webview_controls_fab_cd), useUnmergedTree = true)
                 .assertDoesNotExist()
         }
     }

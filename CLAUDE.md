@@ -153,6 +153,7 @@ App module only: `shellify.android.application`
 - **No `java.lang.Math`** — use `kotlin.math`
 - **No `java.util.stream.*`** — use Kotlin collections
 - **No hardcoded user-visible strings** — all translatable text must go in `strings.xml` (feature-local or `core/ui`); never inline string literals in Composables or Activities
+- **Keep locale files in sync** — whenever strings are added to `strings.xml`, add the corresponding translations to every locale file (`app/src/main/res/values-fr/strings.xml`, `app/src/main/res/values-ar/strings.xml`)
 - **No hardcoded colors** — use tokens from `Color.kt` via `MaterialTheme.colorScheme`; never use `Color(0xFF…)` inline
 - **No hardcoded dimensions** — spacing, padding, icon sizes, and corner radii must be defined in `Dimens.kt`; never use raw `dp`/`sp` literals outside that file
 - **No hardcoded text sizes** — define in `Theme.kt` Typography and reference via `MaterialTheme.typography`
