@@ -144,6 +144,7 @@
     <string name="webview_control_translate">الترجمة التلقائية</string>
     <string name="webview_control_fullscreen">ملء الشاشة</string>
     <string name="webview_control_applock">قفل التطبيق</string>
+    <string name="webview_control_clear_data">مسح البيانات</string>
     <string name="webview_applock_disabled_hint">عيِّن كلمة مرور في الإعدادات للتفعيل</string>
     <string name="webview_sheet_title">الميزات</string>
 
