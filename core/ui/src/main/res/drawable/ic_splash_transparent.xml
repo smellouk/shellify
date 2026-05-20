@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Empty vector used as windowSplashScreenAnimatedIcon for WebViewActivity to suppress
+     Shellify branding on the system splash. The per-PWA in-app overlay takes its place. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108"
+    android:alpha="0">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M54,54m-54,0a54,54 0,1 1,108 0a54,54 0,1 1,-108 0" />
+</vector>

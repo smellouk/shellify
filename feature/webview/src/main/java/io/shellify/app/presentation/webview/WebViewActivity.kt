@@ -14,6 +14,9 @@ import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ProgressBar
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -22,7 +25,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.GTranslate
@@ -91,6 +99,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 class WebViewActivity : FragmentActivity() {
 
@@ -123,6 +132,9 @@ class WebViewActivity : FragmentActivity() {
     private lateinit var container: FrameLayout
     private lateinit var isolationManager: IsolationManager
     private var statusBarScrim: View? = null
+
+    @VisibleForTesting
+    var splashOverlay: View? = null
     private val currentAppFlow = MutableStateFlow<WebApp?>(null)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private val visitedUrls = mutableSetOf<String>()
@@ -382,6 +394,7 @@ class WebViewActivity : FragmentActivity() {
 
     private fun startLoading(pwaApp: WebApp) {
         scope.launch {
+            showSplash(pwaApp)
             if (engine is SystemWebViewEngine) {
                 isolationManager.restoreSession(pwaApp.isolationId)
             }
@@ -591,6 +604,7 @@ class WebViewActivity : FragmentActivity() {
             override fun onPageFinished(url: String?) {
                 url?.let { visitedUrls += it }
                 pageFinishedCallback?.invoke()
+                hideSplash()
                 val app = currentApp() ?: return
                 if (app.translateEnabled) {
                     engine.evaluateJavascript("window.__shellifyTranslateLoaded = false;", null)
@@ -609,8 +623,8 @@ class WebViewActivity : FragmentActivity() {
 
             override fun onTitleChanged(title: String?) {}
             override fun onIconReceived(icon: Bitmap?) {}
-            override fun onError(errorCode: Int, description: String) {}
-            override fun onSslError(error: String) {}
+            override fun onError(errorCode: Int, description: String) { hideSplash() }
+            override fun onSslError(error: String) { hideSplash() }
 
             override fun onExternalLink(url: String) {
                 runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
@@ -639,6 +653,66 @@ class WebViewActivity : FragmentActivity() {
             ) {
             }
         }
+
+    private fun showSplash(pwaApp: WebApp) {
+        val app = application as WebViewServiceProvider
+        val rawColor = pwaApp.themeColor
+            ?.let { runCatching { Color.parseColor(it) }.getOrNull() }
+            ?: Color.BLACK
+        val bgColor = androidx.compose.ui.graphics.Color(rawColor)
+        val isLight = (0.299 * Color.red(rawColor) + 0.587 * Color.green(rawColor) + 0.114 * Color.blue(rawColor)) / 255 > 0.5
+        val contentColor = if (isLight) androidx.compose.ui.graphics.Color.Black else androidx.compose.ui.graphics.Color.White
+
+        val view = ComposeView(this).apply {
+            setContent {
+                val themeMode by app.themeManager.themeMode.collectAsState(ThemeMode.SYSTEM)
+                val dynamicColor by app.themeManager.dynamicColor.collectAsState(true)
+                val iconBitmap by produceState<Bitmap?>(null) {
+                    value = withContext(Dispatchers.IO) {
+                        pwaApp.iconPath?.let { runCatching { BitmapFactory.decodeFile(it) }.getOrNull() }
+                    }
+                }
+                ShellifyTheme(themeMode = themeMode, dynamicColor = dynamicColor, controlStatusBar = false) {
+                    Box(
+                        modifier = Modifier.fillMaxSize().background(bgColor),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.spacedBy(Dimens.spaceXl),
+                        ) {
+                            iconBitmap?.let { bmp ->
+                                Image(
+                                    bitmap = bmp.asImageBitmap(),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(Dimens.sizeEmptyIconLg)
+                                        .clip(RoundedCornerShape(Dimens.cornerLg)),
+                                )
+                            }
+                            Text(
+                                text = pwaApp.name,
+                                style = MaterialTheme.typography.titleLarge,
+                                color = contentColor,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        splashOverlay = view
+        container.addView(view, FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT)
+    }
+
+    private fun hideSplash() {
+        val splash = splashOverlay ?: return
+        splashOverlay = null
+        splash.animate()
+            .alpha(0f)
+            .setDuration(250)
+            .withEndAction { container.removeView(splash) }
+            .start()
+    }
 
     private fun applyWindowMode(app: WebApp) {
         val fullscreen = app.isFullscreen
