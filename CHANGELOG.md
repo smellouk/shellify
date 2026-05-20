@@ -3,6 +3,48 @@
 All notable changes to Shellify are documented here.
 Entries are auto-generated from conventional commits using [git-cliff](https://git-cliff.org).
 
+## [1.2.0] - 2026-05-20
+
+### Bug Fixes
+
+- **feature:webview**: Improve recents chip label and task description
+- **core:isolation**: Make clearData suspend and await cookie removal before reload
+- **core:isolation**: Replace suspendCancellableCoroutine with fire-and-forget removeAllCookies
+
+### Documentation
+
+- **legal**: Soften branding language per legal advice
+- **site**: Add assetlinks.json for Android App Links verification
+- **app**: Update CLAUDE.md — reflect actual Konsist boundaries and WebView MVVM pattern
+- **site**: Fix changelog date format and add Changelog link to legal page sidebars
+
+### Features
+
+- **feature:webview**: Add per-PWA splash screen and suppress double splash
+- **feature:settings**: Add per-app control center toggle with tests
+- **feature:webview**: Add typed error screen and screenshot test coverage
+- **feature:webview**: Apply PWA theme color to all Compose overlays in WebViewActivity
+- **feature:home**: Add delete app to context menu with confirmation dialog
+- **feature:webview**: Add clear data button to control center
+- **feature:add**: Validate URL on save, analyze, and icon fetch
+- **feature:webview**: Hide control center FAB until page finishes loading
+
+### Maintenance
+
+- **main**: Skip workflow for bot commits pushed via PAT
+- Restore canonical Apache 2.0 license text
+
+### Refactoring
+
+- **feature:webview**: Extract WebViewPasswordDialog and WebViewControlCenter composables
+- **feature:webview**: Extract WebViewViewModel — full MVVM split
+
+### Testing
+
+- **app**: Update AppSettingsScreen goldens after Features section renamed to Control center
+- **app**: Replace all hardcoded strings in Android tests with R.string resources
+- **feature:webview**: Add kotlinx.coroutines.test dependency for WebViewViewModelTest
+
 ## [1.1.1] - 2026-05-18
 
 ### Bug Fixes

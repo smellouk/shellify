@@ -149,6 +149,7 @@ h3.release-category {
 
   <aside class="toc" aria-label="Table of contents">
     <div class="toc-title">Releases</div>
+    <a class="toc-link" href="#v-1-2-0">1.2.0 — 2026-05-20</a>
     <a class="toc-link" href="#v-1-1-1">1.1.1 — 2026-05-18</a>
     <a class="toc-link" href="#v-1-1-0">1.1.0 — 2026-05-17</a>
     <a class="toc-link" href="#v-1-0-0">1.0.0 — 2026-05-17</a>
@@ -165,7 +166,7 @@ h3.release-category {
       <span class="doc-tag doc-tag-changelog">Changelog</span>
       <h1>Release history</h1>
       <div class="doc-meta">
-        <span>Last updated: May 18, 2026</span>
+        <span>Last updated: May 20, 2026</span>
         <span>·</span>
         <a href="mailto:contact@shellify.app">contact@shellify.app</a>
       </div>
@@ -173,6 +174,50 @@ h3.release-category {
 
     <div class="doc-note doc-note-teal">
       <strong>Auto-generated</strong> from conventional commits using <a href="https://git-cliff.org" rel="noopener">git-cliff</a>. Each entry reflects a tagged release.
+    </div>
+
+    <div class="doc-section" id="v-1-2-0">
+      <h2><span class="release-version">1.2.0</span><span class="release-date">2026-05-20</span></h2>
+<h3 class="release-category">Bug Fixes</h3>
+<ul>
+<li><strong>feature:webview</strong>: Improve recents chip label and task description</li>
+<li><strong>core:isolation</strong>: Make clearData suspend and await cookie removal before reload</li>
+<li><strong>core:isolation</strong>: Replace suspendCancellableCoroutine with fire-and-forget removeAllCookies</li>
+</ul>
+<h3 class="release-category">Documentation</h3>
+<ul>
+<li><strong>legal</strong>: Soften branding language per legal advice</li>
+<li><strong>site</strong>: Add assetlinks.json for Android App Links verification</li>
+<li><strong>app</strong>: Update CLAUDE.md — reflect actual Konsist boundaries and WebView MVVM pattern</li>
+<li><strong>site</strong>: Fix changelog date format and add Changelog link to legal page sidebars</li>
+</ul>
+<h3 class="release-category">Features</h3>
+<ul>
+<li><strong>feature:webview</strong>: Add per-PWA splash screen and suppress double splash</li>
+<li><strong>feature:settings</strong>: Add per-app control center toggle with tests</li>
+<li><strong>feature:webview</strong>: Add typed error screen and screenshot test coverage</li>
+<li><strong>feature:webview</strong>: Apply PWA theme color to all Compose overlays in WebViewActivity</li>
+<li><strong>feature:home</strong>: Add delete app to context menu with confirmation dialog</li>
+<li><strong>feature:webview</strong>: Add clear data button to control center</li>
+<li><strong>feature:add</strong>: Validate URL on save, analyze, and icon fetch</li>
+<li><strong>feature:webview</strong>: Hide control center FAB until page finishes loading</li>
+</ul>
+<h3 class="release-category">Maintenance</h3>
+<ul>
+<li><strong>main</strong>: Skip workflow for bot commits pushed via PAT</li>
+<li>Restore canonical Apache 2.0 license text</li>
+</ul>
+<h3 class="release-category">Refactoring</h3>
+<ul>
+<li><strong>feature:webview</strong>: Extract WebViewPasswordDialog and WebViewControlCenter composables</li>
+<li><strong>feature:webview</strong>: Extract WebViewViewModel — full MVVM split</li>
+</ul>
+<h3 class="release-category">Testing</h3>
+<ul>
+<li><strong>app</strong>: Update AppSettingsScreen goldens after Features section renamed to Control center</li>
+<li><strong>app</strong>: Replace all hardcoded strings in Android tests with R.string resources</li>
+<li><strong>feature:webview</strong>: Add kotlinx.coroutines.test dependency for WebViewViewModelTest</li>
+</ul>
     </div>
 
     <div class="doc-section" id="v-1-1-1">
