@@ -2,12 +2,15 @@ package io.shellify.app.core.isolation
 
 import android.content.Context
 import android.os.Build
+import android.webkit.CookieManager
 import android.webkit.WebView
 import io.shellify.app.core.crypto.CryptoManager
 import io.shellify.app.core.engine.GeckoEngineManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 /**
  * Single entry-point for all PWA isolation logic.
@@ -55,12 +58,18 @@ class IsolationManager(
         }
     }
 
-    fun clearData(isolationId: String) {
+    suspend fun clearData(isolationId: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             WebViewProfileManager.deleteProfile(isolationId)
         } else {
-            scope.launch { cookieJarManager.deleteFor(isolationId) }
+            val cm = CookieManager.getInstance()
+            suspendCancellableCoroutine { cont ->
+                cm.removeAllCookies { cont.resume(Unit) }
+            }
+            cm.flush()
+            cookieJarManager.deleteFor(isolationId)
         }
         geckoEngineManager?.clearDataForContext(isolationId)
     }
+
 }
