@@ -51,6 +51,7 @@ class WebViewControlCenterTest {
                     callback: BrowserEngineCallback,
                 ): View {
                     engineReady.countDown()
+                    callback.onPageFinished(app.url)
                     return View(context)
                 }
                 override fun loadUrl(url: String) {}

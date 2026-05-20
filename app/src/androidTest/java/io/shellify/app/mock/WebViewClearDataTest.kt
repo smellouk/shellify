@@ -56,6 +56,7 @@ class WebViewClearDataTest {
                     callback: BrowserEngineCallback,
                 ): View {
                     engineReady.countDown()
+                    callback.onPageFinished(app.url)
                     return View(context)
                 }
 
