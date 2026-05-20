@@ -48,6 +48,7 @@ class WebViewControlCenterScreenshotTest {
                     onTranslateChanged = {},
                     onFullscreenChanged = {},
                     onLockChanged = {},
+                    onClearData = {},
                 )
             }
         }
@@ -65,6 +66,7 @@ class WebViewControlCenterScreenshotTest {
                     onTranslateChanged = {},
                     onFullscreenChanged = {},
                     onLockChanged = {},
+                    onClearData = {},
                 )
             }
         }
@@ -83,6 +85,7 @@ class WebViewControlCenterScreenshotTest {
                         onTranslateChanged = {},
                         onFullscreenChanged = {},
                         onLockChanged = {},
+                    onClearData = {},
                     )
                 }
             }
@@ -102,6 +105,7 @@ class WebViewControlCenterScreenshotTest {
                         onTranslateChanged = {},
                         onFullscreenChanged = {},
                         onLockChanged = {},
+                    onClearData = {},
                     )
                 }
             }

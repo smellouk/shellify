@@ -144,6 +144,7 @@
     <string name="webview_control_translate">Traduction automatique</string>
     <string name="webview_control_fullscreen">Plein écran</string>
     <string name="webview_control_applock">Verrouillage de l\'application</string>
+    <string name="webview_control_clear_data">Effacer les données</string>
     <string name="webview_applock_disabled_hint">Définissez un mot de passe dans Paramètres pour activer</string>
     <string name="webview_sheet_title">Fonctionnalités</string>
 

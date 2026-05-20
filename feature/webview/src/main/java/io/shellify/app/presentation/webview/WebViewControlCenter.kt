@@ -1,11 +1,13 @@
 package io.shellify.app.presentation.webview
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.GTranslate
 import androidx.compose.material.icons.filled.Lock
@@ -27,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import io.shellify.app.presentation.components.ConfirmDialog
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -45,6 +48,7 @@ fun WebViewControlCenter(
     onTranslateChanged: (Boolean) -> Unit,
     onFullscreenChanged: (Boolean) -> Unit,
     onLockChanged: (Boolean) -> Unit,
+    onClearData: () -> Unit,
 ) {
     var showSheet by remember { mutableStateOf(false) }
 
@@ -76,6 +80,7 @@ fun WebViewControlCenter(
                 onTranslateChanged = onTranslateChanged,
                 onFullscreenChanged = onFullscreenChanged,
                 onLockChanged = onLockChanged,
+                onClearData = { showSheet = false; onClearData() },
             )
         }
     }
@@ -89,7 +94,10 @@ fun WebViewControlCenterSheet(
     onTranslateChanged: (Boolean) -> Unit,
     onFullscreenChanged: (Boolean) -> Unit,
     onLockChanged: (Boolean) -> Unit,
+    onClearData: () -> Unit,
 ) {
+    var showClearDataDialog by remember { mutableStateOf(false) }
+
     Text(
         stringResource(R.string.webview_sheet_title),
         style = MaterialTheme.typography.titleMedium,
@@ -155,5 +163,26 @@ fun WebViewControlCenterSheet(
             )
         },
     )
+    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
+    ListItem(
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        leadingContent = { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) },
+        headlineContent = {
+            Text(stringResource(R.string.webview_control_clear_data), color = MaterialTheme.colorScheme.error)
+        },
+        modifier = Modifier.clickable { showClearDataDialog = true },
+    )
     Spacer(Modifier.navigationBarsPadding())
+
+    if (showClearDataDialog) {
+        ConfirmDialog(
+            title = stringResource(R.string.home_clear_data_title),
+            body = stringResource(R.string.home_clear_data_body, pwaApp.name),
+            confirmLabel = stringResource(R.string.home_clear_data_button),
+            onConfirm = { showClearDataDialog = false; onClearData() },
+            onDismiss = { showClearDataDialog = false },
+            icon = Icons.Default.Delete,
+            isDestructive = true,
+        )
+    }
 }

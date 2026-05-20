@@ -144,6 +144,7 @@
     <string name="webview_control_translate">Auto-translate</string>
     <string name="webview_control_fullscreen">Fullscreen</string>
     <string name="webview_control_applock">App lock</string>
+    <string name="webview_control_clear_data">Clear data</string>
     <string name="webview_applock_disabled_hint">Set an app password in Settings to enable</string>
     <string name="webview_sheet_title">Control center</string>
     <string name="webview_task_label">Shell</string>
