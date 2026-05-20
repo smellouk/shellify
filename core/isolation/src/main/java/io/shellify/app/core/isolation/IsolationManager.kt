@@ -9,8 +9,6 @@ import io.shellify.app.core.engine.GeckoEngineManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlin.coroutines.resume
 
 /**
  * Single entry-point for all PWA isolation logic.
@@ -63,9 +61,7 @@ class IsolationManager(
             WebViewProfileManager.deleteProfile(isolationId)
         } else {
             val cm = CookieManager.getInstance()
-            suspendCancellableCoroutine { cont ->
-                cm.removeAllCookies { cont.resume(Unit) }
-            }
+            cm.removeAllCookies(null)
             cm.flush()
             cookieJarManager.deleteFor(isolationId)
         }
