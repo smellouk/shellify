@@ -226,6 +226,20 @@ _GH_SVG = (
     "</svg>"
 )
 
+_PWA_META = """\
+<!-- PWA manifest -->
+<link rel="manifest" href="manifest.json">
+
+<!-- Theme colour -->
+<meta name="theme-color" content="#7C4DFF" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#6200EE" media="(prefers-color-scheme: light)">
+
+<!-- iOS / Safari PWA meta -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Shellify">
+<link rel="apple-touch-icon" href="icon.png">"""
+
 _LEGAL_CSS = """\
 <style>
 .legal-wrap {
@@ -436,6 +450,7 @@ def _page(
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{html.escape(page_title)}</title>
 <meta name="description" content="{html.escape(meta_desc)}">
+{_PWA_META}
 <link rel="stylesheet" href="assets/site.css">
 {_LEGAL_CSS}
 </head>
