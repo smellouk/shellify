@@ -1,0 +1,33 @@
+{
+  "name": "Shellify Developer Tools",
+  "short_name": "Shellify Tools",
+  "description": "In-app test utilities for Shellify. Serve via adb reverse tcp:8080 tcp:8080 and open inside the app.",
+  "id": "/tools.html",
+  "start_url": "/tools.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#7C4DFF",
+  "background_color": "#0D1117",
+  "categories": ["developer-tools", "utilities"],
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any"
+    }
+  ]
+}
