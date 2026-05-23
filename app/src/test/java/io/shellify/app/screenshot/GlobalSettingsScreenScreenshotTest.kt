@@ -1,7 +1,10 @@
 package io.shellify.app.screenshot
 
+import android.app.NotificationManager
+import android.content.Context
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
+import androidx.test.core.app.ApplicationProvider
 import com.github.takahirom.roborazzi.captureRoboImage
 import io.mockk.every
 import io.mockk.mockk
@@ -16,10 +19,12 @@ import io.shellify.app.domain.model.EngineType
 import io.shellify.app.presentation.settings.PasswordDialogMode
 import io.shellify.app.presentation.theme.ShellifyTheme
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.junit.After
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
@@ -30,6 +35,15 @@ class GlobalSettingsScreenScreenshotTest {
 
     @get:Rule
     val composeTestRule = createComposeRule()
+
+    private fun notificationManager() =
+        ApplicationProvider.getApplicationContext<Context>()
+            .getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+    @After
+    fun resetOsNotifications() {
+        shadowOf(notificationManager()).setNotificationsEnabled(true)
+    }
 
     private fun buildVm(state: GlobalSettingsUiState): GlobalSettingsViewModel {
         val gecko = mockk<GeckoEngineManager>(relaxed = true).also {
@@ -211,6 +225,44 @@ class GlobalSettingsScreenScreenshotTest {
                         GlobalSettingsUiState(
                             isLoaded = true,
                             globalNotificationsEnabled = false,
+                        )
+                    ),
+                    onLicenses = {},
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun notifications_osDisabled_showsEnableButton() {
+        shadowOf(notificationManager()).setNotificationsEnabled(false)
+        composeTestRule.setContent {
+            ShellifyTheme {
+                GlobalSettingsScreen(
+                    viewModel = buildVm(
+                        GlobalSettingsUiState(
+                            isLoaded = true,
+                            globalNotificationsEnabled = false,
+                        )
+                    ),
+                    onLicenses = {},
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun notifications_osEnabled_showsOpenInNewIcon() {
+        shadowOf(notificationManager()).setNotificationsEnabled(true)
+        composeTestRule.setContent {
+            ShellifyTheme {
+                GlobalSettingsScreen(
+                    viewModel = buildVm(
+                        GlobalSettingsUiState(
+                            isLoaded = true,
+                            globalNotificationsEnabled = true,
                         )
                     ),
                     onLicenses = {},

@@ -455,6 +455,9 @@ window.addEventListener('load', () => {
       } else if (perm === 'DENIED') {
         permEl.classList.add('err');
         permTxt.textContent = '✗ Shellify permission: DENIED — blocked in PWA settings';
+      } else if (perm === 'BLOCKED_BY_OS') {
+        permEl.classList.add('err');
+        permTxt.textContent = '✗ Shellify permission: BLOCKED — notifications disabled in Android settings';
       } else {
         permTxt.textContent = '○ Shellify permission: ' + perm + ' — not yet configured in PWA settings';
       }

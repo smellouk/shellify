@@ -148,4 +148,23 @@ class AppSettingsNotificationsSectionScreenshotTest {
         }
         composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
+
+    @Test
+    fun notifications_notAsked() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                AppSettingsScreen(
+                    viewModel = buildVm(
+                        AppSettingsUiState(
+                            app = app(notificationPermission = NotificationPermission.NOT_ASKED),
+                            isLoading = false,
+                        )
+                    ),
+                    onBack = {},
+                    onDeleted = {},
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
 }

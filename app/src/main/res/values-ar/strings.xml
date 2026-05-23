@@ -227,7 +227,9 @@
     <string name="global_settings_screenshot_protection">حماية لقطات الشاشة</string>
     <string name="global_settings_screenshot_protection_desc">منع لقطات الشاشة وتسجيل الشاشة</string>
     <string name="global_settings_section_notifications">الإشعارات</string>
-    <string name="global_settings_notifications_enabled">السماح بالإشعارات</string>
+    <string name="global_settings_notifications_enabled">إدارة الإشعارات</string>
+    <string name="global_settings_notifications_enable">تفعيل</string>
+    <string name="global_settings_notifications_open_settings">إعدادات الإشعارات</string>
     <string name="settings_notifications_global_disabled">فعّل الإشعارات من الإعدادات العامة للتحكم بها لكل تطبيق</string>
     <string name="global_settings_section_backup">النسخ الاحتياطي</string>
     <string name="global_settings_encrypted_backup">نسخ احتياطي مشفَّر</string>

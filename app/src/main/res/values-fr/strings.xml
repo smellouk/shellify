@@ -227,7 +227,9 @@
     <string name="global_settings_screenshot_protection">Protection contre les captures d\'écran</string>
     <string name="global_settings_screenshot_protection_desc">Empêcher les captures d\'écran et l\'enregistrement d\'écran</string>
     <string name="global_settings_section_notifications">Notifications</string>
-    <string name="global_settings_notifications_enabled">Autoriser les notifications</string>
+    <string name="global_settings_notifications_enabled">Gérer les notifications</string>
+    <string name="global_settings_notifications_enable">Activer</string>
+    <string name="global_settings_notifications_open_settings">Paramètres de notification</string>
     <string name="settings_notifications_global_disabled">Activez les notifications dans les Paramètres globaux pour contrôler les applications</string>
     <string name="global_settings_section_backup">Sauvegarde</string>
     <string name="global_settings_encrypted_backup">Sauvegarde chiffrée</string>

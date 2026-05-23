@@ -53,6 +53,7 @@ import io.shellify.app.core.security.isLegacyHash
 import io.shellify.app.core.security.showSystemLockPrompt
 import io.shellify.app.core.security.verifyPassword
 import io.shellify.app.core.theme.ThemeMode
+import androidx.core.app.NotificationManagerCompat
 import io.shellify.app.core.webbridge.NotificationBridge
 import io.shellify.app.core.webbridge.ShellifyBridge
 import io.shellify.app.core.webbridge.TranslateBridge
@@ -233,7 +234,8 @@ class WebViewActivity : FragmentActivity() {
                         viewModel.onNotificationReceived(t, b, i, null)
                     },
                     permissionProvider = {
-                        viewModel.uiState.value.app?.notificationPermission?.name ?: "NOT_ASKED"
+                        if (!NotificationManagerCompat.from(this).areNotificationsEnabled()) "BLOCKED_BY_OS"
+                        else viewModel.uiState.value.app?.notificationPermission?.name ?: "NOT_ASKED"
                     },
                 ), "ShellifyBridge")
             }

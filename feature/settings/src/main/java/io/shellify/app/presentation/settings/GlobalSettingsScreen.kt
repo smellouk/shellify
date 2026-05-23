@@ -1,7 +1,12 @@
 package io.shellify.app.presentation.settings
 
 import android.os.Build
+import android.provider.Settings
 import android.text.format.DateFormat
+import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.runtime.DisposableEffect
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -126,6 +131,7 @@ import io.shellify.app.core.iconpack.SimpleIconsState
 import io.shellify.app.core.theme.ThemeMode
 import io.shellify.app.domain.model.UserAgentMode
 import android.app.Activity
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -146,15 +152,35 @@ fun GlobalSettingsScreen(
     val simpleIconsState by viewModel.simpleIconsManager.state.collectAsState()
     val geckoLatestVersion by viewModel.geckoEngineManager.latestVersion.collectAsState()
     var showUaDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
 
     // Trigger version check whenever the engine is installed
     androidx.compose.runtime.LaunchedEffect(geckoInstallState) {
         if (geckoInstallState is GeckoInstallState.Installed) viewModel.checkForGeckoUpdate()
     }
+    var osNotificationsEnabled by remember {
+        mutableStateOf(NotificationManagerCompat.from(context).areNotificationsEnabled())
+    }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                osNotificationsEnabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
-        viewModel.setGlobalNotificationsEnabled(granted)
+        osNotificationsEnabled = granted
+        if (!granted) {
+            context.startActivity(
+                android.content.Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+            )
+        }
     }
     var showScheduleDialog by remember { mutableStateOf(false) }
     var showBackupWarning by remember { mutableStateOf(false) }
@@ -164,7 +190,6 @@ fun GlobalSettingsScreen(
     val importPwdDesc = stringResource(R.string.global_settings_import_password_dialog_desc)
     val strSave = stringResource(R.string.common_save)
     val strRestore = stringResource(R.string.common_restore)
-    val context = LocalContext.current
 
     // DataStore flows are reloaded in-place by BackupManager.reloadFromFile() after restore,
     // so no activity restart is needed — just clear the flag.
@@ -859,7 +884,7 @@ fun GlobalSettingsScreen(
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Icon(
-                                    if (state.globalNotificationsEnabled) Icons.Default.Notifications
+                                    if (osNotificationsEnabled) Icons.Default.Notifications
                                     else Icons.Default.NotificationsOff,
                                     null,
                                     modifier = Modifier.size(20.dp),
@@ -874,20 +899,39 @@ fun GlobalSettingsScreen(
                             )
                         },
                         trailingContent = {
-                            Switch(
-                                checked = state.globalNotificationsEnabled,
-                                onCheckedChange = { on ->
-                                    if (!on) {
-                                        viewModel.setGlobalNotificationsEnabled(false)
-                                    } else if (android.os.Build.VERSION.SDK_INT >= 33) {
-                                        notificationPermissionLauncher.launch(
-                                            android.Manifest.permission.POST_NOTIFICATIONS
+                            if (osNotificationsEnabled) {
+                                IconButton(
+                                    onClick = {
+                                        context.startActivity(
+                                            android.content.Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                                .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
                                         )
-                                    } else {
-                                        viewModel.setGlobalNotificationsEnabled(true)
-                                    }
-                                },
-                            )
+                                    },
+                                ) {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.OpenInNew,
+                                        contentDescription = stringResource(R.string.global_settings_notifications_open_settings),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            } else {
+                                TextButton(
+                                    onClick = {
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                            notificationPermissionLauncher.launch(
+                                                android.Manifest.permission.POST_NOTIFICATIONS
+                                            )
+                                        } else {
+                                            context.startActivity(
+                                                android.content.Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+                                                    .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                                            )
+                                        }
+                                    },
+                                ) {
+                                    Text(stringResource(R.string.global_settings_notifications_enable))
+                                }
+                            }
                         },
                     )
                 }

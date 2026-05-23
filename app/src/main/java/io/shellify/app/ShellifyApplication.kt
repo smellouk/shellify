@@ -41,6 +41,7 @@ import io.shellify.app.presentation.shortcut.ShortcutActivity
 import io.shellify.app.presentation.webview.PwaNotificationDispatcher
 import io.shellify.app.presentation.webview.WebViewIntentFactoryImpl
 import io.shellify.app.presentation.webview.WebViewServiceProvider
+import androidx.core.app.NotificationManagerCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -112,7 +113,7 @@ class ShellifyApplication : Application(), WebViewServiceProvider, LinkDispatche
     override val notificationDispatcher by lazy {
         PwaNotificationDispatcher(
             context = this,
-            isGlobalNotificationsEnabled = { globalNotificationsEnabled.value },
+            isGlobalNotificationsEnabled = { NotificationManagerCompat.from(this).areNotificationsEnabled() },
             isDndActive = IsDndActiveUseCase(),
             saveNotification = saveNotification,
             countToday = countNotificationsToday,

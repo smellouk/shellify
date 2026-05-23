@@ -246,7 +246,9 @@
     <string name="global_settings_screenshot_protection">Screenshot protection</string>
     <string name="global_settings_screenshot_protection_desc">Prevent screenshots and screen recording</string>
     <string name="global_settings_section_notifications">Notifications</string>
-    <string name="global_settings_notifications_enabled">Allow notifications</string>
+    <string name="global_settings_notifications_enabled">Manage notifications</string>
+    <string name="global_settings_notifications_enable">Enable</string>
+    <string name="global_settings_notifications_open_settings">Notification settings</string>
     <string name="settings_notifications_global_disabled">Enable notifications in Global Settings to allow per-app control</string>
     <string name="global_settings_section_backup">Backup</string>
     <string name="global_settings_encrypted_backup">Encrypted backup</string>

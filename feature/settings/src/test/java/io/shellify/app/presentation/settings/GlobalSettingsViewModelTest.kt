@@ -1,5 +1,6 @@
 package io.shellify.app.presentation.settings
 
+import android.app.NotificationManager
 import android.content.Context
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -76,6 +77,9 @@ class GlobalSettingsViewModelTest {
         every { backupSettings.directoryUri } returns MutableStateFlow(null)
         every { backupSettings.schedule } returns MutableStateFlow(BackupSchedule.NONE)
         every { backupSettings.lastBackupTime } returns MutableStateFlow(0L)
+        val notificationManager = mockk<NotificationManager>(relaxed = true)
+        every { context.getSystemService(Context.NOTIFICATION_SERVICE) } returns notificationManager
+        every { notificationManager.notificationChannels } returns emptyList()
         every { getWebApps() } returns flowOf(emptyList())
         coEvery { saveWebApp(any()) } returns 0L
         every { context.getString(CoreUiR.string.settings_backup_error_no_password) } returns
