@@ -14,7 +14,6 @@ import io.shellify.app.core.pwa.FaviconFetcher
 import io.shellify.app.core.pwa.PwaAnalyzer
 import io.shellify.app.core.security.PasswordManager
 import io.shellify.app.core.security.verifyPassword
-import io.shellify.app.core.theme.ThemeManager
 import io.shellify.app.core.shortcut.PwaShortcutManager
 import io.shellify.app.core.shortcut.SvgIconRenderer
 import io.shellify.app.domain.model.EngineType
@@ -71,7 +70,6 @@ class AppSettingsViewModel(
     private val simpleIconsManager: SimpleIconsManager,
     private val passwordManager: PasswordManager,
     val geckoEngineManager: GeckoEngineManager,
-    private val themeManager: ThemeManager,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -100,10 +98,14 @@ class AppSettingsViewModel(
                 }
             }
         }
-        viewModelScope.launch {
-            themeManager.globalNotificationsEnabled.collect { enabled ->
-                _state.update { it.copy(globalNotificationsEnabled = enabled) }
-            }
+        _state.update {
+            it.copy(globalNotificationsEnabled = androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled())
+        }
+    }
+
+    fun refreshGlobalNotificationState() {
+        _state.update {
+            it.copy(globalNotificationsEnabled = androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled())
         }
     }
 

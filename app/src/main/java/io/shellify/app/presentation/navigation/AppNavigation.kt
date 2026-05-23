@@ -240,7 +240,6 @@ fun AppNavigation(
                             app.simpleIconsManager,
                             app.passwordManager,
                             app.geckoEngineManager,
-                            app.themeManager,
                         )
                     },
                     onBack = { navController.popBackStack() },
