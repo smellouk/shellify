@@ -161,9 +161,6 @@ class AppLockPasswordGuardTest {
             geckoEngineManager = mockk<GeckoEngineManager> {
                 every { installState } returns MutableStateFlow(GeckoInstallState.NotInstalled)
             },
-            themeManager = mockk<ThemeManager>(relaxed = true) {
-                every { globalNotificationsEnabled } returns MutableStateFlow(false)
-            },
         )
     }
 
