@@ -3,7 +3,9 @@ package io.shellify.app.mock.screen
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -18,6 +20,7 @@ import io.shellify.app.presentation.theme.ShellifyTheme
 import io.shellify.app.util.FakeData
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
@@ -168,5 +171,44 @@ class AppSettingsScreenTest {
             .onNodeWithText(context.getString(CoreUiR.string.settings_swipe_to_refresh))
             .performScrollTo()
             .assertIsDisplayed()
+    }
+
+    // ─── Network log row ──────────────────────────────────────────────────────
+
+    @Test
+    fun networkLogRow_isDisplayed() {
+        val app = FakeData.webApp(id = 1L, name = "Notion", url = "https://notion.so")
+        setAppSettingsScreen(AppSettingsUiState(app = app, isLoading = false))
+        composeTestRule
+            .onNodeWithText(context.getString(CoreUiR.string.settings_network_log))
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun networkLogRow_downloadIconIsDisplayed() {
+        val app = FakeData.webApp(id = 1L, name = "Notion", url = "https://notion.so")
+        setAppSettingsScreen(AppSettingsUiState(app = app, isLoading = false))
+        composeTestRule
+            .onNodeWithContentDescription(context.getString(CoreUiR.string.network_log_export_cd))
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun networkLogRow_downloadIconClick_invokesExportOnViewModel() {
+        val app = FakeData.webApp(id = 1L, name = "Notion", url = "https://notion.so")
+        // hasNetworkLogs = true is required — the download button is disabled otherwise.
+        val vm = buildViewModel(AppSettingsUiState(app = app, isLoading = false, hasNetworkLogs = true))
+        composeTestRule.setContent {
+            ShellifyTheme {
+                AppSettingsScreen(viewModel = vm, onBack = {}, onDeleted = {})
+            }
+        }
+        composeTestRule
+            .onNodeWithContentDescription(context.getString(CoreUiR.string.network_log_export_cd))
+            .performScrollTo()
+            .performClick()
+        verify { vm.onExportNetworkLogsClick() }
     }
 }

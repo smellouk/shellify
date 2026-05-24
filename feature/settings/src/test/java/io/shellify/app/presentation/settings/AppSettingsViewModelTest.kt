@@ -18,6 +18,8 @@ import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.TranslateLanguage
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.domain.usecase.DeleteWebAppUseCase
+import io.shellify.app.domain.usecase.ExportNetworkLogsUseCase
+import io.shellify.app.domain.usecase.GetNetworkLogUseCase
 import io.shellify.app.domain.usecase.GetWebAppByIdUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +53,8 @@ class AppSettingsViewModelTest {
     private val simpleIconsManager = mockk<SimpleIconsManager>(relaxed = true)
     private val passwordManager = mockk<PasswordManager>(relaxed = true)
     private val geckoEngineManager = mockk<GeckoEngineManager>(relaxed = true)
+    private val exportNetworkLog = mockk<ExportNetworkLogsUseCase>(relaxed = true)
+    private val getNetworkLog = mockk<GetNetworkLogUseCase>(relaxed = true)
 
     private val testApp = WebApp(id = 1L, name = "TestApp", url = "https://test.com", isolationId = "iso-abc")
 
@@ -66,6 +70,7 @@ class AppSettingsViewModelTest {
         every { passwordManager.passwordHash } returns MutableStateFlow(null)
         every { context.getSystemService(Context.NOTIFICATION_SERVICE) } returns mockk<NotificationManager>(relaxed = true)
         every { context.getSystemService(Context.APP_OPS_SERVICE) } returns mockk<AppOpsManager>(relaxed = true)
+        every { getNetworkLog(any()) } returns MutableStateFlow(emptyList())
         viewModel = AppSettingsViewModel(
             appId = 1L,
             getWebAppById = getWebAppById,
@@ -78,6 +83,8 @@ class AppSettingsViewModelTest {
             simpleIconsManager = simpleIconsManager,
             passwordManager = passwordManager,
             geckoEngineManager = geckoEngineManager,
+            exportNetworkLog = exportNetworkLog,
+            getNetworkLog = getNetworkLog,
         )
     }
 

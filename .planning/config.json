@@ -19,6 +19,7 @@
     "_auto_chain_active": false
   },
   "git": {
+    "branching_strategy": "phase",
     "base_branch": "main",
     "phase_branch_template": "feature/phase-{phase}-{slug}",
     "milestone_branch_template": "release/{milestone}"

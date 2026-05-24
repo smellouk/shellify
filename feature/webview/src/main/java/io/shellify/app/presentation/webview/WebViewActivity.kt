@@ -82,6 +82,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -140,6 +141,12 @@ class WebViewActivity : FragmentActivity() {
     private lateinit var viewModel: WebViewViewModel
     private var statusBarScrim: View? = null
     private var isIncognitoSession = false
+
+    // One logger per Activity session: captures all onRequestIntercepted events into a live flow.
+    private var networkRequestLogger: NetworkRequestLogger? = null
+
+    // Controls NetworkLogSheet visibility from outside the Compose tree.
+    private val showNetworkLog = MutableStateFlow(false)
 
     // Registered in onCreate — must be registered before the Activity reaches STARTED.
     private val postNotificationsLauncher = registerForActivityResult(
@@ -216,6 +223,16 @@ class WebViewActivity : FragmentActivity() {
         }
 
         viewModel = ViewModelProvider(this, WebViewViewModel.Factory(pwaApp, app))[WebViewViewModel::class.java]
+        // Logger is only created for real app sessions (appId != -1L).
+        // Preview and incognito sessions have no persistent app identity, so network
+        // logging is skipped entirely — the null check in the engine callback is the guard.
+        networkRequestLogger = if (appId != -1L) {
+            NetworkRequestLogger(
+                appId = appId,
+                logNetworkRequest = app.logNetworkRequest,
+                clearNetworkLogs = app.clearNetworkLogs,
+            )
+        } else null
 
         engine = engineFactory?.invoke() ?: when {
             pwaApp.engineType == EngineType.GECKOVIEW && app.geckoEngineManager.isInstalled() ->
@@ -234,6 +251,24 @@ class WebViewActivity : FragmentActivity() {
             pwaApp.themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() }
                 ?: Color.BLACK
         )
+
+        // Initialise swipeRefreshLayout before engine.createView() so that the BrowserEngineCallback
+        // (which sets isRefreshing = false in onPageFinished/onError/onSslError) can access it
+        // safely even when a test engine factory fires the callback synchronously during createView.
+        swipeRefreshLayout = SwipeRefreshLayout(this).apply {
+            val tintColor = pwaApp.themeColor
+                ?.let { runCatching { Color.parseColor(it) }.getOrNull() }
+                ?: getColor(android.R.color.holo_blue_bright)
+            setColorSchemeColors(tintColor)
+            isEnabled = pwaApp.swipeToRefreshEnabled
+            setOnChildScrollUpCallback { _, _ ->
+                when (val e = engine) {
+                    is GeckoViewEngine -> e.canScrollUp()
+                    else -> e.getView()?.canScrollVertically(-1) ?: false
+                }
+            }
+            setOnRefreshListener { engine.reload() }
+        }
 
         val engineView = engine.createView(this, pwaApp, buildCallback())
 
@@ -285,20 +320,6 @@ class WebViewActivity : FragmentActivity() {
             ),
         )
 
-        swipeRefreshLayout = SwipeRefreshLayout(this).apply {
-            val tintColor = pwaApp.themeColor
-                ?.let { runCatching { Color.parseColor(it) }.getOrNull() }
-                ?: getColor(android.R.color.holo_blue_bright)
-            setColorSchemeColors(tintColor)
-            isEnabled = pwaApp.swipeToRefreshEnabled
-            setOnChildScrollUpCallback { _, _ ->
-                when (val e = engine) {
-                    is GeckoViewEngine -> e.canScrollUp()
-                    else -> e.getView()?.canScrollVertically(-1) ?: false
-                }
-            }
-            setOnRefreshListener { engine.reload() }
-        }
         swipeRefreshLayout.addView(container)
         // SwipeRefreshLayout is the root view after edge-to-edge is enabled. Register the insets
         // listener here — not on container — so insets are reliably dispatched to the actual root.
@@ -426,6 +447,7 @@ class WebViewActivity : FragmentActivity() {
         }
         addErrorOverlay(app)
         addControlsOverlay(app)
+        addNetworkLogOverlay(app)
         addPermissionDialogOverlay(app)
     }
 
@@ -604,12 +626,47 @@ class WebViewActivity : FragmentActivity() {
                         },
                         onLockChanged = { viewModel.onLockChanged(it) },
                         onClearData = { viewModel.onClearData() },
+                        onNetworkLogClick = { showNetworkLog.value = true },
                     )
                 }
             }
         }
         container.addView(
             overlay,
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT,
+        )
+    }
+
+    private fun addNetworkLogOverlay(app: WebViewServiceProvider) {
+        val logOverlay = ComposeView(this).apply {
+            setViewCompositionStrategy(
+                androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+            )
+            setContent {
+                val themeMode by app.themeManager.themeMode.collectAsState(ThemeMode.SYSTEM)
+                val dynamicColor by app.themeManager.dynamicColor.collectAsState(true)
+                val state by viewModel.uiState.collectAsState()
+                val show by showNetworkLog.collectAsState()
+                if (!show) return@setContent
+                val accentColor = state.app?.themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() }
+                ShellifyTheme(
+                    themeMode = themeMode,
+                    dynamicColor = dynamicColor,
+                    accentColor = accentColor,
+                    controlStatusBar = false,
+                ) {
+                    NetworkLogSheet(
+                        sessionLog = networkRequestLogger?.sessionLog?.collectAsState()?.value ?: emptyList(),
+                        isGeckoEngine = engine is GeckoViewEngine,
+                        onDismiss = { showNetworkLog.value = false },
+                        onClearSession = { networkRequestLogger?.clearSession() },
+                    )
+                }
+            }
+        }
+        container.addView(
+            logOverlay,
             FrameLayout.LayoutParams.MATCH_PARENT,
             FrameLayout.LayoutParams.MATCH_PARENT,
         )
@@ -708,6 +765,11 @@ class WebViewActivity : FragmentActivity() {
 
             override fun onNotificationPermissionRequested(onResult: (Boolean) -> Unit) {
                 viewModel.onNotificationPermissionRequested(onResult)
+            }
+
+            override fun onRequestIntercepted(url: String, blocked: Boolean) {
+                // logger is null for preview/incognito sessions — safe no-op.
+                networkRequestLogger?.onRequestIntercepted(url, blocked)
             }
         }
 
@@ -882,6 +944,8 @@ class WebViewActivity : FragmentActivity() {
                 }
             }
         }
+        // Cancel the logger scope before engine destroy — prevents orphaned IO coroutines.
+        networkRequestLogger?.cancel()
         // unregisterActiveApp was already called in onStop(); engine.destroy() closes the session.
         if (::engine.isInitialized) engine.destroy()
         super.onDestroy()

@@ -6,10 +6,14 @@ import io.shellify.app.core.isolation.IsolationManager
 import io.shellify.app.core.security.PasswordManager
 import io.shellify.app.core.theme.ThemeManager
 import io.shellify.app.domain.usecase.CountNotificationsTodayUseCase
+import io.shellify.app.domain.usecase.ClearNetworkLogsUseCase
+import io.shellify.app.domain.usecase.DeleteOldNetworkLogsUseCase
 import io.shellify.app.domain.usecase.GetCategoryByIdUseCase
 import io.shellify.app.domain.usecase.DeleteOldNotificationsUseCase
+import io.shellify.app.domain.usecase.GetNetworkLogUseCase
 import io.shellify.app.domain.usecase.GetNotificationsUseCase
 import io.shellify.app.domain.usecase.GetWebAppByIdUseCase
+import io.shellify.app.domain.usecase.LogNetworkRequestUseCase
 import io.shellify.app.domain.usecase.SaveNotificationUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
 import kotlinx.coroutines.flow.StateFlow
@@ -28,6 +32,10 @@ interface WebViewServiceProvider {
     val getNotifications: GetNotificationsUseCase
     val deleteOldNotifications: DeleteOldNotificationsUseCase
     val countNotificationsToday: CountNotificationsTodayUseCase
+    val logNetworkRequest: LogNetworkRequestUseCase
+    val clearNetworkLogs: ClearNetworkLogsUseCase
+    val getNetworkLog: GetNetworkLogUseCase
+    val deleteOldNetworkLogs: DeleteOldNetworkLogsUseCase
 
     // Active-app tracking: called by WebViewActivity to coordinate with BackgroundNotificationService.
     val activeWebViewApps: StateFlow<Set<Long>>

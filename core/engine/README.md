@@ -21,7 +21,7 @@
 | Class | Description |
 |---|---|
 | `BrowserEngine` | Interface implemented by both engine backends. Declares `loadUrl()`, `goBack()`, `goForward()`, `reload()`, and engine lifecycle methods. |
-| `BrowserEngineCallback` | Callback interface for page load progress, network errors, and DOM change events. |
+| `BrowserEngineCallback` | Callback interface for page load progress, network errors, DOM change events, and network request interception (`onRequestIntercepted(url, blocked)`). |
 | `GeckoViewEngine` | `BrowserEngine` implementation backed by Mozilla GeckoView. |
 | `SystemWebViewEngine` | `BrowserEngine` implementation backed by `android.webkit.WebView`. |
 | `GeckoEngineManager` | Downloads GeckoView 128.0.20240704121409 from `maven.mozilla.org`; detects device ABI (`arm64-v8a`, `armeabi-v7a`, `x86_64`, `x86`); SHA-256 verifies the downloaded AAR; extracts native `.so` libraries to `filesDir/gecko_engine/lib/$abi/`; exposes a `StateFlow<GeckoInstallState>` for UI observation. |

@@ -32,7 +32,7 @@
 | 19 | Usage Limits Per App | Daily time cap with a soft block screen, integrated with analytics data | TBD | TBD |
 | 20 | Import Bookmarks from Chrome/Firefox as Apps | One-tap migration of browser bookmarks into Shellify PWAs | TBD | TBD |
 | 21 | Profiles Support | Guest and named profiles to switch between independent sets of added apps | TBD | TBD |
-| 22 | Network Request Log | Per-session log of domains contacted, requests blocked, and data transferred | TBD | TBD |
+| 22 | Network Request Log | 6/6 | Complete    | 2026-05-24 |
 | 23 | Console Log Viewer | Surface console.log output in a slide-up panel for custom JS debugging | TBD | TBD |
 
 ---
@@ -477,16 +477,32 @@ Plans:
 
 **Goal:** Surface a lightweight per-session log of every domain contacted, request blocked, and data volume transferred for each PWA, building transparency and trust with privacy-focused users.
 
-**Requirements:** TBD — run `/gsd-plan-phase 22` to define
+**Requirements:** D-01, D-02, D-03, D-04, D-05 (from CONTEXT.md)
 
 **Depends on:** None
 
-**Plans:**
-- TBD
+**Plans:** 6/6 plans complete
+
+**Wave 1** *(parallel — no dependencies)*
+- [x] 22-01-PLAN.md — core:domain layer: NetworkRequestLog model, NetworkRequestLogRepository interface, LogNetworkRequestUseCase, GetNetworkLogUseCase, DeleteOldNetworkLogsUseCase + unit tests
+- [x] 22-02-PLAN.md — Engine capture: BrowserEngineCallback.onRequestIntercepted default no-op, SystemWebViewEngine block-body refactor + sub-resource callback, GeckoViewEngine ContentBlocking.Delegate + onPageStart + engine unit tests
+
+**Wave 2** *(depends on Wave 1 domain layer)*
+- [x] 22-03-PLAN.md — core:database layer: NetworkRequestLogEntity, NetworkRequestLogDao, NetworkRequestLogMapper, NetworkRequestLogRepositoryImpl, MIGRATION_4_5, AppDatabase v5 bump + migration test
+
+**Wave 3** *(parallel — both depend on Wave 1; Plan 04 also depends on Wave 2)*
+- [x] 22-04-PLAN.md — feature:webview in-session layer: NetworkRequestLogger, NetworkLogSheet (live ModalBottomSheet overlay), WebViewControlCenter network log entry, WebViewActivity wiring, WebViewServiceProvider use case extension
+- [x] 22-05-PLAN.md — feature:settings history screen: NetworkLogHistoryViewModel (session-grouped UiState), NetworkLogHistoryScreen (Scaffold + LazyColumn), ViewModel unit tests + Roborazzi screenshot tests
+
+**Wave 4** *(depends on Wave 3 outputs)*
+- [x] 22-06-PLAN.md — Integration: Screen.NetworkLog route, AppNavigation composable, ShellifyApplication DI wiring + startup prune, AppSettingsViewModel command + AppSettingsScreen entry, all 13 string resources (EN + FR + AR)
 
 **Success Criteria:**
-1. TBD
-
+1. Tapping the Network log button in the WebViewActivity control center opens a live bottom sheet listing domains contacted during the current session, with blocked domains shown in red with a shield icon
+2. Domain rows expand (tap) to reveal individual full URLs via AnimatedVisibility
+3. When the GeckoView engine is active, a muted notice informs the user that detailed per-request logging is not available
+4. AppSettings -> Network log navigates to a 30-day history screen showing past sessions grouped by date, with the same blocked-domain visual treatment
+5. DB migration 4->5 creates the network_request_logs table; existing data is preserved; app does not crash on upgrade
 ---
 
 ## Phase 23: Console Log Viewer

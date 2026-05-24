@@ -17,6 +17,8 @@ import io.shellify.app.core.security.PasswordManager
 import io.shellify.app.domain.model.NotificationPermission
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.domain.usecase.DeleteWebAppUseCase
+import io.shellify.app.domain.usecase.ExportNetworkLogsUseCase
+import io.shellify.app.domain.usecase.GetNetworkLogUseCase
 import io.shellify.app.domain.usecase.GetWebAppByIdUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +53,8 @@ class AppSettingsViewModelNotificationTest {
     private val simpleIconsManager = mockk<SimpleIconsManager>(relaxed = true)
     private val passwordManager = mockk<PasswordManager>(relaxed = true)
     private val geckoEngineManager = mockk<GeckoEngineManager>(relaxed = true)
+    private val exportNetworkLog = mockk<ExportNetworkLogsUseCase>(relaxed = true)
+    private val getNetworkLog = mockk<GetNetworkLogUseCase>(relaxed = true)
 
     private val testApp = WebApp(
         id = 42L,
@@ -75,6 +79,7 @@ class AppSettingsViewModelNotificationTest {
         every { passwordManager.passwordHash } returns MutableStateFlow(null)
         every { context.getSystemService(Context.NOTIFICATION_SERVICE) } returns mockk<NotificationManager>(relaxed = true)
         every { context.getSystemService(Context.APP_OPS_SERVICE) } returns mockk<AppOpsManager>(relaxed = true)
+        every { getNetworkLog(any()) } returns MutableStateFlow(emptyList())
         viewModel = AppSettingsViewModel(
             appId = 42L,
             getWebAppById = getWebAppById,
@@ -87,6 +92,8 @@ class AppSettingsViewModelNotificationTest {
             simpleIconsManager = simpleIconsManager,
             passwordManager = passwordManager,
             geckoEngineManager = geckoEngineManager,
+            exportNetworkLog = exportNetworkLog,
+            getNetworkLog = getNetworkLog,
         )
     }
 
@@ -123,6 +130,8 @@ class AppSettingsViewModelNotificationTest {
             simpleIconsManager = simpleIconsManager,
             passwordManager = passwordManager,
             geckoEngineManager = geckoEngineManager,
+            exportNetworkLog = exportNetworkLog,
+            getNetworkLog = getNetworkLog,
         )
         advanceUntilIdle()
 
@@ -149,6 +158,8 @@ class AppSettingsViewModelNotificationTest {
             simpleIconsManager = simpleIconsManager,
             passwordManager = passwordManager,
             geckoEngineManager = geckoEngineManager,
+            exportNetworkLog = exportNetworkLog,
+            getNetworkLog = getNetworkLog,
         )
         advanceUntilIdle()
 
@@ -211,6 +222,8 @@ class AppSettingsViewModelNotificationTest {
             simpleIconsManager = simpleIconsManager,
             passwordManager = passwordManager,
             geckoEngineManager = geckoEngineManager,
+            exportNetworkLog = exportNetworkLog,
+            getNetworkLog = getNetworkLog,
         )
         advanceUntilIdle()
         val commands = mutableListOf<AppSettingsCommand>()
@@ -255,6 +268,8 @@ class AppSettingsViewModelNotificationTest {
             simpleIconsManager = simpleIconsManager,
             passwordManager = passwordManager,
             geckoEngineManager = geckoEngineManager,
+            exportNetworkLog = exportNetworkLog,
+            getNetworkLog = getNetworkLog,
         )
         advanceUntilIdle()
         assertEquals(22, viewModel.uiState.value.app?.dndStartHour)
@@ -267,4 +282,34 @@ class AppSettingsViewModelNotificationTest {
         coVerify(exactly = 1) { saveWebApp(match { it.dndStartHour == -1 && it.dndEndHour == -1 }) }
     }
 
+    // ── Export network logs ────────────────────────────────────────────────────
+
+    @Test
+    fun `onExportNetworkLogsClick invokes exportNetworkLog with the app id`() = runTest {
+        coEvery { exportNetworkLog(42L) } returns "log"
+        advanceUntilIdle()
+
+        viewModel.onExportNetworkLogsClick()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { exportNetworkLog(42L) }
+    }
+
+    @Test
+    fun `onExportNetworkLogsClick emits ShareNetworkLog command with returned content`() = runTest {
+        coEvery { exportNetworkLog(42L) } returns "formatted log content"
+        advanceUntilIdle()
+        val commands = mutableListOf<AppSettingsCommand>()
+        val job = launch { viewModel.commands.toList(commands) }
+
+        viewModel.onExportNetworkLogsClick()
+        advanceUntilIdle()
+
+        assertTrue(
+            commands.any {
+                it is AppSettingsCommand.ShareNetworkLog && it.content == "formatted log content"
+            }
+        )
+        job.cancel()
+    }
 }

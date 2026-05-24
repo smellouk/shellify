@@ -15,18 +15,36 @@ import io.shellify.app.core.webview.WebViewManager
 import io.shellify.app.domain.model.EngineType
 import io.shellify.app.domain.model.WebApp
 
+// Extracted so unit tests can verify the main-frame guard and blocked flag without
+// requiring a real WebView or AdBlocker (same pattern used for dispatchNotification).
+internal fun dispatchInterceptedRequest(url: String, isForMainFrame: Boolean, blocked: Boolean, cb: BrowserEngineCallback?) {
+    if (!isForMainFrame) {
+        cb?.onRequestIntercepted(url, blocked = blocked)
+    }
+}
+
 class SystemWebViewEngine(private val adBlocker: AdBlocker) : BrowserEngine {
 
     override val engineType = EngineType.SYSTEM_WEBVIEW
     private var webView: WebView? = null
+    private var storedCallback: BrowserEngineCallback? = null
 
     override fun createView(context: Context, app: WebApp, callback: BrowserEngineCallback): View {
+        storedCallback = callback
         val wv = WebView(context)
         WebViewManager.configure(wv, app)
 
         wv.webViewClient = object : WebViewClient() {
-            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest) =
-                if (app.adBlockEnabled) adBlocker.shouldBlock(request) else null
+            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): android.webkit.WebResourceResponse? {
+                val result = if (app.adBlockEnabled) adBlocker.shouldBlock(request) else null
+                dispatchInterceptedRequest(
+                    url = request.url.toString(),
+                    isForMainFrame = request.isForMainFrame,
+                    blocked = result != null,
+                    cb = storedCallback,
+                )
+                return result
+            }
 
             override fun shouldOverrideUrlLoading(
                 view: WebView,

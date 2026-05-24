@@ -49,6 +49,7 @@ fun WebViewControlCenter(
     onFullscreenChanged: (Boolean) -> Unit,
     onLockChanged: (Boolean) -> Unit,
     onClearData: () -> Unit,
+    onNetworkLogClick: () -> Unit,
 ) {
     var showSheet by remember { mutableStateOf(false) }
 
@@ -81,6 +82,7 @@ fun WebViewControlCenter(
                 onFullscreenChanged = onFullscreenChanged,
                 onLockChanged = onLockChanged,
                 onClearData = { showSheet = false; onClearData() },
+                onNetworkLogClick = { showSheet = false; onNetworkLogClick() },
             )
         }
     }
@@ -95,6 +97,7 @@ fun WebViewControlCenterSheet(
     onFullscreenChanged: (Boolean) -> Unit,
     onLockChanged: (Boolean) -> Unit,
     onClearData: () -> Unit,
+    onNetworkLogClick: () -> Unit,
 ) {
     var showClearDataDialog by remember { mutableStateOf(false) }
 
@@ -162,6 +165,13 @@ fun WebViewControlCenterSheet(
                 enabled = hasGlobalPassword,
             )
         },
+    )
+    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
+    ListItem(
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        leadingContent = { Icon(Icons.Default.Shield, null) },
+        headlineContent = { Text(stringResource(R.string.webview_control_network_log)) },
+        modifier = Modifier.clickable { onNetworkLogClick() },
     )
     HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
     ListItem(

@@ -45,3 +45,25 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
         )
     }
 }
+
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS network_request_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                app_id INTEGER NOT NULL,
+                session_id TEXT NOT NULL,
+                hostname TEXT NOT NULL,
+                url TEXT NOT NULL,
+                is_blocked INTEGER NOT NULL DEFAULT 0,
+                timestamp INTEGER NOT NULL,
+                FOREIGN KEY (app_id) REFERENCES web_apps(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_network_request_logs_app_id ON network_request_logs(app_id)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_network_request_logs_session_id ON network_request_logs(session_id)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_network_request_logs_timestamp ON network_request_logs(timestamp)")
+    }
+}

@@ -9,6 +9,7 @@ import io.shellify.app.domain.model.EngineType
 import io.shellify.app.domain.model.UserAgentMode
 import io.shellify.app.domain.model.WebApp
 import org.mozilla.geckoview.AllowOrDeny
+import org.mozilla.geckoview.ContentBlocking
 import org.mozilla.geckoview.GeckoResult
 import org.mozilla.geckoview.GeckoSession
 import org.mozilla.geckoview.GeckoSessionSettings
@@ -44,6 +45,18 @@ internal fun dispatchNotification(notification: WebNotification, cb: BrowserEngi
         ),
         cb,
     )
+}
+
+// Extracted so unit tests can exercise ContentBlocking.Delegate fan-out without a real GeckoSession.
+// event.isBlocking() distinguishes actually-blocked (true) from tracked-but-not-blocked (false).
+internal fun dispatchContentBlocked(uri: String, isBlocking: Boolean, cb: BrowserEngineCallback) {
+    cb.onRequestIntercepted(uri, blocked = isBlocking)
+}
+
+// Extracted for symmetric testability with dispatchContentBlocked.
+// onContentLoaded fires for resources that were loaded (not blocked) — always blocked=false.
+internal fun dispatchContentLoaded(uri: String, cb: BrowserEngineCallback) {
+    cb.onRequestIntercepted(uri, blocked = false)
 }
 
 class GeckoViewEngine(
@@ -225,6 +238,8 @@ class GeckoViewEngine(
         s.progressDelegate = object : GeckoSession.ProgressDelegate {
             override fun onPageStart(session: GeckoSession, url: String) {
                 cb.onPageStarted(url)
+                // Log main-frame navigation as a non-blocked entry (D-05: page-level only for GeckoView).
+                cb.onRequestIntercepted(url, blocked = false)
             }
 
             override fun onPageStop(session: GeckoSession, success: Boolean) {
@@ -233,6 +248,16 @@ class GeckoViewEngine(
 
             override fun onProgressChange(session: GeckoSession, progress: Int) {
                 cb.onProgressChanged(progress)
+            }
+        }
+
+        s.contentBlockingDelegate = object : ContentBlocking.Delegate {
+            override fun onContentBlocked(session: GeckoSession, event: ContentBlocking.BlockEvent) {
+                dispatchContentBlocked(event.uri, isBlocking = event.isBlocking(), cb = cb)
+            }
+
+            override fun onContentLoaded(session: GeckoSession, event: ContentBlocking.BlockEvent) {
+                dispatchContentLoaded(event.uri, cb = cb)
             }
         }
 

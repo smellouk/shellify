@@ -572,4 +572,26 @@
     <string name="bg_notification_service_text_generic">Maintien des notifications PWA</string>
     <string name="test_app_name">Test App</string>
     <string name="test_url_example">https://example.com</string>
+
+    <!-- Network Request Log -->
+    <string name="webview_control_network_log">Journal réseau</string>
+    <string name="network_log_sheet_title">Requêtes réseau</string>
+    <string name="network_log_empty_title">Aucune requête</string>
+    <string name="network_log_empty_body">Les domaines contactés pendant cette session apparaîtront ici.</string>
+    <string name="network_log_history_title">Journal réseau</string>
+    <string name="network_log_history_empty_title">Aucun historique</string>
+    <string name="network_log_history_empty_body">Les sessions de plus de 30 jours sont supprimées automatiquement.</string>
+    <string name="network_log_session_header" formatted="true">Session — %s</string>
+    <string name="network_log_request_count" formatted="true">%d requête(s)</string>
+    <string name="network_log_blocked_label">Bloqué</string>
+    <string name="network_log_gecko_notice">La journalisation détaillée des requêtes n\'est pas disponible pour le moteur GeckoView. Le domaine et le nombre de blocages sont affichés.</string>
+    <string name="settings_network_log">Journal réseau</string>
+    <string name="network_log_blocked_cd">Requête bloquée</string>
+    <string name="network_log_history_footer">L\'historique est conservé pendant 30 jours.</string>
+    <string name="network_log_export_cd">Exporter les journaux réseau</string>
+    <string name="network_log_export_subject">Journal réseau Shellify</string>
+    <string name="network_log_clear_cd">Effacer les journaux réseau</string>
+    <string name="network_log_clear_title">Effacer les journaux ?</string>
+    <string name="network_log_clear_body">Toutes les requêtes réseau enregistrées pour cette application seront définitivement supprimées.</string>
+    <string name="network_log_clear_confirm">Effacer</string>
 </resources>

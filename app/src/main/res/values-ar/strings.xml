@@ -572,4 +572,26 @@
     <string name="bg_notification_service_text_generic">إبقاء إشعارات PWA نشطة</string>
     <string name="test_app_name">Test App</string>
     <string name="test_url_example">https://example.com</string>
+
+    <!-- Network Request Log -->
+    <string name="webview_control_network_log">سجل الشبكة</string>
+    <string name="network_log_sheet_title">طلبات الشبكة</string>
+    <string name="network_log_empty_title">لا توجد طلبات</string>
+    <string name="network_log_empty_body">ستظهر هنا النطاقات التي تم الاتصال بها خلال هذه الجلسة.</string>
+    <string name="network_log_history_title">سجل الشبكة</string>
+    <string name="network_log_history_empty_title">لا يوجد سجل</string>
+    <string name="network_log_history_empty_body">تُحذف الجلسات الأقدم من 30 يومًا تلقائيًا.</string>
+    <string name="network_log_session_header" formatted="true">جلسة — %s</string>
+    <string name="network_log_request_count" formatted="true">%d طلب</string>
+    <string name="network_log_blocked_label">محظور</string>
+    <string name="network_log_gecko_notice">تسجيل الطلبات التفصيلي غير متاح لمحرك GeckoView. يتم عرض النطاق وعدد الطلبات المحظورة فقط.</string>
+    <string name="settings_network_log">سجل الشبكة</string>
+    <string name="network_log_blocked_cd">طلب محظور</string>
+    <string name="network_log_history_footer">يُحتفظ بالسجل لمدة 30 يومًا.</string>
+    <string name="network_log_export_cd">تصدير سجلات الشبكة</string>
+    <string name="network_log_export_subject">سجل شبكة Shellify</string>
+    <string name="network_log_clear_cd">مسح سجلات الشبكة</string>
+    <string name="network_log_clear_title">مسح السجلات؟</string>
+    <string name="network_log_clear_body">سيتم حذف جميع طلبات الشبكة المسجلة لهذا التطبيق نهائيًا.</string>
+    <string name="network_log_clear_confirm">مسح</string>
 </resources>

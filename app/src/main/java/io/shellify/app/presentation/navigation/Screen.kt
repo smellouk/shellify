@@ -25,4 +25,8 @@ sealed class Screen(val route: String) {
     object NotificationHistory : Screen("notification_history/{appId}") {
         fun createRoute(appId: Long) = "notification_history/$appId"
     }
+
+    object NetworkLog : Screen("network_log/{appId}") {
+        fun createRoute(appId: Long) = "network_log/$appId"
+    }
 }

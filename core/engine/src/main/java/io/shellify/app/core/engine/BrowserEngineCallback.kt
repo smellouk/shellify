@@ -25,4 +25,6 @@ interface BrowserEngineCallback {
     fun onNotificationReceived(title: String, body: String?, iconUrl: String?, tag: String?)
 
     fun onNotificationPermissionRequested(onResult: (Boolean) -> Unit)
+
+    fun onRequestIntercepted(url: String, blocked: Boolean) {}
 }

@@ -547,4 +547,26 @@
     <string name="bg_notification_service_text_generic">Keeping PWA notifications alive</string>
     <string name="test_app_name">Test App</string>
     <string name="test_url_example">https://example.com</string>
+
+    <!-- Network Request Log -->
+    <string name="webview_control_network_log">Network log</string>
+    <string name="network_log_sheet_title">Network requests</string>
+    <string name="network_log_empty_title">No requests yet</string>
+    <string name="network_log_empty_body">Domains contacted during this session will appear here.</string>
+    <string name="network_log_history_title">Network log</string>
+    <string name="network_log_history_empty_title">No history</string>
+    <string name="network_log_history_empty_body">Sessions older than 30 days are removed automatically.</string>
+    <string name="network_log_session_header" formatted="true">Session — %s</string>
+    <string name="network_log_request_count" formatted="true">%d request(s)</string>
+    <string name="network_log_blocked_label">Blocked</string>
+    <string name="network_log_gecko_notice">Detailed request logging is not available for the GeckoView engine. Domain and block count are shown.</string>
+    <string name="settings_network_log">Network log</string>
+    <string name="network_log_blocked_cd">Blocked request</string>
+    <string name="network_log_history_footer">History is kept for 30 days.</string>
+    <string name="network_log_export_cd">Export network logs</string>
+    <string name="network_log_export_subject">Shellify network log</string>
+    <string name="network_log_clear_cd">Clear network logs</string>
+    <string name="network_log_clear_title">Clear logs?</string>
+    <string name="network_log_clear_body">All recorded network requests for this app will be permanently deleted.</string>
+    <string name="network_log_clear_confirm">Clear</string>
 </resources>

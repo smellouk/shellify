@@ -40,6 +40,7 @@ import androidx.compose.material.icons.automirrored.filled.Shortcut
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteSweep
+import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.GTranslate
@@ -52,6 +53,7 @@ import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
@@ -131,6 +133,7 @@ fun AppSettingsScreen(
     onBack: () -> Unit,
     onDeleted: () -> Unit,
     onNavigateToHistory: (appId: Long) -> Unit = {},
+    onNavigateToNetworkLog: (appId: Long) -> Unit = {},
     onStartBackgroundService: (appId: Long) -> Unit = {},
     onStopBackgroundService: (appId: Long) -> Unit = {},
 ) {
@@ -181,10 +184,20 @@ fun AppSettingsScreen(
             when (command) {
                 is AppSettingsCommand.NavigateToNotificationHistory ->
                     onNavigateToHistory(command.appId)
+                is AppSettingsCommand.NavigateToNetworkLog ->
+                    onNavigateToNetworkLog(command.appId)
                 is AppSettingsCommand.StartBackgroundService ->
                     onStartBackgroundService(command.appId)
                 is AppSettingsCommand.StopBackgroundService ->
                     onStopBackgroundService(command.appId)
+                is AppSettingsCommand.ShareNetworkLog -> {
+                    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "text/plain"
+                        putExtra(Intent.EXTRA_TEXT, command.content)
+                        putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.network_log_export_subject))
+                    }
+                    context.startActivity(Intent.createChooser(sendIntent, null))
+                }
             }
         }
     }
@@ -579,6 +592,35 @@ fun AppSettingsScreen(
                         )
                     },
                     modifier = Modifier.clickable { viewModel.onNotificationHistoryClick() },
+                )
+                CardDivider()
+                ListItem(
+                    leadingContent = { Icon(Icons.Default.Dns, contentDescription = null) },
+                    headlineContent = {
+                        Text(
+                            stringResource(R.string.settings_network_log),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    },
+                    trailingContent = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(
+                                onClick = { viewModel.onExportNetworkLogsClick() },
+                                enabled = state.hasNetworkLogs,
+                            ) {
+                                Icon(
+                                    Icons.Default.FileDownload,
+                                    contentDescription = stringResource(R.string.network_log_export_cd),
+                                )
+                            }
+                            Icon(
+                                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            )
+                        }
+                    },
+                    modifier = Modifier.clickable { viewModel.onNetworkLogClick() },
                 )
             }
 

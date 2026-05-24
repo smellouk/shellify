@@ -24,6 +24,8 @@ import io.shellify.app.domain.model.NotificationPermission
 import io.shellify.app.domain.model.TranslateLanguage
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.domain.usecase.DeleteWebAppUseCase
+import io.shellify.app.domain.usecase.ExportNetworkLogsUseCase
+import io.shellify.app.domain.usecase.GetNetworkLogUseCase
 import io.shellify.app.domain.usecase.GetWebAppByIdUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -39,6 +41,8 @@ sealed interface AppSettingsCommand {
     data class StartBackgroundService(val appId: Long) : AppSettingsCommand
     data class StopBackgroundService(val appId: Long) : AppSettingsCommand
     data class NavigateToNotificationHistory(val appId: Long) : AppSettingsCommand
+    data class NavigateToNetworkLog(val appId: Long) : AppSettingsCommand
+    data class ShareNetworkLog(val content: String) : AppSettingsCommand
 }
 
 data class AppSettingsUiState(
@@ -56,6 +60,7 @@ data class AppSettingsUiState(
     val disableLockError: Boolean = false,
     val hasPassword: Boolean = false,
     val globalNotificationsEnabled: Boolean = false,
+    val hasNetworkLogs: Boolean = false,
 )
 
 class AppSettingsViewModel(
@@ -70,6 +75,8 @@ class AppSettingsViewModel(
     private val simpleIconsManager: SimpleIconsManager,
     private val passwordManager: PasswordManager,
     val geckoEngineManager: GeckoEngineManager,
+    private val exportNetworkLog: ExportNetworkLogsUseCase,
+    private val getNetworkLog: GetNetworkLogUseCase,
     private val isGlobalNotificationsEnabled: () -> Boolean = {
         androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled()
     },
@@ -103,6 +110,11 @@ class AppSettingsViewModel(
         }
         _state.update {
             it.copy(globalNotificationsEnabled = isGlobalNotificationsEnabled())
+        }
+        viewModelScope.launch {
+            getNetworkLog(appId).collect { logs ->
+                _state.update { it.copy(hasNetworkLogs = logs.isNotEmpty()) }
+            }
         }
     }
 
@@ -231,6 +243,21 @@ class AppSettingsViewModel(
         val current = _state.value.app ?: return
         viewModelScope.launch {
             _commands.tryEmit(AppSettingsCommand.NavigateToNotificationHistory(current.id))
+        }
+    }
+
+    fun onNetworkLogClick() {
+        val current = _state.value.app ?: return
+        viewModelScope.launch {
+            _commands.tryEmit(AppSettingsCommand.NavigateToNetworkLog(current.id))
+        }
+    }
+
+    fun onExportNetworkLogsClick() {
+        val current = _state.value.app ?: return
+        viewModelScope.launch {
+            val content = exportNetworkLog(current.id)
+            _commands.tryEmit(AppSettingsCommand.ShareNetworkLog(content))
         }
     }
 

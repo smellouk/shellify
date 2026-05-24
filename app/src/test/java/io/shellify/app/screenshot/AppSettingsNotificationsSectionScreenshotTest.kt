@@ -1,7 +1,9 @@
 package io.shellify.app.screenshot
 
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.performScrollTo
 import com.github.takahirom.roborazzi.captureRoboImage
 import io.mockk.every
 import io.mockk.mockk
@@ -14,6 +16,8 @@ import io.shellify.app.presentation.settings.AppSettingsScreen
 import io.shellify.app.presentation.settings.AppSettingsUiState
 import io.shellify.app.presentation.settings.AppSettingsViewModel
 import io.shellify.app.presentation.theme.ShellifyTheme
+import androidx.test.core.app.ApplicationProvider
+import io.shellify.core.ui.R as CoreUiR
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.Rule
@@ -165,6 +169,31 @@ class AppSettingsNotificationsSectionScreenshotTest {
                 )
             }
         }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun networkLog_downloadIconInRow() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                AppSettingsScreen(
+                    viewModel = buildVm(
+                        AppSettingsUiState(
+                            app = app(notificationPermission = NotificationPermission.NOT_ASKED),
+                            isLoading = false,
+                        )
+                    ),
+                    onBack = {},
+                    onDeleted = {},
+                )
+            }
+        }
+        // Scroll until the download icon is on screen, then capture.
+        val exportCd = ApplicationProvider.getApplicationContext<android.content.Context>()
+            .getString(CoreUiR.string.network_log_export_cd)
+        composeTestRule
+            .onNodeWithContentDescription(exportCd)
+            .performScrollTo()
         composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 }

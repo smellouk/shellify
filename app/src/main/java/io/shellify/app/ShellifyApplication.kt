@@ -18,22 +18,28 @@ import io.shellify.app.core.shortcut.PwaShortcutManager
 import io.shellify.app.core.theme.ThemeManager
 import io.shellify.app.data.local.AppDatabase
 import io.shellify.app.data.repository.CategoryRepositoryImpl
+import io.shellify.app.data.repository.NetworkRequestLogRepositoryImpl
 import io.shellify.app.data.repository.NotificationRepositoryImpl
 import io.shellify.app.data.repository.WebAppRepositoryImpl
+import io.shellify.app.domain.usecase.ClearNetworkLogsUseCase
 import io.shellify.app.domain.usecase.CountNotificationsTodayUseCase
 import io.shellify.app.domain.usecase.DeleteAllAppsUseCase
 import io.shellify.app.domain.usecase.DeleteAllCategoriesUseCase
 import io.shellify.app.domain.usecase.DeleteCategoryUseCase
+import io.shellify.app.domain.usecase.DeleteOldNetworkLogsUseCase
 import io.shellify.app.domain.usecase.DeleteOldNotificationsUseCase
 import io.shellify.app.domain.usecase.DeleteWebAppUseCase
+import io.shellify.app.domain.usecase.ExportNetworkLogsUseCase
 import io.shellify.app.domain.usecase.FindAppsForUrlUseCase
 import io.shellify.app.domain.usecase.GetCategoriesUseCase
 import io.shellify.app.domain.usecase.GetCategoryByIdUseCase
+import io.shellify.app.domain.usecase.GetNetworkLogUseCase
 import io.shellify.app.domain.usecase.GetNotificationsUseCase
 import io.shellify.app.domain.usecase.GetWebAppByIdUseCase
 import io.shellify.app.domain.usecase.GetWebAppByNameUseCase
 import io.shellify.app.domain.usecase.GetWebAppsUseCase
 import io.shellify.app.domain.usecase.IsDndActiveUseCase
+import io.shellify.app.domain.usecase.LogNetworkRequestUseCase
 import io.shellify.app.domain.usecase.SaveCategoryUseCase
 import io.shellify.app.domain.usecase.SaveNotificationUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
@@ -107,6 +113,13 @@ class ShellifyApplication : Application(), WebViewServiceProvider, LinkDispatche
     override val getNotifications by lazy { GetNotificationsUseCase(notificationRepository) }
     override val deleteOldNotifications by lazy { DeleteOldNotificationsUseCase(notificationRepository) }
     override val countNotificationsToday by lazy { CountNotificationsTodayUseCase(notificationRepository) }
+
+    val networkRequestLogRepository by lazy { NetworkRequestLogRepositoryImpl(database.networkRequestLogDao()) }
+    override val logNetworkRequest by lazy { LogNetworkRequestUseCase(networkRequestLogRepository) }
+    override val getNetworkLog by lazy { GetNetworkLogUseCase(networkRequestLogRepository) }
+    override val deleteOldNetworkLogs by lazy { DeleteOldNetworkLogsUseCase(networkRequestLogRepository) }
+    val exportNetworkLogs by lazy { ExportNetworkLogsUseCase(networkRequestLogRepository) }
+    override val clearNetworkLogs by lazy { ClearNetworkLogsUseCase(networkRequestLogRepository) }
     val globalNotificationsEnabled: StateFlow<Boolean> by lazy {
         themeManager.globalNotificationsEnabled.stateIn(applicationScope, SharingStarted.Eagerly, false)
     }
@@ -142,6 +155,7 @@ class ShellifyApplication : Application(), WebViewServiceProvider, LinkDispatche
         // Prune notifications older than 30 days on every startup.
         // runCatching swallows any DB-init race since AppDatabase is by lazy.
         CoroutineScope(Dispatchers.IO).launch { runCatching { deleteOldNotifications() } }
+        CoroutineScope(Dispatchers.IO).launch { runCatching { deleteOldNetworkLogs() } }
     }
 
     override fun injectAndLoadGeckoView() {

@@ -74,6 +74,8 @@ import io.shellify.app.presentation.settings.AppSettingsViewModel
 import io.shellify.app.presentation.settings.GlobalSettingsScreen
 import io.shellify.app.presentation.settings.GlobalSettingsViewModel
 import io.shellify.app.presentation.settings.LicensesScreen
+import io.shellify.app.presentation.settings.networklog.NetworkLogHistoryScreen
+import io.shellify.app.presentation.settings.networklog.NetworkLogHistoryViewModel
 import io.shellify.app.presentation.settings.notifications.NotificationHistoryScreen
 import io.shellify.app.presentation.settings.notifications.NotificationHistoryViewModel
 import io.shellify.app.presentation.shortcuts.ShortcutsScreen
@@ -240,6 +242,8 @@ fun AppNavigation(
                             app.simpleIconsManager,
                             app.passwordManager,
                             app.geckoEngineManager,
+                            app.exportNetworkLogs,
+                            app.getNetworkLog,
                         )
                     },
                     onBack = { navController.popBackStack() },
@@ -248,6 +252,9 @@ fun AppNavigation(
                     },
                     onNavigateToHistory = { id ->
                         navController.navigate(Screen.NotificationHistory.createRoute(id))
+                    },
+                    onNavigateToNetworkLog = { id ->
+                        navController.navigate(Screen.NetworkLog.createRoute(id))
                     },
                     onStartBackgroundService = { id ->
                         val intent = android.content.Intent(
@@ -329,6 +336,23 @@ fun AppNavigation(
                 NotificationHistoryScreen(
                     viewModel = remember(appId) {
                         NotificationHistoryViewModel(appId, app.getNotifications)
+                    },
+                    onBack = { navController.popBackStack() },
+                )
+            }
+
+            composable(
+                route = Screen.NetworkLog.route,
+                arguments = listOf(navArgument("appId") { type = NavType.LongType }),
+                enterTransition = { slideInHorizontally(initialOffsetX = { it }) + fadeIn() },
+                exitTransition = { ExitTransition.None },
+                popEnterTransition = { EnterTransition.None },
+                popExitTransition = { slideOutHorizontally(targetOffsetX = { it }) + fadeOut() },
+            ) { back ->
+                val appId = back.arguments!!.getLong("appId")
+                NetworkLogHistoryScreen(
+                    viewModel = remember(appId) {
+                        NetworkLogHistoryViewModel(appId, app.getNetworkLog, app.clearNetworkLogs)
                     },
                     onBack = { navController.popBackStack() },
                 )
