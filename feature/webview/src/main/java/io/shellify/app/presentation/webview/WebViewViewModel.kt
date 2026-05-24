@@ -192,8 +192,11 @@ class WebViewViewModel(
 
     /**
      * Called by the Activity when the user taps Allow or Not Now in the permission dialog.
+     * No-ops if the dialog is not currently shown — guards against double-invocation when
+     * Material3 fires onDismissRequest after a button click.
      */
     fun onPermissionDialogResult(granted: Boolean) {
+        if (_permissionDialog.value !is PermissionDialogState.Shown) return
         val cb = pendingPermissionResult
         pendingPermissionResult = null
         val newPermission = if (granted) NotificationPermission.GRANTED else NotificationPermission.DENIED

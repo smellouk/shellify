@@ -47,7 +47,7 @@ class PwaNotificationDispatcher(
         runCatching {
             PendingIntent.getActivity(
                 context,
-                appId.toInt(),
+                (appId and 0x7FFFFFFFL).toInt(), // mask to positive Int range — Long IDs can overflow
                 WebViewActivity.launchIntent(context, appId),
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )

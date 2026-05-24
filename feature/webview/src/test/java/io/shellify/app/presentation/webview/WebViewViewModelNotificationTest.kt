@@ -135,4 +135,46 @@ class WebViewViewModelNotificationTest {
 
         coVerify { dispatcher.dispatch(grantedApp, "Title", "Body", null, null) }
     }
+
+    @Test
+    fun `onNotificationReceived dropped NotAsked shows permission dialog`() = runTest {
+        val vm = vmWith(notAskedApp)
+        coEvery { dispatcher.dispatch(any(), any(), any(), any(), any()) } returns DispatchResult.Dropped.NotAsked
+
+        vm.onNotificationReceived("Title", "Body", null, null)
+        advanceUntilIdle()
+
+        val state = vm.permissionDialog.value
+        assertTrue("dialog must be shown when dispatch returns NotAsked", state is PermissionDialogState.Shown)
+    }
+
+    @Test
+    fun `onPermissionDialogResult with no dialog showing is a no-op`() = runTest {
+        val vm = vmWith(notAskedApp)
+
+        // Dialog was never shown — onPermissionDialogResult must be a no-op.
+        vm.onPermissionDialogResult(true)
+        advanceUntilIdle()
+
+        assertEquals(NotificationPermission.NOT_ASKED, vm.uiState.value.app?.notificationPermission)
+        coVerify(exactly = 0) { saveWebApp(any()) }
+    }
+
+    @Test
+    fun `second onPermissionDialogResult call is a no-op after first handles the result`() = runTest {
+        val vm = vmWith(notAskedApp)
+        val results = mutableListOf<Boolean>()
+        vm.onNotificationPermissionRequested { granted -> results += granted }
+
+        vm.onPermissionDialogResult(true)
+        advanceUntilIdle()
+        // Simulate onDismissRequest firing after the confirm button (Material3 behaviour)
+        vm.onPermissionDialogResult(false)
+        advanceUntilIdle()
+
+        assertEquals(1, results.size)
+        assertEquals(true, results[0])
+        // State from the first (granted) call must not be overwritten by the second (denied)
+        assertEquals(NotificationPermission.GRANTED, vm.uiState.value.app?.notificationPermission)
+    }
 }

@@ -36,7 +36,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -309,30 +312,43 @@ class WebViewActivity : FragmentActivity() {
                 val accentColor = state.app?.themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() }
                 val shown = dialogState as? PermissionDialogState.Shown ?: return@setContent
                 ShellifyTheme(themeMode = themeMode, dynamicColor = dynamicColor, accentColor = accentColor, controlStatusBar = false) {
+                    // Guard against Material3 firing onDismissRequest after a button click, which
+                    // would call onPermissionDialogResult a second time and overwrite the persisted
+                    // grant with DENIED. Each dialog showing gets a fresh false via remember.
+                    var dialogHandled by remember { mutableStateOf(false) }
                     AlertDialog(
                         onDismissRequest = {
-                            viewModel.onPermissionDialogResult(false)
-                            resolveWebViewPermission(false)
+                            if (!dialogHandled) {
+                                dialogHandled = true
+                                viewModel.onPermissionDialogResult(false)
+                                // pendingPermissionResult callback resolves the JS Promise (if any).
+                            }
                         },
                         icon = { Icon(Icons.Default.Notifications, contentDescription = null) },
                         title = { Text(shown.appName) },
                         text = { Text(stringResource(R.string.notification_permission_dialog_body, shown.appName)) },
                         confirmButton = {
                             TextButton(onClick = {
-                                viewModel.onPermissionDialogResult(true)
-                                requestPostNotificationsPermissionIfNeeded()
-                                resolveWebViewPermission(true)
-                                // SystemWebView needs a reload to re-inject NotificationBridge.
-                                // GeckoView must NOT reload here: the reload would reset
-                                // Notification.permission to 'default' for the current session,
-                                // breaking any timers already scheduled on the page.
-                                if (engine.engineType == EngineType.SYSTEM_WEBVIEW) engine.reload()
+                                if (!dialogHandled) {
+                                    dialogHandled = true
+                                    viewModel.onPermissionDialogResult(true)
+                                    // pendingPermissionResult callback resolves the JS Promise only
+                                    // when this dialog was triggered by JS requestPermission(); for
+                                    // the notification-arrival path the callback re-dispatches instead.
+                                    requestPostNotificationsPermissionIfNeeded()
+                                    // SystemWebView needs a reload to re-inject NotificationBridge.
+                                    // GeckoView must NOT reload: the reload resets Notification.permission
+                                    // to 'default', breaking timers already scheduled on the page.
+                                    if (engine.engineType == EngineType.SYSTEM_WEBVIEW) engine.reload()
+                                }
                             }) { Text(stringResource(R.string.notification_permission_allow)) }
                         },
                         dismissButton = {
                             TextButton(onClick = {
-                                viewModel.onPermissionDialogResult(false)
-                                resolveWebViewPermission(false)
+                                if (!dialogHandled) {
+                                    dialogHandled = true
+                                    viewModel.onPermissionDialogResult(false)
+                                }
                             }) { Text(stringResource(R.string.notification_permission_not_now)) }
                         },
                     )

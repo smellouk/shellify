@@ -70,6 +70,9 @@ class AppSettingsViewModel(
     private val simpleIconsManager: SimpleIconsManager,
     private val passwordManager: PasswordManager,
     val geckoEngineManager: GeckoEngineManager,
+    private val isGlobalNotificationsEnabled: () -> Boolean = {
+        androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled()
+    },
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -99,13 +102,13 @@ class AppSettingsViewModel(
             }
         }
         _state.update {
-            it.copy(globalNotificationsEnabled = androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled())
+            it.copy(globalNotificationsEnabled = isGlobalNotificationsEnabled())
         }
     }
 
     fun refreshGlobalNotificationState() {
         _state.update {
-            it.copy(globalNotificationsEnabled = androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled())
+            it.copy(globalNotificationsEnabled = isGlobalNotificationsEnabled())
         }
     }
 

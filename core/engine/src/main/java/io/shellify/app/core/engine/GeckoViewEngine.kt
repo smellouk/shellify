@@ -70,6 +70,7 @@ class GeckoViewEngine(
     private var lastApp: WebApp? = null
     private var contextId: String? = null
 
+    @androidx.annotation.MainThread
     fun reattachNotificationDelegate() {
         val cb = callback ?: return
         engineManager.getRuntime().setWebNotificationDelegate(object : WebNotificationDelegate {

@@ -66,11 +66,12 @@ class BackgroundNotificationService : Service() {
         NotificationManagerCompat.from(this@BackgroundNotificationService)
             .notify(SERVICE_NOTIFICATION_ID, buildServiceNotification(webApp.name))
 
-        // This service's sole purpose is process keepalive. Keeping a foreground service
-        // running prevents Android from throttling the process, so GeckoView's JS timers
-        // in the backgrounded WebViewActivity session fire on time. The existing session's
-        // WebNotificationDelegate (set by GeckoViewEngine) dispatches notifications; no
-        // separate GeckoSession is needed here.
+        // This service's sole purpose is process keepalive: it prevents Android from killing
+        // the process and throttling GeckoView's JS timers while WebViewActivity is backgrounded.
+        // Known limitation: if Android destroys the Activity under memory pressure, the
+        // GeckoSession and its WebNotificationDelegate are also destroyed and PWA notifications
+        // stop arriving — the foreground service notification is the only thing that remains.
+        // A future improvement would restore a background GeckoSession here to cover that gap.
         Log.d(TAG, "Process keepalive active for ${webApp.name} (appId=$appId)")
     }
 
