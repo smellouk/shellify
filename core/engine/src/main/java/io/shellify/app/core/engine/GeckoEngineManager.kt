@@ -63,9 +63,17 @@ class GeckoEngineManager(private val context: Context) {
         // libmozglue must be loaded before libxul (dependency order)
         private val PRELOAD_ORDER = listOf("libmozglue.so", "liblgpllibs.so", "libxul.so")
 
-        @Volatile
-        private var sharedRuntime: GeckoRuntime? = null
     }
+
+    // GeckoView enforces exactly ONE GeckoRuntime per process — a second GeckoRuntime.create()
+    // throws IllegalStateException. A single runtime is created lazily on first use and reused for
+    // every subsequent call. Proxy routing (SOCKS5 / direct) is controlled via JVM system properties
+    // which are checked per-connection, so applying them before each session.open() is sufficient
+    // without needing a separate runtime per ProxyConfig (T-02-20, WR-02-fix).
+    @Volatile private var runtime: GeckoRuntime? = null
+
+    // Override in tests to supply mock GeckoRuntime instances without calling GeckoRuntime.create().
+    internal var runtimeFactory: (ProxyConfig) -> GeckoRuntime = ::buildRuntime
 
     private val prefs: SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -119,7 +127,7 @@ class GeckoEngineManager(private val context: Context) {
     fun applySafeBrowsing(enabled: Boolean) {
         _safeBrowsingEnabled = enabled
         val level = if (enabled) ContentBlocking.SafeBrowsing.DEFAULT else ContentBlocking.SafeBrowsing.NONE
-        sharedRuntime?.settings?.contentBlocking?.setSafeBrowsing(level)
+        runtime?.settings?.contentBlocking?.setSafeBrowsing(level)
     }
 
     fun isInstalled(): Boolean {
@@ -141,13 +149,48 @@ class GeckoEngineManager(private val context: Context) {
 
     // ── GeckoRuntime lifecycle ─────────────────────────────────────────────────
 
-    fun getRuntime(): GeckoRuntime {
-        return sharedRuntime ?: synchronized(this) {
-            sharedRuntime ?: buildRuntime().also { sharedRuntime = it }
+    /**
+     * Returns the single [GeckoRuntime] for this process.
+     *
+     * GeckoView allows exactly ONE [GeckoRuntime] per process; calling [GeckoRuntime.create] a
+     * second time throws [IllegalStateException]. The runtime is created lazily on first call and
+     * reused thereafter regardless of [proxyConfig].
+     *
+     * Proxy routing is managed via JVM system properties ([socksProxyHost] / [socksProxyPort])
+     * which the JVM socket layer checks per-connection. They are applied on every [getRuntime]
+     * call so the proxy is always correct for new connections opened immediately after.
+     *
+     * Callers that do not pass a [proxyConfig] get [ProxyConfig.None] (back-compat default).
+     */
+    fun getRuntime(proxyConfig: ProxyConfig = ProxyConfig.None): GeckoRuntime {
+        // Apply proxy system properties on EVERY call — not just at creation — so the active
+        // SOCKS5 / direct routing reflects the caller's intent for new socket connections.
+        applyProxySystemProperties(proxyConfig)
+        // Fast path: return the existing runtime without taking the lock.
+        runtime?.let { return it }
+        // Slow path: serialize creation so GeckoRuntime.create() is called at most once.
+        return synchronized(this) {
+            runtime ?: runtimeFactory(proxyConfig).also { runtime = it }
         }
     }
 
-    private fun buildRuntime(): GeckoRuntime {
+    private fun applyProxySystemProperties(proxyConfig: ProxyConfig) {
+        when (proxyConfig) {
+            is ProxyConfig.Socks5 -> {
+                System.setProperty("socksProxyHost", proxyConfig.host)
+                System.setProperty("socksProxyPort", proxyConfig.port.toString())
+            }
+            else -> {
+                System.clearProperty("socksProxyHost")
+                System.clearProperty("socksProxyPort")
+            }
+        }
+    }
+
+    // Proxy system properties are applied by applyProxySystemProperties() before this factory
+    // is invoked, so the runtime inherits the correct SOCKS5 / direct config at creation time.
+    @Suppress("UnusedParameter")
+    private fun buildRuntime(proxyConfig: ProxyConfig): GeckoRuntime {
         val safeBrowsingLevel = if (_safeBrowsingEnabled) ContentBlocking.SafeBrowsing.DEFAULT else ContentBlocking.SafeBrowsing.NONE
         val settings = GeckoRuntimeSettings.Builder()
             .javaScriptEnabled(true)
@@ -260,17 +303,24 @@ class GeckoEngineManager(private val context: Context) {
             val body = httpClient.newCall(request).execute().use { it.body?.string() }
                 ?: return@withContext null
 
-            // Parse <release> or last <version> from maven-metadata.xml
+            // Parse <release> or last <version> from maven-metadata.xml.
+            // Prefer the <release> tag; only fall back to <version> if no <release> was found.
+            // Without foundRelease, every subsequent <version> element overwrites latest, which
+            // may point to an older build than <release> when <version> elements follow <release>
+            // in document order (WR-07).
             val factory = XmlPullParserFactory.newInstance()
             val xpp = factory.newPullParser().apply { setInput(body.reader()) }
             var latest: String? = null
             var inRelease = false
+            var foundRelease = false
             var eventType = xpp.eventType
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 if (eventType == XmlPullParser.START_TAG && xpp.name == "release") inRelease = true
                 else if (eventType == XmlPullParser.TEXT && inRelease) {
-                    latest = xpp.text.trim(); inRelease = false
-                } else if (eventType == XmlPullParser.START_TAG && xpp.name == "version") {
+                    latest = xpp.text.trim()
+                    inRelease = false
+                    foundRelease = true
+                } else if (!foundRelease && eventType == XmlPullParser.START_TAG && xpp.name == "version") {
                     xpp.next()
                     if (xpp.eventType == XmlPullParser.TEXT) latest = xpp.text.trim()
                 }
@@ -291,8 +341,9 @@ class GeckoEngineManager(private val context: Context) {
     }
 
     fun clearDataForContext(isolationId: String) {
+        val rt = runtime ?: return
         try {
-            sharedRuntime?.storageController?.clearDataForSessionContext(isolationId)
+            rt.storageController.clearDataForSessionContext(isolationId)
         } catch (e: Exception) {
             Log.w(TAG, "clearDataForContext failed: ${e.message}")
         }
@@ -307,11 +358,10 @@ class GeckoEngineManager(private val context: Context) {
         prefs.edit().remove(KEY_INSTALLED).remove(KEY_VERSION).remove(KEY_VERIFIED)
             .remove(KEY_SHA256).apply()
         _installState.value = GeckoInstallState.NotInstalled
-        try {
-            sharedRuntime?.shutdown()
-        } catch (_: Exception) {
+        runtime?.let {
+            try { it.shutdown() } catch (_: Exception) { }
         }
-        sharedRuntime = null
+        runtime = null
         Log.i(TAG, "GeckoView uninstalled")
     }
 
@@ -324,27 +374,30 @@ class GeckoEngineManager(private val context: Context) {
 
     private fun downloadFile(url: String, dest: File, onProgress: (Float) -> Unit): Boolean {
         val request = Request.Builder().url(url).header("User-Agent", "Mozilla/5.0").build()
-        val response = httpClient.newCall(request).execute()
-        if (!response.isSuccessful) {
-            Log.e(TAG, "HTTP ${response.code} for $url")
-            return false
-        }
-        val body = response.body ?: return false
-        val total = body.contentLength()
-        var read = 0L
-        val buf = ByteArray(8192)
-        FileOutputStream(dest).use { out ->
-            body.byteStream().use { input ->
-                var n: Int
-                while (input.read(buf).also { n = it } != -1) {
-                    if (cancelRequested) return false
-                    out.write(buf, 0, n)
-                    read += n
-                    if (total > 0) onProgress(read.toFloat() / total)
+        // Wrap response in .use{} so the connection is always returned to OkHttp's pool,
+        // including on error paths. Without this the socket leaks on !isSuccessful (CR-07).
+        return httpClient.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                Log.e(TAG, "HTTP ${response.code} for $url")
+                return@use false
+            }
+            val body = response.body ?: return@use false
+            val total = body.contentLength()
+            var read = 0L
+            val buf = ByteArray(8192)
+            FileOutputStream(dest).use { out ->
+                body.byteStream().use { input ->
+                    var n: Int
+                    while (input.read(buf).also { n = it } != -1) {
+                        if (cancelRequested) return@use false
+                        out.write(buf, 0, n)
+                        read += n
+                        if (total > 0) onProgress(read.toFloat() / total)
+                    }
                 }
             }
+            dest.exists() && dest.length() > 0
         }
-        return dest.exists() && dest.length() > 0
     }
 
     private fun sha256(file: File): String {

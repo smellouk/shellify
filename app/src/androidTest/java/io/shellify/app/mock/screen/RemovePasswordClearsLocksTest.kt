@@ -21,8 +21,6 @@ import io.shellify.app.domain.model.EngineType
 import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.UserAgentMode
 import io.shellify.app.domain.model.WebApp
-import io.shellify.app.domain.usecase.DeleteAllAppsUseCase
-import io.shellify.app.domain.usecase.DeleteAllCategoriesUseCase
 import io.shellify.app.domain.usecase.GetWebAppsUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
 import io.shellify.app.presentation.settings.GlobalSettingsViewModel
@@ -179,8 +177,6 @@ class RemovePasswordClearsLocksTest {
             isolationManager = mockk<IsolationManager>(relaxed = true),
             getWebApps = getWebApps,
             saveWebApp = saveWebApp,
-            deleteAllAppsUseCase = mockk<DeleteAllAppsUseCase>(relaxed = true),
-            deleteAllCategoriesUseCase = mockk<DeleteAllCategoriesUseCase>(relaxed = true),
             passwordManager = passwordManager,
             backupSettings = backupSettings,
             backupManager = mockk<BackupManager>(relaxed = true),

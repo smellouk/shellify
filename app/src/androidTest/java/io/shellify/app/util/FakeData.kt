@@ -23,6 +23,12 @@ object FakeData {
         isFullscreen: Boolean = false,
         adBlockEnabled: Boolean = true,
         translateEnabled: Boolean = false,
+        // Privacy
+        alwaysIncognito: Boolean = false,
+        trackerBlockingEnabled: Boolean = false,
+        // Tor
+        useTor: Boolean = false,
+        preserveTorIdentity: Boolean = false,
     ): WebApp = WebApp(
         id = id,
         name = name,
@@ -32,6 +38,10 @@ object FakeData {
         isFullscreen = isFullscreen,
         adBlockEnabled = adBlockEnabled,
         translateEnabled = translateEnabled,
+        alwaysIncognito = alwaysIncognito,
+        trackerBlockingEnabled = trackerBlockingEnabled,
+        useTor = useTor,
+        preserveTorIdentity = preserveTorIdentity,
     )
 
     fun webAppList(count: Int = 3): List<WebApp> = (1..count).map { i ->

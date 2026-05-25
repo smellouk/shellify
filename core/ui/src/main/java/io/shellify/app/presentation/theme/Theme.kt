@@ -22,6 +22,16 @@ import io.shellify.core.ui.R
 import io.shellify.app.core.theme.ThemeMode
 import java.util.Locale
 
+/**
+ * Named typography style for the incognito-mode badge rendered below the app name in the
+ * WebView splash screen. Bold + 20% larger than bodyMedium so the privacy signal is prominent.
+ */
+val Typography.incognitoModeBadge
+    get() = bodyMedium.copy(
+        fontWeight = FontWeight.Bold,
+        fontSize = bodyMedium.fontSize * 1.2f,
+    )
+
 private val CairoFamily = FontFamily(
     Font(R.font.cairo_regular, FontWeight.Normal),
     Font(R.font.cairo_semibold, FontWeight.SemiBold),

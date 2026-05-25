@@ -11,6 +11,7 @@ import io.shellify.app.domain.model.Category
 import io.shellify.app.domain.model.NotificationChannelId
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.domain.model.IconSource
+import io.shellify.app.domain.usecase.DeleteAllAppsUseCase
 import io.shellify.app.domain.usecase.DeleteWebAppUseCase
 import io.shellify.app.domain.usecase.GetCategoriesUseCase
 import io.shellify.app.domain.usecase.GetWebAppsUseCase
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -39,7 +41,8 @@ data class HomeUiState(
 private data class QuickAddState(val loadingUrls: Set<String> = emptySet(), val doneUrls: Set<String> = emptySet())
 
 class HomeViewModel(
-    getWebApps: GetWebAppsUseCase,
+    private val getWebApps: GetWebAppsUseCase,
+    private val deleteAllAppsUseCase: DeleteAllAppsUseCase,
     private val deleteWebApp: DeleteWebAppUseCase,
     getCategories: GetCategoriesUseCase,
     private val saveWebApp: SaveWebAppUseCase,
@@ -124,5 +127,14 @@ class HomeViewModel(
 
     fun clearData(app: WebApp) = viewModelScope.launch {
         isolationManager.clearData(app.isolationId)
+    }
+
+    fun deleteAllApps() = viewModelScope.launch {
+        val apps = getWebApps().first()
+        apps.forEach { app ->
+            isolationManager.clearData(app.isolationId)
+            PwaShortcutManager.removeShortcut(context, app)
+        }
+        deleteAllAppsUseCase()
     }
 }

@@ -40,10 +40,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.filled.Shortcut
 import androidx.compose.material.icons.automirrored.filled.Article
 import androidx.compose.material.icons.filled.PrivacyTip
-import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.BrightnessAuto
@@ -70,7 +68,6 @@ import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Restore
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
@@ -336,8 +333,8 @@ fun GlobalSettingsScreen(
                             leadingContent = {
                                 Box(
                                     modifier = Modifier
-                                        .size(36.dp)
-                                        .clip(RoundedCornerShape(10.dp))
+                                        .size(Dimens.sizeIconContainer)
+                                        .clip(RoundedCornerShape(Dimens.cornerMd))
                                         .background(
                                             MaterialTheme.colorScheme.primaryContainer.copy(
                                                 alpha = 0.4f
@@ -348,7 +345,7 @@ fun GlobalSettingsScreen(
                                     Icon(
                                         Icons.Default.Palette,
                                         null,
-                                        modifier = Modifier.size(20.dp),
+                                        modifier = Modifier.size(Dimens.sizeMd),
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
@@ -398,8 +395,8 @@ fun GlobalSettingsScreen(
                         leadingContent = {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(10.dp))
+                                    .size(Dimens.sizeIconContainer)
+                                    .clip(RoundedCornerShape(Dimens.cornerMd))
                                     .background(
                                         MaterialTheme.colorScheme.primaryContainer.copy(
                                             alpha = 0.4f
@@ -410,7 +407,7 @@ fun GlobalSettingsScreen(
                                 Icon(
                                     Icons.Default.Language,
                                     null,
-                                    modifier = Modifier.size(20.dp),
+                                    modifier = Modifier.size(Dimens.sizeMd),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
@@ -428,8 +425,7 @@ fun GlobalSettingsScreen(
                             }) { Text(stringResource(R.string.common_change)) }
                         },
                     )
-                }
-                SurfaceCard {
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                     Column(
                         modifier = Modifier.padding(
                             horizontal = Dimens.spaceLg,
@@ -663,15 +659,13 @@ fun GlobalSettingsScreen(
                                 }
                         }
                     }
-                }
-
-                SurfaceCard {
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                     ListItem(
                         leadingContent = {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(10.dp))
+                                    .size(Dimens.sizeIconContainer)
+                                    .clip(RoundedCornerShape(Dimens.cornerMd))
                                     .background(
                                         MaterialTheme.colorScheme.secondaryContainer.copy(
                                             alpha = 0.4f
@@ -682,7 +676,7 @@ fun GlobalSettingsScreen(
                                 Icon(
                                     Icons.Default.Info,
                                     null,
-                                    modifier = Modifier.size(20.dp),
+                                    modifier = Modifier.size(Dimens.sizeMd),
                                     tint = MaterialTheme.colorScheme.secondary
                                 )
                             }
@@ -710,16 +704,16 @@ fun GlobalSettingsScreen(
                     )
                 }
 
-                // ── Security ──────────────────────────────────────────────────────
-                SectionLabel(stringResource(R.string.global_settings_section_security))
+                // ── Privacy & Security ────────────────────────────────────────────
+                SectionLabel(stringResource(R.string.settings_privacy_security))
                 SurfaceCard {
                     if (state.hasPassword) {
                         ListItem(
                             leadingContent = {
                                 Box(
                                     modifier = Modifier
-                                        .size(36.dp)
-                                        .clip(RoundedCornerShape(10.dp))
+                                        .size(Dimens.sizeIconContainer)
+                                        .clip(RoundedCornerShape(Dimens.cornerMd))
                                         .background(
                                             MaterialTheme.colorScheme.primaryContainer.copy(
                                                 alpha = 0.4f
@@ -730,7 +724,7 @@ fun GlobalSettingsScreen(
                                     Icon(
                                         Icons.Default.Lock,
                                         null,
-                                        modifier = Modifier.size(20.dp),
+                                        modifier = Modifier.size(Dimens.sizeMd),
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
@@ -761,8 +755,8 @@ fun GlobalSettingsScreen(
                             leadingContent = {
                                 Box(
                                     modifier = Modifier
-                                        .size(36.dp)
-                                        .clip(RoundedCornerShape(10.dp))
+                                        .size(Dimens.sizeIconContainer)
+                                        .clip(RoundedCornerShape(Dimens.cornerMd))
                                         .background(
                                             MaterialTheme.colorScheme.primaryContainer.copy(
                                                 alpha = 0.4f
@@ -773,7 +767,7 @@ fun GlobalSettingsScreen(
                                     Icon(
                                         Icons.Default.DeleteForever,
                                         null,
-                                        modifier = Modifier.size(20.dp),
+                                        modifier = Modifier.size(Dimens.sizeMd),
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
@@ -797,8 +791,8 @@ fun GlobalSettingsScreen(
                             leadingContent = {
                                 Box(
                                     modifier = Modifier
-                                        .size(36.dp)
-                                        .clip(RoundedCornerShape(10.dp))
+                                        .size(Dimens.sizeIconContainer)
+                                        .clip(RoundedCornerShape(Dimens.cornerMd))
                                         .background(
                                             MaterialTheme.colorScheme.primaryContainer.copy(
                                                 alpha = 0.4f
@@ -809,7 +803,7 @@ fun GlobalSettingsScreen(
                                     Icon(
                                         Icons.Default.LockOpen,
                                         null,
-                                        modifier = Modifier.size(20.dp),
+                                        modifier = Modifier.size(Dimens.sizeMd),
                                         tint = MaterialTheme.colorScheme.primary
                                     )
                                 }
@@ -830,14 +824,13 @@ fun GlobalSettingsScreen(
                             },
                         )
                     }
-                }
-                SurfaceCard {
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                     ListItem(
                         leadingContent = {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(10.dp))
+                                    .size(Dimens.sizeIconContainer)
+                                    .clip(RoundedCornerShape(Dimens.cornerMd))
                                     .background(
                                         MaterialTheme.colorScheme.primaryContainer.copy(
                                             alpha = 0.4f
@@ -848,7 +841,7 @@ fun GlobalSettingsScreen(
                                 Icon(
                                     Icons.Default.NoPhotography,
                                     null,
-                                    modifier = Modifier.size(20.dp),
+                                    modifier = Modifier.size(Dimens.sizeMd),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
@@ -867,17 +860,13 @@ fun GlobalSettingsScreen(
                             )
                         },
                     )
-                }
-
-                // ── Notifications ─────────────────────────────────────────────────
-                SectionLabel(stringResource(R.string.global_settings_section_notifications))
-                SurfaceCard {
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
                     ListItem(
                         leadingContent = {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(10.dp))
+                                    .size(Dimens.sizeIconContainer)
+                                    .clip(RoundedCornerShape(Dimens.cornerMd))
                                     .background(
                                         MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
                                     ),
@@ -887,7 +876,7 @@ fun GlobalSettingsScreen(
                                     if (osNotificationsEnabled) Icons.Default.Notifications
                                     else Icons.Default.NotificationsOff,
                                     null,
-                                    modifier = Modifier.size(20.dp),
+                                    modifier = Modifier.size(Dimens.sizeMd),
                                     tint = MaterialTheme.colorScheme.primary,
                                 )
                             }
@@ -943,8 +932,8 @@ fun GlobalSettingsScreen(
                         leadingContent = {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(10.dp))
+                                    .size(Dimens.sizeIconContainer)
+                                    .clip(RoundedCornerShape(Dimens.cornerMd))
                                     .background(
                                         MaterialTheme.colorScheme.primaryContainer.copy(
                                             alpha = 0.4f
@@ -955,7 +944,7 @@ fun GlobalSettingsScreen(
                                 Icon(
                                     Icons.Default.Backup,
                                     null,
-                                    modifier = Modifier.size(20.dp),
+                                    modifier = Modifier.size(Dimens.sizeMd),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
@@ -1009,8 +998,8 @@ fun GlobalSettingsScreen(
                                 leadingContent = {
                                     Box(
                                         modifier = Modifier
-                                            .size(36.dp)
-                                            .clip(RoundedCornerShape(10.dp))
+                                            .size(Dimens.sizeIconContainer)
+                                            .clip(RoundedCornerShape(Dimens.cornerMd))
                                             .background(
                                                 MaterialTheme.colorScheme.primaryContainer.copy(
                                                     alpha = 0.4f
@@ -1021,7 +1010,7 @@ fun GlobalSettingsScreen(
                                         Icon(
                                             Icons.Default.Key,
                                             null,
-                                            modifier = Modifier.size(20.dp),
+                                            modifier = Modifier.size(Dimens.sizeMd),
                                             tint = MaterialTheme.colorScheme.primary
                                         )
                                     }
@@ -1057,8 +1046,8 @@ fun GlobalSettingsScreen(
                                 leadingContent = {
                                     Box(
                                         modifier = Modifier
-                                            .size(36.dp)
-                                            .clip(RoundedCornerShape(10.dp))
+                                            .size(Dimens.sizeIconContainer)
+                                            .clip(RoundedCornerShape(Dimens.cornerMd))
                                             .background(
                                                 MaterialTheme.colorScheme.primaryContainer.copy(
                                                     alpha = 0.4f
@@ -1069,7 +1058,7 @@ fun GlobalSettingsScreen(
                                         Icon(
                                             Icons.Default.Folder,
                                             null,
-                                            modifier = Modifier.size(20.dp),
+                                            modifier = Modifier.size(Dimens.sizeMd),
                                             tint = MaterialTheme.colorScheme.primary
                                         )
                                     }
@@ -1113,8 +1102,8 @@ fun GlobalSettingsScreen(
                                 leadingContent = {
                                     Box(
                                         modifier = Modifier
-                                            .size(36.dp)
-                                            .clip(RoundedCornerShape(10.dp))
+                                            .size(Dimens.sizeIconContainer)
+                                            .clip(RoundedCornerShape(Dimens.cornerMd))
                                             .background(
                                                 MaterialTheme.colorScheme.primaryContainer.copy(
                                                     alpha = 0.4f
@@ -1125,7 +1114,7 @@ fun GlobalSettingsScreen(
                                         Icon(
                                             Icons.Default.Schedule,
                                             null,
-                                            modifier = Modifier.size(20.dp),
+                                            modifier = Modifier.size(Dimens.sizeMd),
                                             tint = MaterialTheme.colorScheme.primary
                                         )
                                     }
@@ -1164,8 +1153,8 @@ fun GlobalSettingsScreen(
                                     leadingContent = {
                                         Box(
                                             modifier = Modifier
-                                                .size(36.dp)
-                                                .clip(RoundedCornerShape(10.dp))
+                                                .size(Dimens.sizeIconContainer)
+                                                .clip(RoundedCornerShape(Dimens.cornerMd))
                                                 .background(
                                                     MaterialTheme.colorScheme.primaryContainer.copy(
                                                         alpha = 0.4f
@@ -1176,7 +1165,7 @@ fun GlobalSettingsScreen(
                                             Icon(
                                                 Icons.Default.History,
                                                 null,
-                                                modifier = Modifier.size(20.dp),
+                                                modifier = Modifier.size(Dimens.sizeMd),
                                                 tint = MaterialTheme.colorScheme.primary
                                             )
                                         }
@@ -1233,166 +1222,6 @@ fun GlobalSettingsScreen(
                     }
                 }
 
-                // ── Data ──────────────────────────────────────────────────────────
-                SectionLabel(stringResource(R.string.global_settings_section_data))
-                SurfaceCard {
-                    ListItem(
-                        leadingContent = {
-                            Box(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(
-                                        MaterialTheme.colorScheme.primaryContainer.copy(
-                                            alpha = 0.4f
-                                        )
-                                    ),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Icon(
-                                    Icons.Default.Storage,
-                                    null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        },
-                        headlineContent = {
-                            Text(
-                                stringResource(R.string.global_settings_clear_all_data_headline),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        },
-                        supportingContent = { Text(stringResource(R.string.global_settings_clear_all_data_desc)) },
-                        trailingContent = {
-                            IconButton(onClick = viewModel::showClearAllDialog) {
-                                Icon(
-                                    Icons.Default.DeleteSweep,
-                                    contentDescription = stringResource(R.string.global_settings_clear_all_cd),
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        },
-                    )
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
-                    ListItem(
-                        leadingContent = {
-                            Box(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(
-                                        MaterialTheme.colorScheme.primaryContainer.copy(
-                                            alpha = 0.4f
-                                        )
-                                    ),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Icon(
-                                    Icons.Default.Apps,
-                                    null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        },
-                        headlineContent = {
-                            Text(
-                                stringResource(R.string.global_settings_delete_all_apps_headline),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        },
-                        supportingContent = { Text(stringResource(R.string.global_settings_delete_all_apps_desc)) },
-                        trailingContent = {
-                            IconButton(onClick = viewModel::showDeleteAllAppsDialog) {
-                                Icon(
-                                    Icons.Default.DeleteSweep,
-                                    null,
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        },
-                    )
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
-                    ListItem(
-                        leadingContent = {
-                            Box(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(
-                                        MaterialTheme.colorScheme.primaryContainer.copy(
-                                            alpha = 0.4f
-                                        )
-                                    ),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Icon(
-                                    Icons.Default.Category,
-                                    null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        },
-                        headlineContent = {
-                            Text(
-                                stringResource(R.string.global_settings_delete_all_categories_headline),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        },
-                        supportingContent = { Text(stringResource(R.string.global_settings_delete_all_categories_desc)) },
-                        trailingContent = {
-                            IconButton(onClick = viewModel::showDeleteAllCategoriesDialog) {
-                                Icon(
-                                    Icons.Default.DeleteSweep,
-                                    null,
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        },
-                    )
-                    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
-                    ListItem(
-                        leadingContent = {
-                            Box(
-                                modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(
-                                        MaterialTheme.colorScheme.primaryContainer.copy(
-                                            alpha = 0.4f
-                                        )
-                                    ),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Icon(
-                                    Icons.AutoMirrored.Filled.Shortcut,
-                                    null,
-                                    modifier = Modifier.size(20.dp),
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        },
-                        headlineContent = {
-                            Text(
-                                stringResource(R.string.global_settings_delete_all_shortcuts_headline),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        },
-                        supportingContent = { Text(stringResource(R.string.global_settings_delete_all_shortcuts_desc)) },
-                        trailingContent = {
-                            IconButton(onClick = viewModel::showDeleteAllShortcutsDialog) {
-                                Icon(
-                                    Icons.Default.DeleteSweep,
-                                    null,
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        },
-                    )
-                }
-
                 // ── About ─────────────────────────────────────────────────────────
                 SectionLabel(stringResource(R.string.global_settings_section_about))
                 SurfaceCard {
@@ -1400,8 +1229,8 @@ fun GlobalSettingsScreen(
                         leadingContent = {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(10.dp))
+                                    .size(Dimens.sizeIconContainer)
+                                    .clip(RoundedCornerShape(Dimens.cornerMd))
                                     .background(
                                         MaterialTheme.colorScheme.primaryContainer.copy(
                                             alpha = 0.4f
@@ -1412,7 +1241,7 @@ fun GlobalSettingsScreen(
                                 Icon(
                                     Icons.Default.Info,
                                     null,
-                                    modifier = Modifier.size(20.dp),
+                                    modifier = Modifier.size(Dimens.sizeMd),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
@@ -1438,8 +1267,8 @@ fun GlobalSettingsScreen(
                         leadingContent = {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(10.dp))
+                                    .size(Dimens.sizeIconContainer)
+                                    .clip(RoundedCornerShape(Dimens.cornerMd))
                                     .background(
                                         MaterialTheme.colorScheme.primaryContainer.copy(
                                             alpha = 0.4f
@@ -1450,7 +1279,7 @@ fun GlobalSettingsScreen(
                                 Icon(
                                     Icons.Default.AutoAwesome,
                                     null,
-                                    modifier = Modifier.size(20.dp),
+                                    modifier = Modifier.size(Dimens.sizeMd),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
@@ -1477,8 +1306,8 @@ fun GlobalSettingsScreen(
                         leadingContent = {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(10.dp))
+                                    .size(Dimens.sizeIconContainer)
+                                    .clip(RoundedCornerShape(Dimens.cornerMd))
                                     .background(
                                         MaterialTheme.colorScheme.primaryContainer.copy(
                                             alpha = 0.4f
@@ -1489,7 +1318,7 @@ fun GlobalSettingsScreen(
                                 Icon(
                                     Icons.Default.PrivacyTip,
                                     null,
-                                    modifier = Modifier.size(20.dp),
+                                    modifier = Modifier.size(Dimens.sizeMd),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
@@ -1514,8 +1343,8 @@ fun GlobalSettingsScreen(
                         leadingContent = {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(10.dp))
+                                    .size(Dimens.sizeIconContainer)
+                                    .clip(RoundedCornerShape(Dimens.cornerMd))
                                     .background(
                                         MaterialTheme.colorScheme.primaryContainer.copy(
                                             alpha = 0.4f
@@ -1526,7 +1355,7 @@ fun GlobalSettingsScreen(
                                 Icon(
                                     Icons.AutoMirrored.Filled.Article,
                                     null,
-                                    modifier = Modifier.size(20.dp),
+                                    modifier = Modifier.size(Dimens.sizeMd),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
@@ -1553,8 +1382,8 @@ fun GlobalSettingsScreen(
                         leadingContent = {
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
-                                    .clip(RoundedCornerShape(10.dp))
+                                    .size(Dimens.sizeIconContainer)
+                                    .clip(RoundedCornerShape(Dimens.cornerMd))
                                     .background(
                                         MaterialTheme.colorScheme.primaryContainer.copy(
                                             alpha = 0.4f
@@ -1565,7 +1394,7 @@ fun GlobalSettingsScreen(
                                 Icon(
                                     Icons.Default.Code,
                                     null,
-                                    modifier = Modifier.size(20.dp),
+                                    modifier = Modifier.size(Dimens.sizeMd),
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }
@@ -1759,54 +1588,6 @@ fun GlobalSettingsScreen(
             confirmLabel = strRestore,
             onDismiss = viewModel::dismissImportDialog,
             onConfirm = viewModel::importBackup,
-        )
-    }
-
-    if (state.showDeleteAllAppsDialog) {
-        ConfirmDialog(
-            title = stringResource(R.string.global_settings_delete_all_apps_confirm_title),
-            body = stringResource(R.string.global_settings_delete_all_apps_confirm_body),
-            confirmLabel = stringResource(R.string.common_delete_all),
-            onConfirm = viewModel::deleteAllApps,
-            onDismiss = viewModel::dismissDeleteAllAppsDialog,
-            icon = Icons.Default.DeleteSweep,
-            isDestructive = true,
-        )
-    }
-
-    if (state.showDeleteAllCategoriesDialog) {
-        ConfirmDialog(
-            title = stringResource(R.string.global_settings_delete_all_categories_confirm_title),
-            body = stringResource(R.string.global_settings_delete_all_categories_confirm_body),
-            confirmLabel = stringResource(R.string.common_delete_all),
-            onConfirm = viewModel::deleteAllCategories,
-            onDismiss = viewModel::dismissDeleteAllCategoriesDialog,
-            icon = Icons.Default.DeleteSweep,
-            isDestructive = true,
-        )
-    }
-
-    if (state.showDeleteAllShortcutsDialog) {
-        ConfirmDialog(
-            title = stringResource(R.string.global_settings_delete_all_shortcuts_confirm_title),
-            body = stringResource(R.string.global_settings_delete_all_shortcuts_confirm_body),
-            confirmLabel = stringResource(R.string.common_delete_all),
-            onConfirm = viewModel::deleteAllShortcuts,
-            onDismiss = viewModel::dismissDeleteAllShortcutsDialog,
-            icon = Icons.Default.DeleteSweep,
-            isDestructive = true,
-        )
-    }
-
-    if (state.showClearAllDialog) {
-        ConfirmDialog(
-            title = stringResource(R.string.global_settings_clear_all_confirm_title),
-            body = stringResource(R.string.global_settings_clear_all_confirm_body),
-            confirmLabel = stringResource(R.string.common_clear_all),
-            onConfirm = viewModel::clearAll,
-            onDismiss = viewModel::dismissClearAllDialog,
-            icon = Icons.Default.DeleteSweep,
-            isDestructive = true,
         )
     }
 
@@ -2212,15 +1993,15 @@ private fun IconPackCard(
                     leadingContent = {
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(10.dp))
+                                .size(Dimens.sizeIconContainer)
+                                .clip(RoundedCornerShape(Dimens.cornerMd))
                                 .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
                                 iconVector,
                                 null,
-                                modifier = Modifier.size(20.dp),
+                                modifier = Modifier.size(Dimens.sizeMd),
                                 tint = iconColor
                             )
                         }
@@ -2253,13 +2034,13 @@ private fun IconPackCard(
                     leadingContent = {
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(10.dp))
+                                .size(Dimens.sizeIconContainer)
+                                .clip(RoundedCornerShape(Dimens.cornerMd))
                                 .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
                             contentAlignment = Alignment.Center,
                         ) {
                             CircularProgressIndicator(
-                                modifier = Modifier.size(20.dp),
+                                modifier = Modifier.size(Dimens.sizeMd),
                                 strokeWidth = Dimens.strokeMd
                             )
                         }
@@ -2281,15 +2062,15 @@ private fun IconPackCard(
                     leadingContent = {
                         Box(
                             modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(10.dp))
+                                .size(Dimens.sizeIconContainer)
+                                .clip(RoundedCornerShape(Dimens.cornerMd))
                                 .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)),
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
                                 iconVector,
                                 null,
-                                modifier = Modifier.size(20.dp),
+                                modifier = Modifier.size(Dimens.sizeMd),
                                 tint = iconColor
                             )
                         }

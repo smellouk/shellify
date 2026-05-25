@@ -12,7 +12,7 @@
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|------------------|
 | 1 | Web Integration | Shellify as the default web handler | INTG-01–09 (9) | 5 |
-| 2 | Privacy & Tor | Maximum per-app isolation and anonymity | PRIV-01–05, TOR-01–05 (10) | 5 |
+| 2 | Privacy & Tor | 5/5 | Complete   | 2026-05-25 |
 | 3 | Productivity & Insights | Power-user tooling and on-device usage awareness | PROD-01–05, ANLT-01–07 (12) | 5 |
 | 4 | Platform & Discovery | Shellify as a full Android citizen | PLAT-01–06, DISC-01–03, NOTF-01–04 (13) | 5 |
 | 5 | E2E Test Migration | Replace Espresso E2E tests with Maestro | TEST-01–05 (5) | 4 |
@@ -34,6 +34,7 @@
 | 21 | Profiles Support | Guest and named profiles to switch between independent sets of added apps | TBD | TBD |
 | 22 | Network Request Log | 6/6 | Complete    | 2026-05-24 |
 | 23 | Console Log Viewer | Surface console.log output in a slide-up panel for custom JS debugging | TBD | TBD |
+| 24 | Community Plugin Engine | Install community plugins from a marketplace to extend per-PWA behaviour via JS injection | TBD | TBD |
 
 ---
 
@@ -82,22 +83,22 @@ Plans:
 
 **Requirements:** PRIV-01, PRIV-02, PRIV-03, PRIV-04, PRIV-05, TOR-01, TOR-02, TOR-03, TOR-04, TOR-05
 
-**Plans:** 5 plans across 4 waves
+**Plans:** 5/5 plans complete
 
 Plans:
 
 **Wave 1** *(parallel — no dependencies between these plans)*
-- [ ] 02-01-PLAN.md — Domain + DB foundation: 6 new WebApp boolean fields (stealthMode, cookieAutoWipe, alwaysIncognito, trackerBlockingEnabled, useTor, preserveTorIdentity); MIGRATION_5_6 (5→6); AppDatabase v6 bump; WebAppMapper round-trip; instrumented Migration5To6Test
-- [ ] 02-04-PLAN.md — Tor infrastructure (autonomous=false, package legitimacy checkpoint): Guardian Project Maven repo + tor-android:0.4.9.8 + jtorctl:0.4.5.7; ProxyConfig sealed class (None/Socks5/Http); TorState sealed class; TorManager skeleton (StateFlow + grace-period release + NEWNYM); GeckoEngineManager refactor to multi-runtime cache keyed by ProxyConfig
+- [x] 02-01-PLAN.md — Domain + DB foundation: 6 new WebApp boolean fields (stealthMode, cookieAutoWipe, alwaysIncognito, trackerBlockingEnabled, useTor, preserveTorIdentity); MIGRATION_5_6 (5→6); AppDatabase v6 bump; WebAppMapper round-trip; instrumented Migration5To6Test
+- [x] 02-04-PLAN.md — Tor infrastructure (autonomous=false, package legitimacy checkpoint): Guardian Project Maven repo + tor-android:0.4.9.8 + jtorctl:0.4.5.7; ProxyConfig sealed class (None/Socks5/Http); TorState sealed class; TorManager skeleton (StateFlow + grace-period release + NEWNYM); GeckoEngineManager refactor to multi-runtime cache keyed by ProxyConfig
 
 **Wave 2** *(depends on Plan 01)*
-- [ ] 02-02-PLAN.md — Privacy hardening (PRIV-01/02/03/05): AdBlockFilterCache tracker rule set + easyprivacy_domains.txt asset; AdBlocker trackerBlockingEnabled gate; WebViewActivity stealth-aware applyTaskDescription + onStop cookie auto-wipe + alwaysIncognito auto-route; WebViewControlCenter stealth toggle + open incognito row; HomeScreen long-press Open incognito; AppSettingsScreen Privacy section (4 toggles); 11 new EN/FR/AR strings
+- [x] 02-02-PLAN.md — Privacy hardening (PRIV-01/02/03/05): AdBlockFilterCache tracker rule set + easyprivacy_domains.txt asset; AdBlocker trackerBlockingEnabled gate; WebViewActivity stealth-aware applyTaskDescription + onStop cookie auto-wipe + alwaysIncognito auto-route; WebViewControlCenter stealth toggle + open incognito row; HomeScreen long-press Open incognito; AppSettingsScreen Privacy section (4 toggles); 11 new EN/FR/AR strings
 
 **Wave 3** *(depends on Plan 02 — shares WebViewActivity / WebViewControlCenter)*
-- [ ] 02-03-PLAN.md — Panic button (PRIV-04): WebViewViewModel.executePanicWipe (clearData per app + DeleteAllAppsUseCase + ThemeManager/PasswordManager clearAll + NavigateHome); WebViewServiceProvider extended with deleteAllApps + getWebApps; WebViewActivity panic icon with 2000ms long-press + ConfirmDialog; 5 new EN/FR/AR strings
+- [x] 02-03-PLAN.md — Panic button (PRIV-04): WebViewViewModel.executePanicWipe (clearData per app + DeleteAllAppsUseCase + ThemeManager/PasswordManager clearAll + NavigateHome); WebViewServiceProvider extended with deleteAllApps + getWebApps; WebViewActivity panic icon with 2000ms long-press + ConfirmDialog; 5 new EN/FR/AR strings
 
 **Wave 4** *(depends on Plans 01, 02, 03, and 04 — wires Tor end-to-end)*
-- [ ] 02-05-PLAN.md — Tor UI + integration (TOR-01–05 + D-07): ShellifyApplication TorManager wiring; WebViewServiceProvider.torManager; WebViewViewModel TorState gate on LoadUrl + onAppReady/onSessionStop/onNewTorIdentity; GeckoViewEngine ProxyConfig threading; WebViewActivity bootstrap chip + incognito badge; WebViewControlCenter New Tor identity row; AppSettingsScreen Tor section (Route through Tor toggle disabled when SYSTEM_WEBVIEW, Preserve identity toggle, New Tor identity row); AddViewModel .onion exemption; 11 new EN/FR/AR strings
+- [x] 02-05-PLAN.md — Tor UI + integration (TOR-01–05 + D-07): ShellifyApplication TorManager wiring; WebViewServiceProvider.torManager; WebViewViewModel TorState gate on LoadUrl + onAppReady/onSessionStop/onNewTorIdentity; GeckoViewEngine ProxyConfig threading; WebViewActivity bootstrap chip + incognito badge; WebViewControlCenter New Tor identity row; AppSettingsScreen Tor section (Route through Tor toggle disabled when SYSTEM_WEBVIEW, Preserve identity toggle, New Tor identity row); AddViewModel .onion exemption; 11 new EN/FR/AR strings
 
 **Cross-cutting constraints:**
 - DB migration 5→6 requires explicit Migration object + committed `6.json` schema
@@ -541,6 +542,22 @@ Plans:
 
 ---
 
+## Phase 24: Community Plugin Engine for PWA Apps
+
+**Goal:** Let users discover, install, and manage community-authored plugins from a built-in marketplace. Each plugin injects JavaScript into a target PWA on page load, enabling the community to ship new per-app behaviours (ad-hiders, UI tweaks, automation scripts, dark-mode overrides, etc.) without Shellify releasing a native update. Plugins are sandboxed to their target PWA — they never touch Shellify's own UI or other apps.
+
+**Requirements:** TBD — run `/gsd-plan-phase 24` to define
+
+**Depends on:** Phase 9 (Inject JS Script to Website for PWA Editing) — the plugin runtime reuses the JS injection pipeline established in Phase 9 as its execution layer
+
+**Plans:**
+- TBD
+
+**Success Criteria:**
+1. TBD
+
+---
+
 ## Deferred (v2)
 
 | Feature | Reason |
@@ -554,4 +571,4 @@ Plans:
 ---
 
 *Roadmap created: 2026-05-15*
-*Last updated: 2026-05-24 — Phase 8 plans created*
+*Last updated: 2026-05-25 — Phase 24 added (Community Plugin Engine)*

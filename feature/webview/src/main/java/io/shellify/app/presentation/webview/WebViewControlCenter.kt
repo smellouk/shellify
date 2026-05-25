@@ -1,21 +1,41 @@
 package io.shellify.app.presentation.webview
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.GTranslate
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.LockOpen
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Route
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.VpnKeyOff
+import androidx.compose.material.icons.filled.VpnLock
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -29,10 +49,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import io.shellify.app.core.engine.TorState
 import io.shellify.app.presentation.components.ConfirmDialog
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.WebApp
@@ -44,12 +68,15 @@ import io.shellify.core.ui.R
 fun WebViewControlCenter(
     pwaApp: WebApp,
     hasGlobalPassword: Boolean,
+    torState: TorState = TorState.Stopped,
     onAdBlockChanged: (Boolean) -> Unit,
     onTranslateChanged: (Boolean) -> Unit,
     onFullscreenChanged: (Boolean) -> Unit,
     onLockChanged: (Boolean) -> Unit,
     onClearData: () -> Unit,
     onNetworkLogClick: () -> Unit,
+    onNewTorIdentity: () -> Unit = {},
+    onPanic: () -> Unit = {},
 ) {
     var showSheet by remember { mutableStateOf(false) }
 
@@ -77,12 +104,15 @@ fun WebViewControlCenter(
             WebViewControlCenterSheet(
                 pwaApp = pwaApp,
                 hasGlobalPassword = hasGlobalPassword,
+                torState = torState,
                 onAdBlockChanged = onAdBlockChanged,
                 onTranslateChanged = onTranslateChanged,
                 onFullscreenChanged = onFullscreenChanged,
                 onLockChanged = onLockChanged,
                 onClearData = { showSheet = false; onClearData() },
                 onNetworkLogClick = { showSheet = false; onNetworkLogClick() },
+                onNewTorIdentity = { showSheet = false; onNewTorIdentity() },
+                onPanic = { showSheet = false; onPanic() },
             )
         }
     }
@@ -92,20 +122,99 @@ fun WebViewControlCenter(
 fun WebViewControlCenterSheet(
     pwaApp: WebApp,
     hasGlobalPassword: Boolean,
+    torState: TorState = TorState.Stopped,
     onAdBlockChanged: (Boolean) -> Unit,
     onTranslateChanged: (Boolean) -> Unit,
     onFullscreenChanged: (Boolean) -> Unit,
     onLockChanged: (Boolean) -> Unit,
     onClearData: () -> Unit,
     onNetworkLogClick: () -> Unit,
+    onNewTorIdentity: () -> Unit = {},
+    onPanic: () -> Unit = {},
 ) {
     var showClearDataDialog by remember { mutableStateOf(false) }
+    var showPanicDialog by remember { mutableStateOf(false) }
 
-    Text(
-        stringResource(R.string.webview_sheet_title),
-        style = MaterialTheme.typography.titleMedium,
-        modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceXxs),
-    )
+    // Header: sheet title on the left; Tor state icons on the right (only for Tor apps).
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceXxs),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            stringResource(R.string.webview_sheet_title),
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.weight(1f),
+        )
+        if (pwaApp.useTor) {
+            val context = LocalContext.current
+            val (torIcon, torLabel, torTint) = torStateDisplay(torState)
+            val circuitTint = if (torState is TorState.Ready) MaterialTheme.colorScheme.primary
+            else MaterialTheme.colorScheme.onSurfaceVariant
+            val circuitLabel = if (torState is TorState.Ready) {
+                stringResource(R.string.webview_tor_circuit_active)
+            } else {
+                stringResource(R.string.webview_tor_no_circuit)
+            }
+            val newIdentityLabel = stringResource(R.string.webview_control_new_tor_identity)
+            // Card matches SurfaceCard: cornerXl, surface color, 1dp outlineVariant border.
+            Card(
+                shape = RoundedCornerShape(Dimens.cornerXl),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
+            ) {
+                Row(
+                    modifier = Modifier
+                        .height(IntrinsicSize.Min)
+                        .padding(horizontal = Dimens.spaceSm, vertical = Dimens.spaceXxs),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
+                ) {
+                    // Onion — 20% larger, full emoji colors preserved (no tint).
+                    Icon(
+                        painter = painterResource(R.drawable.ic_tor_onion),
+                        contentDescription = null,
+                        modifier = Modifier.size(Dimens.sizeSm * 1.2f),
+                        tint = Color.Unspecified,
+                    )
+                    VerticalDivider(modifier = Modifier.width(Dimens.borderDefault))
+                    // Status icons grouped together with tighter spacing.
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
+                    ) {
+                        Icon(
+                            torIcon,
+                            contentDescription = torLabel,
+                            tint = torTint,
+                            modifier = Modifier
+                                .size(Dimens.sizeSm)
+                                .clickable { Toast.makeText(context, torLabel, Toast.LENGTH_SHORT).show() },
+                        )
+                        Icon(
+                            Icons.Default.Route,
+                            contentDescription = circuitLabel,
+                            tint = circuitTint,
+                            modifier = Modifier
+                                .size(Dimens.sizeSm)
+                                .clickable { Toast.makeText(context, circuitLabel, Toast.LENGTH_SHORT).show() },
+                        )
+                        Icon(
+                            Icons.Default.Refresh,
+                            contentDescription = newIdentityLabel,
+                            modifier = Modifier
+                                .size(Dimens.sizeSm)
+                                .clickable {
+                                    Toast.makeText(context, newIdentityLabel, Toast.LENGTH_SHORT).show()
+                                    onNewTorIdentity()
+                                },
+                        )
+                    }
+                }
+            }
+        }
+    }
     HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceSm))
     ListItem(
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
@@ -182,6 +291,17 @@ fun WebViewControlCenterSheet(
         },
         modifier = Modifier.clickable { showClearDataDialog = true },
     )
+    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
+    ListItem(
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        leadingContent = {
+            Icon(Icons.Default.DeleteForever, null, tint = MaterialTheme.colorScheme.error)
+        },
+        headlineContent = {
+            Text(stringResource(R.string.webview_control_panic), color = MaterialTheme.colorScheme.error)
+        },
+        modifier = Modifier.clickable { showPanicDialog = true },
+    )
     Spacer(Modifier.navigationBarsPadding())
 
     if (showClearDataDialog) {
@@ -195,4 +315,44 @@ fun WebViewControlCenterSheet(
             isDestructive = true,
         )
     }
+
+    if (showPanicDialog) {
+        ConfirmDialog(
+            title = stringResource(R.string.webview_panic_confirm_title),
+            body = stringResource(R.string.webview_panic_confirm_body),
+            confirmLabel = stringResource(R.string.webview_panic_confirm_button),
+            onConfirm = { showPanicDialog = false; onPanic() },
+            onDismiss = { showPanicDialog = false },
+            icon = Icons.Default.DeleteForever,
+            isDestructive = true,
+        )
+    }
+}
+
+/**
+ * Maps a [TorState] to the triple of (icon, label string resource id label, tint) used
+ * in the control-center Tor status row.
+ */
+@Composable
+private fun torStateDisplay(torState: TorState): Triple<ImageVector, String, Color> = when (torState) {
+    is TorState.Ready -> Triple(
+        Icons.Default.CheckCircle,
+        stringResource(R.string.webview_tor_connected),
+        MaterialTheme.colorScheme.primary,
+    )
+    is TorState.Connecting -> Triple(
+        Icons.Default.VpnLock,
+        stringResource(R.string.webview_tor_connecting_short),
+        MaterialTheme.colorScheme.tertiary,
+    )
+    is TorState.Error -> Triple(
+        Icons.Default.Warning,
+        stringResource(R.string.webview_tor_connection_failed),
+        MaterialTheme.colorScheme.error,
+    )
+    TorState.Stopped -> Triple(
+        Icons.Default.VpnKeyOff,
+        stringResource(R.string.webview_tor_stopped),
+        MaterialTheme.colorScheme.onSurfaceVariant,
+    )
 }

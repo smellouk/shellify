@@ -75,8 +75,10 @@ import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.VpnLock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -765,6 +767,18 @@ private fun WhatPage() {
             { primaryContainer },
             R.string.onboarding_feature_translate_title,
             R.string.onboarding_feature_translate_desc
+        ),
+        Feature(
+            Icons.Default.Notifications,
+            { primaryContainer.copy(alpha = 0.5f) },
+            R.string.onboarding_feature_notifications_title,
+            R.string.onboarding_feature_notifications_desc
+        ),
+        Feature(
+            Icons.Default.VpnLock,
+            { surfaceVariant },
+            R.string.onboarding_feature_tor_title,
+            R.string.onboarding_feature_tor_desc
         ),
     )
 

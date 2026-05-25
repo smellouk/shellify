@@ -6,5 +6,4 @@ import io.shellify.app.domain.model.LockType
 
 interface WebViewIntentFactory {
     fun previewIntent(context: Context, url: String, name: String, lockType: LockType? = null): Intent
-    fun incognitoIntent(context: Context, url: String): Intent
 }

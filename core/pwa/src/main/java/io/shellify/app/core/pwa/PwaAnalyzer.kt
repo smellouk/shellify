@@ -1,5 +1,6 @@
 package io.shellify.app.core.pwa
 
+import androidx.annotation.VisibleForTesting
 import io.shellify.app.domain.model.PwaIcon
 import io.shellify.app.domain.model.PwaManifest
 import kotlinx.coroutines.Dispatchers
@@ -66,7 +67,8 @@ class PwaAnalyzer(private val client: OkHttpClient) {
         val href = regex.find(html)?.groupValues?.get(1) ?: return null
         return when {
             href.startsWith("http") -> href
-            href.startsWith("//") -> "https:$href"
+            // Protocol-relative URLs: use the base URL's scheme. Onion services use http, not https.
+            href.startsWith("//") -> "${extractScheme(baseUrl)}:$href"
             href.startsWith("/") -> "${extractOrigin(baseUrl)}$href"
             else -> "$baseUrl/$href"
         }
@@ -129,7 +131,8 @@ class PwaAnalyzer(private val client: OkHttpClient) {
 
     private fun resolveUrl(href: String, baseUrl: String): String = when {
         href.startsWith("http") -> href
-        href.startsWith("//") -> "https:$href"
+        // Protocol-relative URLs: inherit the base URL's scheme. Onion services use http, not https.
+        href.startsWith("//") -> "${extractScheme(baseUrl)}:$href"
         href.startsWith("/") -> "${extractOrigin(baseUrl)}$href"
         else -> "$baseUrl/$href"
     }
@@ -156,8 +159,12 @@ class PwaAnalyzer(private val client: OkHttpClient) {
         Regex("<title>([^<]+)</title>", RegexOption.IGNORE_CASE).find(html)?.groupValues?.get(1)
             ?.trim()
 
-    private fun extractOrigin(url: String): String {
-        val proto = if (url.startsWith("https")) "https" else "http"
+    /** Returns "https" or "http" from the URL's scheme. Used to preserve onion-service http URLs. */
+    private fun extractScheme(url: String): String = if (url.startsWith("https")) "https" else "http"
+
+    @VisibleForTesting
+    internal fun extractOrigin(url: String): String {
+        val proto = extractScheme(url)
         val host = url.removePrefix("https://").removePrefix("http://").substringBefore('/')
         return "$proto://$host"
     }

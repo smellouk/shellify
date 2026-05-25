@@ -63,4 +63,12 @@ data class WebAppEntity(
     @ColumnInfo(name = "dnd_end_hour") val dndEndHour: Int = -1,
     @ColumnInfo(name = "background_notifications_enabled") val backgroundNotificationsEnabled: Boolean = false,
     @ColumnInfo(name = "swipe_to_refresh_enabled") val swipeToRefreshEnabled: Boolean = true,
+    // Privacy
+    @ColumnInfo(name = "stealth_mode") val stealthMode: Boolean = false,
+    @ColumnInfo(name = "cookie_auto_wipe") val cookieAutoWipe: Boolean = false,
+    @ColumnInfo(name = "always_incognito") val alwaysIncognito: Boolean = false,
+    @ColumnInfo(name = "tracker_blocking_enabled") val trackerBlockingEnabled: Boolean = false,
+    // Tor
+    @ColumnInfo(name = "use_tor") val useTor: Boolean = false,
+    @ColumnInfo(name = "preserve_tor_identity") val preserveTorIdentity: Boolean = false,
 )

@@ -44,6 +44,14 @@ data class WebApp(
     val dndEndHour: Int = -1,
     val backgroundNotificationsEnabled: Boolean = false,
     val swipeToRefreshEnabled: Boolean = true,
+    // Privacy
+    val stealthMode: Boolean = false,
+    val cookieAutoWipe: Boolean = false,
+    val alwaysIncognito: Boolean = false,
+    val trackerBlockingEnabled: Boolean = false,
+    // Tor
+    val useTor: Boolean = false,
+    val preserveTorIdentity: Boolean = false,
 ) {
     /** On-disk path: Path → path, SvgIcon → renderedPath, else null. */
     val iconPath: String?

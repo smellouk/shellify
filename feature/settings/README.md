@@ -42,6 +42,40 @@ class AppSettingsViewModel(
 | Clear isolated data | `clearIsolatedData(webAppId)` |
 | Create shortcut | `createShortcut(webApp)` |
 | Delete | `deleteWebApp(webAppId)` → emit `NavigateToHome` |
+| **Stealth mode** | `update { it.copy(stealthMode = !it.stealthMode) }` — hides PWA identity in Android recents |
+| **Cookie auto-wipe** | `update { it.copy(cookieAutoWipe = !it.cookieAutoWipe) }` — triggers `IsolationManager.clearData` on `onStop` |
+| **Always incognito** | `update { it.copy(alwaysIncognito = !it.alwaysIncognito) }` — every launch uses an ephemeral session |
+| **Tracker blocking** | `update { it.copy(trackerBlockingEnabled = !it.trackerBlockingEnabled) }` — enables EasyPrivacy domain list in `AdBlocker` |
+
+### Privacy section in `AppSettingsScreen` (Phase 2)
+
+A new **Privacy** section was inserted between the **Control center** section and the **Browser Engine** section. It contains 4 toggle rows backed by the methods above:
+
+1. Stealth mode — `Icons.Default.VisibilityOff`
+2. Auto-wipe cookies — `Icons.Default.Delete` (CleaningServices fallback)
+3. Always incognito — `Icons.Default.VisibilityOff`
+4. Block trackers — `Icons.Default.Security` (TrackChanges fallback)
+
+### Tor section in `AppSettingsScreen` (Phase 2, Plan 05)
+
+A **Tor** section was inserted after the **Browser Engine** section. It contains:
+
+1. **Route through Tor** toggle (`settings_tor_enable`) — enabled only when `engineType == GECKOVIEW`.
+   When `SystemWebView` is selected, an info banner (`settings_tor_requires_gecko`) is shown instead.
+2. **Preserve Tor identity** toggle (`settings_tor_preserve_identity`) — visible only when `useTor == true`.
+   When enabled, a stable circuit is reused across sessions for the same app.
+3. **New Tor identity** clickable row (`settings_tor_new_identity`) — visible only when `useTor == true`.
+   Clicking emits `AppSettingsCommand.NewTorIdentity`, which is forwarded by the NavHost caller to
+   `ShellifyApplication.torManager.newIdentity()`. Activities and NavHost may access `core:*`
+   infrastructure directly per CLAUDE.md §Known gap.
+
+New `AppSettingsViewModel` methods:
+
+| Method | Effect |
+|---|---|
+| `toggleUseTor()` | Flips `WebApp.useTor` and persists |
+| `togglePreserveTorIdentity()` | Flips `WebApp.preserveTorIdentity` and persists |
+| `onNewTorIdentity()` | Emits `AppSettingsCommand.NewTorIdentity` |
 
 ### `AppSettingsScreen`
 

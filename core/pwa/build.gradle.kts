@@ -14,4 +14,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.okhttp)
     implementation(libs.gson)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk)
 }

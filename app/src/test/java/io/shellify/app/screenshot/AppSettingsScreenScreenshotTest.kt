@@ -7,6 +7,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.shellify.app.core.engine.GeckoEngineManager
 import io.shellify.app.core.engine.GeckoInstallState
+import io.shellify.app.domain.model.EngineType
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.presentation.settings.AppSettingsScreen
 import io.shellify.app.presentation.settings.AppSettingsUiState
@@ -151,6 +152,88 @@ class AppSettingsScreenScreenshotTest {
                     viewModel = buildVm(
                         AppSettingsUiState(
                             app = app("Notion", "https://notion.so").copy(swipeToRefreshEnabled = false),
+                            isLoading = false,
+                        )
+                    ),
+                    onBack = {}, onDeleted = {},
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun torSection_useTorEnabled_geckoView() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                AppSettingsScreen(
+                    viewModel = buildVm(
+                        AppSettingsUiState(
+                            app = app("ProtonMail", "https://mail.proton.me").copy(
+                                useTor = true,
+                                engineType = EngineType.GECKOVIEW,
+                            ),
+                            isLoading = false,
+                        )
+                    ),
+                    onBack = {}, onDeleted = {},
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun torSection_useTorDisabled_systemWebView() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                AppSettingsScreen(
+                    viewModel = buildVm(
+                        AppSettingsUiState(
+                            app = app("Reddit", "https://reddit.com").copy(
+                                useTor = false,
+                                engineType = EngineType.SYSTEM_WEBVIEW,
+                            ),
+                            isLoading = false,
+                        )
+                    ),
+                    onBack = {}, onDeleted = {},
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun torSection_preserveIdentity_enabled() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                AppSettingsScreen(
+                    viewModel = buildVm(
+                        AppSettingsUiState(
+                            app = app("ProtonMail", "https://mail.proton.me").copy(
+                                useTor = true,
+                                preserveTorIdentity = true,
+                                engineType = EngineType.GECKOVIEW,
+                            ),
+                            isLoading = false,
+                        )
+                    ),
+                    onBack = {}, onDeleted = {},
+                )
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun privacySection_alwaysIncognito_enabled() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                AppSettingsScreen(
+                    viewModel = buildVm(
+                        AppSettingsUiState(
+                            app = app("Twitter", "https://twitter.com").copy(alwaysIncognito = true),
                             isLoading = false,
                         )
                     ),

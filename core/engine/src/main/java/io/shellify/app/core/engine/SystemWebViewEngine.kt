@@ -36,7 +36,7 @@ class SystemWebViewEngine(private val adBlocker: AdBlocker) : BrowserEngine {
 
         wv.webViewClient = object : WebViewClient() {
             override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): android.webkit.WebResourceResponse? {
-                val result = if (app.adBlockEnabled) adBlocker.shouldBlock(request) else null
+                val result = if (app.adBlockEnabled) adBlocker.shouldBlock(request, app.trackerBlockingEnabled) else null
                 dispatchInterceptedRequest(
                     url = request.url.toString(),
                     isForMainFrame = request.isForMainFrame,

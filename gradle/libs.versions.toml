@@ -20,16 +20,19 @@ gson = "2.11.0"
 datastore = "1.1.1"
 appcompat = "1.7.0"
 swiperefreshlayout = "1.2.0"
+tor-android = "0.4.8.16"
 biometric = "1.1.0"
 work = "2.9.1"
 documentfile = "1.0.1"
 zxing = "3.5.3"
 geckoview = "140.0.20250707120347"
+jtorctl = "0.4.5.7"
 junit = "4.13.2"
 mockk = "1.14.3"
 androidx-test-ext = "1.2.1"
 androidx-test = "1.6.1"
 espresso = "3.7.0"
+uiautomator = "2.3.0"
 json = "20240303"
 konsist = "0.16.1"
 aboutlibraries = "11.2.3"
@@ -49,6 +52,7 @@ androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version
 androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidx-test" }
 androidx-test-rules = { group = "androidx.test", name = "rules", version.ref = "androidx-test" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
+uiautomator = { group = "androidx.test.uiautomator", name = "uiautomator", version.ref = "uiautomator" }
 mockk-android = { group = "io.mockk", name = "mockk-android", version.ref = "mockk" }
 androidx-room-testing = { group = "androidx.room", name = "room-testing", version.ref = "room" }
 compose-material3 = { group = "androidx.compose.material3", name = "material3" }
@@ -80,7 +84,9 @@ kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-cor
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
 geckoview = { group = "org.mozilla.geckoview", name = "geckoview-arm64-v8a", version.ref = "geckoview" }
+jtorctl = { group = "info.guardianproject", name = "jtorctl", version.ref = "jtorctl" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+tor-android = { group = "info.guardianproject", name = "tor-android", version.ref = "tor-android" }
 mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk" }
 json = { group = "org.json", name = "json", version.ref = "json" }
 konsist = { group = "com.lemonappdev", name = "konsist", version.ref = "konsist" }

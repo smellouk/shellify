@@ -60,6 +60,9 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.VpnLock
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -136,6 +139,7 @@ fun AppSettingsScreen(
     onNavigateToNetworkLog: (appId: Long) -> Unit = {},
     onStartBackgroundService: (appId: Long) -> Unit = {},
     onStopBackgroundService: (appId: Long) -> Unit = {},
+    onNewTorIdentity: () -> Unit = {},
 ) {
     val state by viewModel.uiState.collectAsState()
     val geckoInstallState by viewModel.geckoEngineManager.installState.collectAsState()
@@ -198,6 +202,9 @@ fun AppSettingsScreen(
                     }
                     context.startActivity(Intent.createChooser(sendIntent, null))
                 }
+                // Tor identity rotation delegates to the caller (Activity/NavHost) which owns
+                // the TorManager instance. Activities may access core:* directly per CLAUDE.md.
+                AppSettingsCommand.NewTorIdentity -> onNewTorIdentity()
             }
         }
     }
@@ -501,15 +508,13 @@ fun AppSettingsScreen(
                     },
                 )
             }
+            SectionLabel(stringResource(R.string.settings_notifications))
             SurfaceCard {
                 ToggleListItem(
                     label = stringResource(R.string.settings_notifications_permission),
                     checked = app.notificationPermission == NotificationPermission.GRANTED && state.globalNotificationsEnabled,
-                    onToggle = {
-                        if (state.globalNotificationsEnabled && app.notificationPermission != NotificationPermission.NOT_ASKED) {
-                            viewModel.toggleNotificationPermission()
-                        }
-                    },
+                    onToggle = viewModel::toggleNotificationPermission,
+                    enabled = state.globalNotificationsEnabled,
                     icon = {
                         Icon(
                             if (app.notificationPermission == NotificationPermission.GRANTED && state.globalNotificationsEnabled) {
@@ -520,44 +525,36 @@ fun AppSettingsScreen(
                             contentDescription = null,
                         )
                     },
+                    supportingContent = when {
+                        !state.globalNotificationsEnabled -> {
+                            {
+                                Text(
+                                    stringResource(R.string.settings_notifications_global_disabled),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                        app.notificationPermission == NotificationPermission.GRANTED -> {
+                            {
+                                val hint = buildString {
+                                    append(stringResource(R.string.settings_notifications_active_hint))
+                                    if (app.engineType != EngineType.GECKOVIEW) {
+                                        append(" ")
+                                        append(stringResource(R.string.settings_notifications_gecko_hint))
+                                    }
+                                }
+                                Text(
+                                    hint,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                        else -> null
+                    },
                 )
-                if (!state.globalNotificationsEnabled) {
-                    CardDivider()
-                    ListItem(
-                        leadingContent = {
-                            Icon(
-                                Icons.Default.Info,
-                                null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        },
-                        headlineContent = {
-                            Text(
-                                stringResource(R.string.settings_notifications_global_disabled),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        },
-                    )
-                } else if (app.notificationPermission == NotificationPermission.NOT_ASKED) {
-                    CardDivider()
-                    ListItem(
-                        leadingContent = {
-                            Icon(
-                                Icons.Default.Info,
-                                null,
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        },
-                        headlineContent = {
-                            Text(
-                                stringResource(R.string.settings_notifications_not_asked_hint),
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        },
-                    )
-                } else if (app.notificationPermission == NotificationPermission.GRANTED) {
+                if (app.notificationPermission == NotificationPermission.GRANTED && state.globalNotificationsEnabled) {
                     CardDivider()
                     DndRangeRow(
                         startHour = app.dndStartHour,
@@ -593,73 +590,26 @@ fun AppSettingsScreen(
                     },
                     modifier = Modifier.clickable { viewModel.onNotificationHistoryClick() },
                 )
+            }
+
+            // ── Privacy & Security ────────────────────────────────────────────
+            SectionLabel(stringResource(R.string.settings_privacy_security))
+            SurfaceCard {
+                ToggleListItem(
+                    label = stringResource(R.string.settings_always_incognito),
+                    checked = app.alwaysIncognito,
+                    onToggle = viewModel::toggleAlwaysIncognito,
+                    icon = { Icon(Icons.Default.VisibilityOff, null) },
+                )
                 CardDivider()
-                ListItem(
-                    leadingContent = { Icon(Icons.Default.Dns, contentDescription = null) },
-                    headlineContent = {
-                        Text(
-                            stringResource(R.string.settings_network_log),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                    },
-                    trailingContent = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            IconButton(
-                                onClick = { viewModel.onExportNetworkLogsClick() },
-                                enabled = state.hasNetworkLogs,
-                            ) {
-                                Icon(
-                                    Icons.Default.FileDownload,
-                                    contentDescription = stringResource(R.string.network_log_export_cd),
-                                )
-                            }
-                            Icon(
-                                Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                            )
-                        }
-                    },
-                    modifier = Modifier.clickable { viewModel.onNetworkLogClick() },
+                ToggleListItem(
+                    label = stringResource(R.string.settings_tracker_blocking),
+                    checked = app.trackerBlockingEnabled,
+                    onToggle = viewModel::toggleTrackerBlocking,
+                    // TrackChanges is not available in filled icons — use Security as fallback per UI-SPEC
+                    icon = { Icon(Icons.Default.Security, null) },
                 )
-            }
-
-            // ── Browser Engine ────────────────────────────────────────────────
-            SectionLabel(stringResource(R.string.add_engine_section))
-            AppEngineCard(
-                selected = app.engineType,
-                geckoInstallState = geckoInstallState,
-                onSelect = viewModel::setEngineType,
-            )
-
-            // ── Shortcut ──────────────────────────────────────────────────────
-            SectionLabel(stringResource(R.string.settings_shortcut))
-            SurfaceCard {
-                ListItem(
-                    headlineContent = {
-                        Text(
-                            stringResource(R.string.settings_create_shortcut),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    },
-                    supportingContent = { Text(stringResource(R.string.settings_create_shortcut_desc)) },
-                    trailingContent = {
-                        IconButton(onClick = {
-                            PwaShortcutManager.createShortcut(context, app)
-                            viewModel.markShortcutCreated(app)
-                        }) {
-                            Icon(
-                                Icons.AutoMirrored.Filled.Shortcut,
-                                stringResource(R.string.settings_create_shortcut_cd)
-                            )
-                        }
-                    },
-                )
-            }
-
-            // ── Security ──────────────────────────────────────────────────────
-            SectionLabel(stringResource(R.string.settings_security))
-            SurfaceCard {
+                CardDivider()
                 ListItem(
                     leadingContent = {
                         Icon(
@@ -716,6 +666,114 @@ fun AppSettingsScreen(
                         }
                     }
                 }
+            }
+
+            // ── Browser & Network ─────────────────────────────────────────────
+            // Tor requires GeckoView: the system WebView cannot route through a SOCKS proxy.
+            SectionLabel(stringResource(R.string.settings_browser_network))
+            AppEngineCard(
+                selected = app.engineType,
+                geckoInstallState = geckoInstallState,
+                onSelect = viewModel::setEngineType,
+            )
+
+            SurfaceCard {
+                val torEnabled = app.engineType == EngineType.GECKOVIEW
+                ToggleListItem(
+                    label = stringResource(R.string.settings_tor_enable),
+                    checked = app.useTor && torEnabled,
+                    onToggle = viewModel::toggleUseTor,
+                    icon = { Icon(Icons.Default.VpnLock, null) },
+                    enabled = torEnabled,
+                    supportingContent = if (!torEnabled) {
+                        {
+                            Text(
+                                stringResource(R.string.settings_tor_requires_gecko),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    } else {
+                        null
+                    },
+                )
+                if (app.useTor && torEnabled) {
+                    CardDivider()
+                    ToggleListItem(
+                        label = stringResource(R.string.settings_tor_preserve_identity),
+                        checked = app.preserveTorIdentity,
+                        onToggle = viewModel::togglePreserveTorIdentity,
+                        icon = { Icon(Icons.Default.Security, null) },
+                    )
+                    CardDivider()
+                    ListItem(
+                        leadingContent = { Icon(Icons.Default.Refresh, null) },
+                        headlineContent = {
+                            Text(
+                                stringResource(R.string.settings_tor_new_identity),
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                        },
+                        supportingContent = {
+                            Text(stringResource(R.string.settings_tor_new_identity_desc))
+                        },
+                        modifier = Modifier.clickable { viewModel.onNewTorIdentity() },
+                    )
+                }
+                CardDivider()
+                ListItem(
+                    leadingContent = { Icon(Icons.Default.Dns, contentDescription = null) },
+                    headlineContent = {
+                        Text(
+                            stringResource(R.string.settings_network_log),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                    },
+                    trailingContent = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconButton(
+                                onClick = { viewModel.onExportNetworkLogsClick() },
+                                enabled = state.hasNetworkLogs,
+                            ) {
+                                Icon(
+                                    Icons.Default.FileDownload,
+                                    contentDescription = stringResource(R.string.network_log_export_cd),
+                                )
+                            }
+                            Icon(
+                                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                            )
+                        }
+                    },
+                    modifier = Modifier.clickable { viewModel.onNetworkLogClick() },
+                )
+            }
+
+            // ── Shortcut ──────────────────────────────────────────────────────
+            SectionLabel(stringResource(R.string.settings_shortcut))
+            SurfaceCard {
+                ListItem(
+                    headlineContent = {
+                        Text(
+                            stringResource(R.string.settings_create_shortcut),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
+                    supportingContent = { Text(stringResource(R.string.settings_create_shortcut_desc)) },
+                    trailingContent = {
+                        IconButton(onClick = {
+                            PwaShortcutManager.createShortcut(context, app)
+                            viewModel.markShortcutCreated(app)
+                        }) {
+                            Icon(
+                                Icons.AutoMirrored.Filled.Shortcut,
+                                stringResource(R.string.settings_create_shortcut_cd)
+                            )
+                        }
+                    },
+                )
             }
 
             // ── Danger zone ───────────────────────────────────────────────────
@@ -987,8 +1045,11 @@ private fun ToggleListItem(
     checked: Boolean,
     onToggle: () -> Unit,
     icon: @Composable (() -> Unit)? = null,
+    enabled: Boolean = true,
+    supportingContent: @Composable (() -> Unit)? = null,
 ) = ListItem(
     headlineContent = { Text(label, style = MaterialTheme.typography.bodyMedium) },
+    supportingContent = supportingContent,
     leadingContent = icon,
-    trailingContent = { Switch(checked = checked, onCheckedChange = { onToggle() }) },
+    trailingContent = { Switch(checked = checked, enabled = enabled, onCheckedChange = { onToggle() }) },
 )

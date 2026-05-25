@@ -244,4 +244,93 @@ class WebAppMapperTest {
         val app = baseApp().copy(swipeToRefreshEnabled = false)
         assertEquals(false, app.toEntity().toDomain().swipeToRefreshEnabled)
     }
+
+    // ── Privacy + Tor fields (Phase 2) ────────────────────────────────────────
+
+    @Test
+    fun `WebApp constructed with defaults has all privacy and tor fields false`() {
+        val app = baseApp()
+        assertEquals(false, app.stealthMode)
+        assertEquals(false, app.cookieAutoWipe)
+        assertEquals(false, app.alwaysIncognito)
+        assertEquals(false, app.trackerBlockingEnabled)
+        assertEquals(false, app.useTor)
+        assertEquals(false, app.preserveTorIdentity)
+    }
+
+    @Test
+    fun `toEntity copies all 6 new boolean fields into WebAppEntity`() {
+        val app = baseApp().copy(
+            stealthMode = true,
+            cookieAutoWipe = true,
+            alwaysIncognito = true,
+            trackerBlockingEnabled = true,
+            useTor = true,
+            preserveTorIdentity = true,
+        )
+        val entity = app.toEntity()
+        assertEquals(true, entity.stealthMode)
+        assertEquals(true, entity.cookieAutoWipe)
+        assertEquals(true, entity.alwaysIncognito)
+        assertEquals(true, entity.trackerBlockingEnabled)
+        assertEquals(true, entity.useTor)
+        assertEquals(true, entity.preserveTorIdentity)
+    }
+
+    @Test
+    fun `toDomain copies all 6 new boolean fields back into WebApp`() {
+        val entity = baseEntity().copy(
+            stealthMode = true,
+            cookieAutoWipe = true,
+            alwaysIncognito = true,
+            trackerBlockingEnabled = true,
+            useTor = true,
+            preserveTorIdentity = true,
+        )
+        val app = entity.toDomain()
+        assertEquals(true, app.stealthMode)
+        assertEquals(true, app.cookieAutoWipe)
+        assertEquals(true, app.alwaysIncognito)
+        assertEquals(true, app.trackerBlockingEnabled)
+        assertEquals(true, app.useTor)
+        assertEquals(true, app.preserveTorIdentity)
+    }
+
+    @Test
+    fun `round-trip toEntity then toDomain preserves all 6 new booleans when true`() {
+        val app = baseApp().copy(
+            stealthMode = true,
+            cookieAutoWipe = true,
+            alwaysIncognito = true,
+            trackerBlockingEnabled = true,
+            useTor = true,
+            preserveTorIdentity = true,
+        )
+        val roundTripped = app.toEntity().toDomain()
+        assertEquals(true, roundTripped.stealthMode)
+        assertEquals(true, roundTripped.cookieAutoWipe)
+        assertEquals(true, roundTripped.alwaysIncognito)
+        assertEquals(true, roundTripped.trackerBlockingEnabled)
+        assertEquals(true, roundTripped.useTor)
+        assertEquals(true, roundTripped.preserveTorIdentity)
+    }
+
+    @Test
+    fun `round-trip toEntity then toDomain preserves all 6 new booleans when false`() {
+        val app = baseApp().copy(
+            stealthMode = false,
+            cookieAutoWipe = false,
+            alwaysIncognito = false,
+            trackerBlockingEnabled = false,
+            useTor = false,
+            preserveTorIdentity = false,
+        )
+        val roundTripped = app.toEntity().toDomain()
+        assertEquals(false, roundTripped.stealthMode)
+        assertEquals(false, roundTripped.cookieAutoWipe)
+        assertEquals(false, roundTripped.alwaysIncognito)
+        assertEquals(false, roundTripped.trackerBlockingEnabled)
+        assertEquals(false, roundTripped.useTor)
+        assertEquals(false, roundTripped.preserveTorIdentity)
+    }
 }

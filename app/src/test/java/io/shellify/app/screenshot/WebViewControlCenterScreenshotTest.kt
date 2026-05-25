@@ -6,6 +6,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.captureRoboImage
+import io.shellify.app.core.engine.TorState
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.presentation.theme.ShellifyTheme
 import io.shellify.app.presentation.webview.WebViewControlCenter
@@ -35,6 +36,12 @@ class WebViewControlCenterScreenshotTest {
     private val pwaAppNoTheme = WebApp(
         name = "GitHub",
         url = "https://github.com",
+    )
+
+    private val torApp = WebApp(
+        name = "ProtonMail",
+        url = "https://mail.proton.me",
+        useTor = true,
     )
 
     @Test
@@ -110,6 +117,75 @@ class WebViewControlCenterScreenshotTest {
                         onLockChanged = {},
                         onClearData = {},
                         onNetworkLogClick = {},
+                    )
+                }
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun sheet_torConnecting() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
+                    WebViewControlCenterSheet(
+                        pwaApp = torApp,
+                        hasGlobalPassword = false,
+                        torState = TorState.Connecting,
+                        onAdBlockChanged = {},
+                        onTranslateChanged = {},
+                        onFullscreenChanged = {},
+                        onLockChanged = {},
+                        onClearData = {},
+                        onNetworkLogClick = {},
+                        onNewTorIdentity = {},
+                    )
+                }
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun sheet_torReady() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
+                    WebViewControlCenterSheet(
+                        pwaApp = torApp,
+                        hasGlobalPassword = false,
+                        torState = TorState.Ready,
+                        onAdBlockChanged = {},
+                        onTranslateChanged = {},
+                        onFullscreenChanged = {},
+                        onLockChanged = {},
+                        onClearData = {},
+                        onNetworkLogClick = {},
+                        onNewTorIdentity = {},
+                    )
+                }
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun sheet_torError() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
+                    WebViewControlCenterSheet(
+                        pwaApp = torApp,
+                        hasGlobalPassword = false,
+                        torState = TorState.Error("SELinux denied"),
+                        onAdBlockChanged = {},
+                        onTranslateChanged = {},
+                        onFullscreenChanged = {},
+                        onLockChanged = {},
+                        onClearData = {},
+                        onNetworkLogClick = {},
+                        onNewTorIdentity = {},
                     )
                 }
             }

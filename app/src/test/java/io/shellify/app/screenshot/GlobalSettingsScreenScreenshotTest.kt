@@ -126,20 +126,6 @@ class GlobalSettingsScreenScreenshotTest {
         composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
     }
 
-    @Test
-    fun clearDataDialog() {
-        composeTestRule.setContent {
-            ShellifyTheme {
-                GlobalSettingsScreen(
-                    viewModel = buildVm(
-                        GlobalSettingsUiState(isLoaded = true, showClearAllDialog = true)
-                    ),
-                    onLicenses = {},
-                )
-            }
-        }
-        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
-    }
 
     @Test
     fun geckoViewSelectedSafeBrowsingOff() {

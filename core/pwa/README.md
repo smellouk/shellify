@@ -113,3 +113,18 @@ flowchart TD
 | Network timeout | Inherits OkHttp default (10 s connect, 10 s read) |
 
 **Consumers:** `feature:add` (URL analysis on the add screen), `feature:home` (icon display in the app grid), `feature:shortcuts` (shortcut icon rendering).
+
+## Tor / .onion URL handling (Phase 2, Plan 05)
+
+`PwaAnalyzer` does not explicitly reject `.onion` URLs. When a Tor-enabled app is analysed,
+the HTTP fetch will fail (plain `OkHttpClient` has no Tor SOCKS proxy) and `PwaManifest()` is
+returned as the empty fallback — the same as for any unreachable site. No crashes, no panics.
+
+Two protocol-resolution fixes were applied so that onion-service HTML that uses protocol-relative
+URLs (`//host.onion/...`) is not silently upgraded to `https://`:
+
+- `extractManifestUrl`: `//...` now inherits the base URL's scheme via `extractScheme()`.
+- `resolveUrl`: same fix.
+
+`extractOrigin(url)` is now `internal @VisibleForTesting` so unit tests can verify the
+scheme-preservation behavior directly without going through the full network stack.

@@ -22,6 +22,10 @@ dependencies {
     implementation(libs.androidx.webkit)
     implementation(libs.geckoview)
     implementation(libs.okhttp)
+    implementation(libs.tor.android)
+    // jtorctl must be 'api' so that TorManager's constructor parameter type (TorControlConnection)
+    // is visible to the app module which instantiates TorManager in ShellifyApplication.
+    api(libs.jtorctl)
 }
 
 

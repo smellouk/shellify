@@ -74,4 +74,11 @@
     <!-- Backup is managed manually via BackupManager -->
     <issue id="AllowBackup" severity="ignore" />
 
+    <!-- TorService ships in tor-android (Guardian Project Maven); its .class is absent
+         from the CI lint classpath. The regexp targets only this specific class so all
+         other MissingClass issues (our own Activities, Services, etc.) remain visible. -->
+    <issue id="MissingClass">
+        <ignore regexp="org\.torproject\.jni\.TorService" />
+    </issue>
+
 </lint>

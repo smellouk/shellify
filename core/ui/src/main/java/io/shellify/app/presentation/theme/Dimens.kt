@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.sp
 object Dimens {
 
     // Spacing (padding / arrangement)
+    val spaceXxxs: Dp = 2.dp
     val spaceXxs: Dp = 4.dp
     val spaceXs: Dp = 6.dp
     val spaceSm: Dp = 8.dp
@@ -70,6 +71,8 @@ object Dimens {
     val sizeIconTile: Dp = 44.dp  // Suggestion / feature card icon tile
     val sizeCheckPill: Dp = 28.dp  // QuickPicks circular check toggle
     val heroHeightSm: Dp = 200.dp // Onboarding short hero (QuickPicks)
+    val widthSuggestionsMax: Dp = 300.dp  // max width for quick-suggestions column (HomeScreen)
+    val widthChipsMax: Dp = 280.dp        // max width for suggestion-chip rows (CategoryScreen)
 
     // Additional corners
     val cornerFull: Dp = 100.dp  // Pill shape

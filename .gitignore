@@ -1,4 +1,5 @@
 memory/
+.claude/
 *.iml
 .gradle/
 .idea/

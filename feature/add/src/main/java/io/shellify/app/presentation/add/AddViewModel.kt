@@ -327,6 +327,17 @@ class AddViewModel(
             _state.update { it.copy(urlError = context.getString(R.string.add_url_error_blank)) }
             return null
         }
+        // .onion hosts are Tor hidden services: HTTPS is rarely available and the plain HTTP
+        // traffic is encrypted end-to-end by the Tor circuit. Allow http://*.onion as-is
+        // and normalize bare *.onion hostnames to http:// (never https://).
+        if (isOnionUrl(trimmed)) {
+            val normalized = if (!trimmed.startsWith("http")) "http://$trimmed" else trimmed
+            if (!isValidUrl(normalized)) {
+                _state.update { it.copy(urlError = context.getString(R.string.error_invalid_url)) }
+                return null
+            }
+            return normalized
+        }
         // Explicitly typed http:// must be upgraded to https before saving.
         if (trimmed.startsWith("http://")) {
             _state.update { it.copy(urlError = context.getString(R.string.add_url_error_http)) }
@@ -339,6 +350,20 @@ class AddViewModel(
         }
         return normalized
     }
+
+    /**
+     * Returns true if [raw] is an .onion URL — with or without a scheme.
+     * Matches: `http://abc.onion`, `https://abc.onion`, `abc.onion/path`, `abc.onion`.
+     */
+    internal fun isOnionUrl(raw: String): Boolean {
+        val host = runCatching { java.net.URL(raw).host }.getOrNull() ?: raw.substringBefore('/')
+        return host.trimEnd('/').endsWith(".onion", ignoreCase = true)
+    }
+
+    private fun isValidUrl(url: String): Boolean = try {
+        val parsed = java.net.URL(url)
+        parsed.host.isNotEmpty() && !parsed.host.contains(' ')
+    } catch (_: Exception) { false }
 
     private fun isValidHttpsUrl(url: String): Boolean = try {
         val parsed = java.net.URL(url)

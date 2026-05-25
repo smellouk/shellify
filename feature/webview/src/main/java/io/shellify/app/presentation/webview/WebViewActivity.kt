@@ -23,6 +23,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -32,8 +33,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.VpnLock
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.ui.draw.alpha
+import io.shellify.app.core.engine.TorState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,10 +52,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.VisibleForTesting
 import androidx.fragment.app.FragmentActivity
@@ -71,7 +83,10 @@ import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.NotificationPermission
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.presentation.theme.Dimens
+import io.shellify.app.presentation.theme.IncognitoPurple
+import io.shellify.app.presentation.theme.IncognitoPurpleHex
 import io.shellify.app.presentation.theme.ShellifyTheme
+import io.shellify.app.presentation.theme.incognitoModeBadge
 import io.shellify.app.presentation.webview.WebViewViewModel.PermissionDialogState
 import io.shellify.core.ui.R
 import androidx.core.view.ViewCompat
@@ -92,10 +107,12 @@ class WebViewActivity : FragmentActivity() {
         const val EXTRA_APP_ID = "app_id"
         const val EXTRA_PREVIEW_URL = "preview_url"
         const val EXTRA_PREVIEW_NAME = "preview_name"
-        const val EXTRA_INCOGNITO = "incognito"
 
         /** Passes the LockType.name string to override the preview path lock enforcement. */
         const val EXTRA_LOCK_TYPE = "lock_type"
+
+        // Opacity for the VisibilityOff icon and subtitle text in the incognito splash badge.
+        private const val INCOGNITO_CONTENT_ALPHA = 0.8f
 
         @VisibleForTesting
         var engineFactory: (() -> BrowserEngine)? = null
@@ -122,13 +139,6 @@ class WebViewActivity : FragmentActivity() {
                 .apply { lockType?.let { putExtra(EXTRA_LOCK_TYPE, it.name) } }
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
 
-        /** Launches an ephemeral session that clears cookies and profile data on Activity destroy. */
-        fun incognitoIntent(context: android.content.Context, url: String): Intent =
-            Intent(context, WebViewActivity::class.java)
-                .putExtra(EXTRA_PREVIEW_URL, url)
-                .putExtra(EXTRA_INCOGNITO, true)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT)
-
         private const val SPLASH_MIN_MS = 500L
     }
 
@@ -140,7 +150,17 @@ class WebViewActivity : FragmentActivity() {
     private lateinit var isolationManager: IsolationManager
     private lateinit var viewModel: WebViewViewModel
     private var statusBarScrim: View? = null
-    private var isIncognitoSession = false
+
+    // Tor release metadata stored at activity level so onStop can call torManager.releaseApp even
+    // when the ViewModel has not finished async initialization (WR-06). Set in initWithApp.
+    private var torAppId: Long = -1L
+    private var torEnabled: Boolean = false
+    private var torPreserveIdentity: Boolean = false
+
+    // Effective theme color for the current session — set once in initWithApp.
+    // Equals IncognitoPurpleHex when alwaysIncognito is on; otherwise the app's themeColor.
+    // Stored at activity scope so onResume can re-apply it without re-reading the DB.
+    private var effectiveThemeColorHex: String? = null
 
     // One logger per Activity session: captures all onRequestIntercepted events into a live flow.
     private var networkRequestLogger: NetworkRequestLogger? = null
@@ -178,11 +198,6 @@ class WebViewActivity : FragmentActivity() {
 
         val appId = intent.getLongExtra(EXTRA_APP_ID, -1L)
         val previewUrl = intent.getStringExtra(EXTRA_PREVIEW_URL)
-        val isIncognito = intent.getBooleanExtra(EXTRA_INCOGNITO, false)
-        isIncognitoSession = isIncognito
-
-        // Incognito requires a URL; cannot launch by appId in incognito mode.
-        if (isIncognito && previewUrl == null) { finish(); return }
 
         val immediateApp: WebApp? = webAppOverride ?: when {
             previewUrl != null -> WebApp(
@@ -215,6 +230,18 @@ class WebViewActivity : FragmentActivity() {
             ) else initialPwaApp
         } else initialPwaApp
 
+        // alwaysIncognito: if the app has the flag set, assign an ephemeral isolationId before
+        // the WebView is constructed. This ensures onDestroy clears the ephemeral profile (per D-04 / T-02-07).
+        if (pwaApp.alwaysIncognito) {
+            pwaApp = pwaApp.copy(isolationId = java.util.UUID.randomUUID().toString())
+        }
+
+        // Override the visual theme with incognito purple when alwaysIncognito is on so every
+        // UI surface (status bar, container, splash, progress bar, swipe indicator) signals
+        // the privacy mode to the user without any extra state flag.
+        val effectiveThemeColor: String? = if (pwaApp.alwaysIncognito) IncognitoPurpleHex else pwaApp.themeColor
+        effectiveThemeColorHex = effectiveThemeColor
+
         lifecycleScope.launch {
             app.passwordManager.screenshotProtection.collect { on ->
                 if (on) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
@@ -223,6 +250,13 @@ class WebViewActivity : FragmentActivity() {
         }
 
         viewModel = ViewModelProvider(this, WebViewViewModel.Factory(pwaApp, app))[WebViewViewModel::class.java]
+        // Store Tor release metadata at activity scope so onStop can call torManager.releaseApp
+        // even if the ViewModel finishes initialization after onStop fires (WR-06).
+        if (pwaApp.useTor && appId != -1L) {
+            torAppId = appId
+            torEnabled = true
+            torPreserveIdentity = pwaApp.preserveTorIdentity
+        }
         // Logger is only created for real app sessions (appId != -1L).
         // Preview and incognito sessions have no persistent app identity, so network
         // logging is skipped entirely — the null check in the engine callback is the guard.
@@ -235,6 +269,15 @@ class WebViewActivity : FragmentActivity() {
         } else null
 
         engine = engineFactory?.invoke() ?: when {
+            pwaApp.useTor -> {
+                // Tor requires GeckoView proxy routing. If GeckoView is not installed,
+                // refuse to open and surface an error instead of silently leaking traffic.
+                if (!app.geckoEngineManager.isInstalled()) {
+                    viewModel.onError(-1, getString(R.string.webview_tor_requires_geckoview))
+                    return
+                }
+                GeckoViewEngine(this, app.geckoEngineManager)
+            }
             pwaApp.engineType == EngineType.GECKOVIEW && app.geckoEngineManager.isInstalled() ->
                 GeckoViewEngine(this, app.geckoEngineManager)
             else -> SystemWebViewEngine(app.adBlocker)
@@ -248,7 +291,7 @@ class WebViewActivity : FragmentActivity() {
 
         container = FrameLayout(this)
         container.setBackgroundColor(
-            pwaApp.themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() }
+            effectiveThemeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() }
                 ?: Color.BLACK
         )
 
@@ -256,7 +299,7 @@ class WebViewActivity : FragmentActivity() {
         // (which sets isRefreshing = false in onPageFinished/onError/onSslError) can access it
         // safely even when a test engine factory fires the callback synchronously during createView.
         swipeRefreshLayout = SwipeRefreshLayout(this).apply {
-            val tintColor = pwaApp.themeColor
+            val tintColor = effectiveThemeColor
                 ?.let { runCatching { Color.parseColor(it) }.getOrNull() }
                 ?: getColor(android.R.color.holo_blue_bright)
             setColorSchemeColors(tintColor)
@@ -305,7 +348,7 @@ class WebViewActivity : FragmentActivity() {
         progressBar = ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal).apply {
             max = 100
             isIndeterminate = false
-            val tint = pwaApp.themeColor
+            val tint = effectiveThemeColor
                 ?.let { runCatching { Color.parseColor(it) }.getOrNull() }
                 ?: getColor(android.R.color.holo_blue_bright)
             progressTintList = ColorStateList.valueOf(tint)
@@ -345,8 +388,8 @@ class WebViewActivity : FragmentActivity() {
         }
 
         applyWindowMode(pwaApp)
-        applyStatusBarColor(pwaApp.themeColor)
-        applyTaskDescription(pwaApp)
+        applyStatusBarColor(effectiveThemeColor)
+        applyTaskDescription(pwaApp, effectiveThemeColor)
 
         observeState(app, pwaApp)
         collectCommands()
@@ -449,6 +492,117 @@ class WebViewActivity : FragmentActivity() {
         addControlsOverlay(app)
         addNetworkLogOverlay(app)
         addPermissionDialogOverlay(app)
+        addTorConnectingOverlay(app, pwaApp)
+    }
+
+    /**
+     * Adds a full-screen centered overlay for Tor bootstrapping and error states.
+     * Replaces the previous top-corner chip with a more prominent, app-like experience:
+     *
+     *  • [TorState.Connecting]: full-screen surface with centered [VpnLock] icon,
+     *    "Connecting to Tor network…" text, and a [CircularProgressIndicator].
+     *    The overlay fades away automatically once Tor reaches [TorState.Ready].
+     *  • [TorState.Error]: replaces the spinner with a [Warning] icon, error message,
+     *    and a Retry button that requests a new Tor circuit via [WebViewViewModel.onNewTorIdentity].
+     *
+     * Skipped entirely for non-Tor apps.
+     */
+    @Suppress("MagicNumber")
+    private fun addTorConnectingOverlay(app: WebViewServiceProvider, pwaApp: WebApp) {
+        if (!pwaApp.useTor) return
+        val overlay = ComposeView(this).apply {
+            setContent {
+                val themeMode by app.themeManager.themeMode.collectAsState(ThemeMode.SYSTEM)
+                val dynamicColor by app.themeManager.dynamicColor.collectAsState(true)
+                val accentColor = pwaApp.themeColor?.let { runCatching { Color.parseColor(it) }.getOrNull() }
+                val state by viewModel.uiState.collectAsState()
+                val isConnecting = state.torState is TorState.Connecting
+                val isError = state.torState is TorState.Error
+                // Keep the overlay visible until the first onPageStop arrives (isPageLoaded).
+                // Without this guard there is a window between TorState.Ready and the first
+                // successful page-stop where GeckoView errors (e.g. a transient SOCKS
+                // connection race) would flash through on screen.
+                val isWaitingForPage = !isError && !state.isPageLoaded
+
+                ShellifyTheme(
+                    themeMode = themeMode,
+                    dynamicColor = dynamicColor,
+                    accentColor = accentColor,
+                    controlStatusBar = false,
+                ) {
+                    AnimatedVisibility(
+                        visible = isConnecting || isError || isWaitingForPage,
+                        enter = fadeIn(),
+                        exit = fadeOut(animationSpec = tween(400)),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.surface),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(Dimens.spaceLg),
+                            ) {
+                                // Branch on isError first so TorState.Ready + !isPageLoaded
+                                // still shows the spinner rather than falling through to the
+                                // error branch (which is the old bug: isConnecting=false → else).
+                                if (isError) {
+                                    val errorMessage = (state.torState as TorState.Error).message
+                                    Icon(
+                                        imageVector = Icons.Default.Warning,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(Dimens.size5xl),
+                                        tint = MaterialTheme.colorScheme.error,
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.webview_tor_error_chip),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                    Text(
+                                        text = errorMessage,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.padding(horizontal = Dimens.spaceXxl),
+                                    )
+                                    androidx.compose.material3.Button(
+                                        onClick = { viewModel.onNewTorIdentity() },
+                                    ) {
+                                        Text(stringResource(R.string.webview_tor_retry))
+                                    }
+                                } else {
+                                    Icon(
+                                        imageVector = Icons.Default.VpnLock,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(Dimens.size5xl),
+                                        tint = MaterialTheme.colorScheme.primary,
+                                    )
+                                    Text(
+                                        text = stringResource(
+                                            if (isConnecting) R.string.webview_tor_connecting
+                                            else R.string.webview_tor_loading,
+                                        ),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                    )
+                                    androidx.compose.material3.CircularProgressIndicator(
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        container.addView(
+            overlay,
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT,
+        )
     }
 
     private fun handleAuthState(app: WebViewServiceProvider, pwaApp: WebApp, authState: AuthState) {
@@ -468,6 +622,14 @@ class WebViewActivity : FragmentActivity() {
                     WebViewCommand.Reload -> engine.reload()
                     WebViewCommand.Finish -> finish()
                     WebViewCommand.PageFinished -> pageFinishedCallback?.invoke()
+                    // Panic wipe complete: finish this Activity and return to HomeScreen.
+                    // The back stack already has HomeScreen; finishing here surfaces it
+                    // with an empty app list (per D-02 wipe sequence).
+                    WebViewCommand.NavigateHome -> finish()
+                    // NewTorIdentityRequested: torState transitions Ready->Connecting->Ready
+                    // automatically via TorManager BroadcastReceiver. The bootstrap chip
+                    // will reappear on its own — no explicit UI action needed here.
+                    WebViewCommand.NewTorIdentityRequested -> Unit
                 }
             }
         }
@@ -572,7 +734,9 @@ class WebViewActivity : FragmentActivity() {
             if (engine is SystemWebViewEngine) {
                 isolationManager.restoreSession(pwaApp.isolationId)
             }
-            engine.loadUrl(pwaApp.url)
+            // Route through onAppReady so Tor apps wait for TorState.Ready before loading
+            // any URL (T-02-23 traffic-leak prevention gate). Non-Tor apps emit LoadUrl immediately.
+            viewModel.onAppReady(pwaApp)
         }
     }
 
@@ -618,6 +782,7 @@ class WebViewActivity : FragmentActivity() {
                     WebViewControlCenter(
                         pwaApp = pwaApp,
                         hasGlobalPassword = passwordHash != null,
+                        torState = state.torState,
                         onAdBlockChanged = { viewModel.onAdBlockChanged(it) },
                         onTranslateChanged = { viewModel.onTranslateChanged(it) },
                         onFullscreenChanged = { on ->
@@ -627,6 +792,8 @@ class WebViewActivity : FragmentActivity() {
                         onLockChanged = { viewModel.onLockChanged(it) },
                         onClearData = { viewModel.onClearData() },
                         onNetworkLogClick = { showNetworkLog.value = true },
+                        onNewTorIdentity = { viewModel.onNewTorIdentity() },
+                        onPanic = { viewModel.executePanicWipe() },
                     )
                 }
             }
@@ -776,13 +943,24 @@ class WebViewActivity : FragmentActivity() {
     private fun showSplash(pwaApp: WebApp) {
         splashShownAt = SystemClock.elapsedRealtime()
         val app = application as WebViewServiceProvider
-        val rawColor = pwaApp.themeColor
-            ?.let { runCatching { Color.parseColor(it) }.getOrNull() }
-            ?: Color.BLACK
-        val bgColor = androidx.compose.ui.graphics.Color(rawColor)
-        @Suppress("MagicNumber")
-        val isLight = (0.299 * Color.red(rawColor) + 0.587 * Color.green(rawColor) + 0.114 * Color.blue(rawColor)) / 255 > 0.5
-        val contentColor = if (isLight) androidx.compose.ui.graphics.Color.Black else androidx.compose.ui.graphics.Color.White
+
+        // When alwaysIncognito is on, the splash always uses the deep-purple signal color with
+        // white text regardless of the app's configured themeColor.
+        val bgColor: androidx.compose.ui.graphics.Color
+        val contentColor: androidx.compose.ui.graphics.Color
+        if (pwaApp.alwaysIncognito) {
+            bgColor = IncognitoPurple
+            contentColor = androidx.compose.ui.graphics.Color.White
+        } else {
+            val rawColor = pwaApp.themeColor
+                ?.let { runCatching { Color.parseColor(it) }.getOrNull() }
+                ?: Color.BLACK
+            bgColor = androidx.compose.ui.graphics.Color(rawColor)
+            @Suppress("MagicNumber")
+            val isLight =
+                (0.299 * Color.red(rawColor) + 0.587 * Color.green(rawColor) + 0.114 * Color.blue(rawColor)) / 255 > 0.5
+            contentColor = if (isLight) androidx.compose.ui.graphics.Color.Black else androidx.compose.ui.graphics.Color.White
+        }
 
         val view = ComposeView(this).apply {
             setContent {
@@ -816,6 +994,24 @@ class WebViewActivity : FragmentActivity() {
                                 style = MaterialTheme.typography.titleLarge,
                                 color = contentColor,
                             )
+                            if (pwaApp.alwaysIncognito) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.VisibilityOff,
+                                        contentDescription = null,
+                                        tint = contentColor.copy(alpha = INCOGNITO_CONTENT_ALPHA),
+                                        modifier = Modifier.size(Dimens.sizeSm),
+                                    )
+                                    Text(
+                                        text = stringResource(R.string.webview_incognito_mode),
+                                        style = MaterialTheme.typography.incognitoModeBadge,
+                                        color = contentColor.copy(alpha = INCOGNITO_CONTENT_ALPHA),
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -881,10 +1077,10 @@ class WebViewActivity : FragmentActivity() {
     }
 
     @Suppress("DEPRECATION")
-    private fun applyTaskDescription(app: WebApp) {
+    private fun applyTaskDescription(app: WebApp, themeColor: String? = app.themeColor) {
         val icon: Bitmap? =
             app.iconPath?.let { runCatching { BitmapFactory.decodeFile(it) }.getOrNull() }
-        val rawColor = app.themeColor
+        val rawColor = themeColor
             ?.let { runCatching { Color.parseColor(it) }.getOrNull() }
             ?: Color.WHITE
         val opaqueColor = Color.argb(255, Color.red(rawColor), Color.green(rawColor), Color.blue(rawColor))
@@ -922,13 +1118,24 @@ class WebViewActivity : FragmentActivity() {
                 .apply { putExtra(BackgroundNotificationService.EXTRA_APP_ID, appId) }
             startForegroundService(svcIntent)
         }
+        // Cookie auto-wipe: when enabled, clear the isolation profile on stop so the next
+        // session starts with a clean cookie jar. This is distinct from incognito onDestroy
+        // wipe — it preserves the persistent isolationId (per D-05 / T-02-06).
+        if (::viewModel.isInitialized) {
+            viewModel.onSessionStop()
+        } else if (torEnabled && torAppId != -1L) {
+            // ViewModel not yet initialized (fast onStop before async DB lookup completes).
+            // Release the Tor app registration directly so the grace-period shutdown can proceed
+            // and stale app IDs do not block daemon shutdown forever (WR-06).
+            (application as? WebViewServiceProvider)?.torManager?.releaseApp(torAppId, torPreserveIdentity)
+        }
     }
 
     override fun onResume() {
         super.onResume()
         // viewModel is initialized asynchronously for appId launches — guard until ready.
         if (::viewModel.isInitialized) {
-            viewModel.uiState.value.app?.let { applyTaskDescription(it) }
+            viewModel.uiState.value.app?.let { applyTaskDescription(it, effectiveThemeColorHex) }
         }
     }
 
@@ -937,12 +1144,6 @@ class WebViewActivity : FragmentActivity() {
         // async DB lookup (appId path) completed.
         if (::viewModel.isInitialized) {
             viewModel.onSessionEnd()
-            if (isIncognitoSession) {
-                val isolationId = viewModel.uiState.value.app?.isolationId
-                if (isolationId != null) {
-                    lifecycleScope.launch { isolationManager.clearData(isolationId) }
-                }
-            }
         }
         // Cancel the logger scope before engine destroy — prevents orphaned IO coroutines.
         networkRequestLogger?.cancel()
