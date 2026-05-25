@@ -1,13 +1,37 @@
 package io.shellify.app.core.adblock
 
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.CopyOnWriteArraySet
+
 /**
  * Compiled ad-block rules split into exact-host sets and substring patterns.
+ * Also carries a parallel tracker host set loaded from the bundled EasyPrivacy asset.
  * Inspired by AppForge's AdBlockFilterCache.
+ *
+ * Collections are CopyOnWrite variants so concurrent reads from WebViewClient.shouldInterceptRequest
+ * (background thread) and writes from loadBuiltInRules / loadTrackerRules / addCustomRules
+ * (main thread or IO thread) do not race (WR-04).
  */
 class AdBlockFilterCache {
 
-    private val blockedHosts = mutableSetOf<String>()
-    private val blockedPatterns = mutableListOf<String>()
+    private val blockedHosts = CopyOnWriteArraySet<String>()
+    private val blockedPatterns = CopyOnWriteArrayList<String>()
+
+    // Parallel tracker rule set — loaded from assets/easyprivacy_domains.txt.
+    // Evaluated independently from ad-block rules; gated by trackerBlockingEnabled flag in AdBlocker.
+    private val blockedTrackerHosts = CopyOnWriteArraySet<String>()
+
+    fun shouldBlockTracker(url: String): Boolean {
+        val host = extractHost(url) ?: return false
+        return host in blockedTrackerHosts
+    }
+
+    fun loadTrackerRules(lines: Sequence<String>) {
+        lines
+            .map { it.trim() }
+            .filter { it.isNotBlank() && !it.startsWith("#") }
+            .forEach { host -> blockedTrackerHosts += host.lowercase().removePrefix("www.") }
+    }
 
     init {
         loadBuiltInRules()

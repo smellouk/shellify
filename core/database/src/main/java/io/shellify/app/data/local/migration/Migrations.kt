@@ -67,3 +67,14 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
         db.execSQL("CREATE INDEX IF NOT EXISTS index_network_request_logs_timestamp ON network_request_logs(timestamp)")
     }
 }
+
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE web_apps ADD COLUMN stealth_mode INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE web_apps ADD COLUMN cookie_auto_wipe INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE web_apps ADD COLUMN always_incognito INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE web_apps ADD COLUMN tracker_blocking_enabled INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE web_apps ADD COLUMN use_tor INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE web_apps ADD COLUMN preserve_tor_identity INTEGER NOT NULL DEFAULT 0")
+    }
+}

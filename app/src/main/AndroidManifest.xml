@@ -108,6 +108,22 @@
             android:name="androidx.activity.ComponentActivity"
             android:exported="false" />
 
+        <!-- Override TorService to run in a private process. The Tor native binary calls an ioctl
+             (0x894b, tcp_socket) that Android 14 SELinux denies for untrusted_app_34; the resulting
+             abort() would otherwise kill the main app process. Isolating TorService to :tor means
+             the crash stays in that process. The BroadcastReceiver and the Tor control port (TCP
+             9051) both work across process boundaries so no other code changes are required here.
+             tools:replace is defensive against future library versions that set these attributes. -->
+        <!-- MissingClass: TorService ships in tor-android (Guardian Project Maven);
+             its .class is not on the lint classpath during CI code-scanning.
+             The lint SARIF rule ID is "MissingClass" (not "MissingRegisteredClass"). -->
+        <service
+            android:name="org.torproject.jni.TorService"
+            android:exported="false"
+            android:process=":tor"
+            tools:ignore="MissingClass"
+            tools:replace="android:exported,android:process" />
+
         <!-- FileProvider for sharing icons -->
         <provider
             android:name="androidx.core.content.FileProvider"

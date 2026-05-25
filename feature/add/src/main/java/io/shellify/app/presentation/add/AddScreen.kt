@@ -611,6 +611,40 @@ fun AddScreen(
             }
 
             FeatureCard(
+                Icons.Default.Notifications,
+                stringResource(R.string.add_feature_notifications),
+                state.notificationsEnabled && state.globalNotificationsEnabled,
+                viewModel::setNotificationsEnabled,
+                canEnable = state.globalNotificationsEnabled,
+                hint = if (!state.globalNotificationsEnabled) {
+                    {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
+                        ) {
+                            Icon(
+                                Icons.Default.Info,
+                                null,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(Dimens.sizeSm),
+                            )
+                            Text(
+                                stringResource(R.string.settings_notifications_global_disabled),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                } else null,
+            ) {
+                Text(
+                    stringResource(R.string.add_feature_notifications_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            FeatureCard(
                 Icons.Default.Lock, stringResource(R.string.add_feature_applock),
                 enabled = state.lockType != LockType.NONE,
                 onToggle = { on ->
@@ -636,39 +670,6 @@ fun AddScreen(
                         )
                         Text(label, style = MaterialTheme.typography.bodyMedium)
                     }
-                }
-            }
-
-            FeatureCard(
-                Icons.Default.Notifications,
-                stringResource(R.string.add_feature_notifications),
-                state.notificationsEnabled && state.globalNotificationsEnabled,
-                viewModel::setNotificationsEnabled,
-                canEnable = state.globalNotificationsEnabled,
-            ) {
-                Text(
-                    stringResource(R.string.add_feature_notifications_desc),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            if (!state.globalNotificationsEnabled) {
-                Row(
-                    modifier = Modifier.padding(horizontal = Dimens.spaceSm, vertical = Dimens.spaceXxs),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceSm),
-                ) {
-                    Icon(
-                        Icons.Default.Info,
-                        null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(Dimens.sizeSm),
-                    )
-                    Text(
-                        stringResource(R.string.settings_notifications_global_disabled),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
                 }
             }
 
@@ -969,6 +970,9 @@ private fun FeatureCard(
     enabled: Boolean,
     onToggle: (Boolean) -> Unit,
     canEnable: Boolean = true,
+    // Always-visible content shown inside the card below the header, regardless of toggle state.
+    // Use for hints that explain why the feature is unavailable.
+    hint: (@Composable ColumnScope.() -> Unit)? = null,
     expandedContent: @Composable ColumnScope.() -> Unit,
 ) {
     Card(
@@ -1004,6 +1008,16 @@ private fun FeatureCard(
                     modifier = Modifier.weight(1f)
                 )
                 Switch(checked = enabled, enabled = canEnable, onCheckedChange = onToggle)
+            }
+            if (hint != null) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = Dimens.spaceLg),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+                Column(
+                    modifier = Modifier.padding(horizontal = Dimens.spaceLg, vertical = Dimens.space14),
+                    content = hint
+                )
             }
             AnimatedVisibility(
                 visible = enabled,

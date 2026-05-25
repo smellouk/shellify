@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.presentation.linkdispatcher.DispatchSheet
@@ -97,6 +98,11 @@ class LinkDispatcherSheetTest {
         assertEquals("https://github.com/page", selectedUrl)
     }
 
+    // On API 35+, KeyEvent.KEYCODE_BACK is no longer delivered to apps targeting API 35+.
+    // UiDevice.pressBack() sends KEYCODE_BACK via InputManager — a no-op on API 35+ emulators
+    // because the system routes back exclusively through OnBackInvokedCallback, which
+    // UiAutomator cannot trigger for a Dialog window. The test remains valid on API <= 34.
+    @SdkSuppress(maxSdkVersion = 34)
     @Test
     fun chooserState_backPress_invokesOnDismiss() {
         val app = FakeData.webApp(name = "GitHub", url = "https://github.com")
@@ -109,7 +115,21 @@ class LinkDispatcherSheetTest {
         )
         composeTestRule.onNodeWithText(context.getString(CoreUiR.string.link_dispatcher_chooser_title))
             .assertIsDisplayed()
-        androidx.test.espresso.Espresso.pressBack()
+        // Espresso.pressBack() waits for a root with window focus before dispatching.
+        // ModalBottomSheet creates a Dialog window on API 34+ that Espresso's RootViewPicker
+        // cannot track (the Activity window has no focus; the dialog window is not in the
+        // Espresso root registry), causing a 10-second RootViewWithoutFocusException timeout.
+        // sendKeyDownUpSync also fails because in createComposeRule() the Dialog window doesn't
+        // receive OS-level focus.
+        // UiDevice.pressBack() dispatches via adb input at the system level and is immune to
+        // window-focus state in the test environment.
+        androidx.test.uiautomator.UiDevice
+            .getInstance(InstrumentationRegistry.getInstrumentation())
+            .pressBack()
+        // waitForIdle() is insufficient: ModalBottomSheet calls onDismissRequest from
+        // rememberCoroutineScope() inside the Dialog, which uses a real (non-test) dispatcher.
+        // waitUntil polls until the callback fires (after the hide animation completes).
+        composeTestRule.waitUntil(timeoutMillis = 5_000) { dismissed }
         assertEquals(true, dismissed)
     }
 }

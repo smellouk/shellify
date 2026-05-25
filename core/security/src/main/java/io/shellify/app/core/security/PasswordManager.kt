@@ -56,6 +56,14 @@ class PasswordManager(private val context: Context) {
         context.passwordStore.edit { it[keyPasswordHash] = hash }
     }
 
+    /**
+     * Clears all DataStore preferences. Used by the panic wipe to remove all security and
+     * password data as part of the atomic wipe sequence (per D-02 / T-02-13).
+     */
+    suspend fun clearAll() {
+        context.passwordStore.edit { it.clear() }
+    }
+
     // ── Failed-attempt tracking ───────────────────────────────────────────────
     // Counts are persisted so they survive process death between attempts.
     // Counts older than ATTEMPT_EXPIRY_MS are treated as zero.

@@ -145,8 +145,6 @@
     <string name="webview_control_applock">App lock</string>
     <string name="webview_control_clear_data">Clear data</string>
     <string name="webview_applock_disabled_hint">Set an app password in Settings to enable</string>
-    <string name="webview_sheet_title">Features</string>
-
     <!-- App Settings (per-app) -->
     <string name="settings_title">App settings</string>
     <string name="settings_app_info">App info</string>
@@ -215,7 +213,6 @@
     <string name="global_settings_gecko_download_failed">Download failed: %s</string>
     <string name="global_settings_gecko_sha_verified">SHA-256 verified — matches Mozilla\'s release</string>
     <string name="global_settings_gecko_sha_unverified">Integrity not verified — reinstall to verify</string>
-    <string name="global_settings_section_security">Security</string>
     <string name="global_settings_app_password_headline">App password</string>
     <string name="global_settings_password_set">Password is set</string>
     <string name="global_settings_password_not_set">No password set</string>
@@ -244,16 +241,6 @@
     <string name="global_settings_backup_session_warning_title">Backup contains sensitive data</string>
     <string name="global_settings_backup_session_warning_body">Backups may contain cookies or session data that provide access to third-party websites and accounts. Keep your backup file and password secure — anyone with both may be able to access your saved sessions.</string>
     <string name="global_settings_backup_scheduled_note">Scheduled backups are saved only to your selected folder. No data is transmitted over the network. You can disable auto-backup at any time.</string>
-    <string name="global_settings_section_data">Data</string>
-    <string name="global_settings_clear_all_data_headline">Clear all app data</string>
-    <string name="global_settings_clear_all_data_desc">Removes cookies and storage for all apps</string>
-    <string name="global_settings_clear_all_cd">Clear all</string>
-    <string name="global_settings_delete_all_apps_headline">Delete all apps</string>
-    <string name="global_settings_delete_all_apps_desc">Removes all apps, their data and shortcuts</string>
-    <string name="global_settings_delete_all_categories_headline">Delete all categories</string>
-    <string name="global_settings_delete_all_categories_desc">Apps become uncategorized</string>
-    <string name="global_settings_delete_all_shortcuts_headline">Delete all shortcuts</string>
-    <string name="global_settings_delete_all_shortcuts_desc">Removes all launcher shortcuts from home screen</string>
     <string name="global_settings_section_about">About</string>
     <string name="global_settings_version_headline">Version</string>
     <string name="licenses_title">Open Source Licenses</string>
@@ -314,14 +301,6 @@
     <string name="global_settings_restore_confirm_body">This will replace all current app data — apps, categories, settings, and icons — with the contents of the backup file. This cannot be undone.</string>
     <string name="global_settings_import_password_dialog_title">Enter backup password</string>
     <string name="global_settings_import_password_dialog_desc">Enter the password used when this backup was created.</string>
-    <string name="global_settings_delete_all_apps_confirm_title">Delete all apps?</string>
-    <string name="global_settings_delete_all_apps_confirm_body">This will permanently delete all apps, their WebView data, and all launcher shortcuts. This cannot be undone.</string>
-    <string name="global_settings_delete_all_categories_confirm_title">Delete all categories?</string>
-    <string name="global_settings_delete_all_categories_confirm_body">All categories will be removed. Apps will become uncategorized.</string>
-    <string name="global_settings_delete_all_shortcuts_confirm_title">Delete all shortcuts?</string>
-    <string name="global_settings_delete_all_shortcuts_confirm_body">All launcher shortcuts will be removed from your home screen. The apps themselves will remain.</string>
-    <string name="global_settings_clear_all_confirm_title">Clear all app data?</string>
-    <string name="global_settings_clear_all_confirm_body">This will delete cookies, local storage, and cached data for all apps. You will be logged out of all sessions.</string>
     <string name="global_settings_backup_result_title">Backup</string>
     <string name="global_settings_password_too_short">At least 4 characters</string>
     <string name="global_settings_passwords_dont_match">Passwords don\'t match</string>

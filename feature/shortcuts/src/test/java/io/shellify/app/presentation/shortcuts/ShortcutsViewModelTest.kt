@@ -2,10 +2,14 @@ package io.shellify.app.presentation.shortcuts
 
 import android.content.Context
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
 import io.mockk.unmockkObject
+import io.mockk.verify
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import io.shellify.app.core.iconpack.SimpleIconsManager
 import io.shellify.app.core.iconpack.SimpleIconsState
 import io.shellify.app.core.pwa.FaviconFetcher
@@ -180,6 +184,51 @@ class ShortcutsViewModelTest {
         every { simpleIconsManager.state } returns MutableStateFlow(SimpleIconsState.Imported(iconCount = 3000))
         val vm = ShortcutsViewModel(context, getWebApps, saveWebApp, analyzer, faviconFetcher, simpleIconsManager)
         assertTrue(vm.uiState.value.isIconPackAvailable)
+    }
+
+    // ── deleteAllShortcuts ────────────────────────────────────────────────────
+    // These tests do NOT use runTest because deleteAllShortcuts() calls load() on
+    // Dispatchers.IO — an IO coroutine that outlives advanceUntilIdle(). runTest
+    // accumulates uncaught exceptions from background threads and would surface them
+    // in the NEXT runTest block as UncaughtExceptionsBeforeTest. Regular blocking
+    // tests are immune to this, and CountDownLatch on saveWebApp provides the needed
+    // synchronisation signal.
+
+    private val appA = WebApp(id = 2L, name = "App A", url = "https://a.com", isolationId = "iso-a", hasLauncherShortcut = true)
+    private val appB = WebApp(id = 3L, name = "App B", url = "https://b.com", isolationId = "iso-b", hasLauncherShortcut = true)
+
+    @Test
+    fun `deleteAllShortcuts saves every app with hasLauncherShortcut false`() {
+        val latch = CountDownLatch(2)
+        coEvery { saveWebApp(any()) } answers { latch.countDown(); 1L }
+        every { getWebApps() } returns flowOf(listOf(appA, appB))
+        viewModel.deleteAllShortcuts()
+        @Suppress("MagicNumber") latch.await(2000, TimeUnit.MILLISECONDS)
+        coVerify(exactly = 1) { saveWebApp(appA.copy(hasLauncherShortcut = false)) }
+        coVerify(exactly = 1) { saveWebApp(appB.copy(hasLauncherShortcut = false)) }
+    }
+
+    @Test
+    fun `deleteAllShortcuts removes launcher shortcut for each app`() {
+        val latch = CountDownLatch(2)
+        coEvery { saveWebApp(any()) } answers { latch.countDown(); 1L }
+        every { getWebApps() } returns flowOf(listOf(appA, appB))
+        viewModel.deleteAllShortcuts()
+        @Suppress("MagicNumber") latch.await(2000, TimeUnit.MILLISECONDS)
+        verify(exactly = 1) { PwaShortcutManager.removeShortcut(any(), appA) }
+        verify(exactly = 1) { PwaShortcutManager.removeShortcut(any(), appB) }
+    }
+
+    @Test
+    fun `deleteAllShortcuts with empty app list does not call saveWebApp`() {
+        val latch = CountDownLatch(1)
+        // Signal on getPinnedShortcuts (the reload after the empty forEach) to know when done
+        every { PwaShortcutManager.getPinnedShortcuts(any()) } answers { latch.countDown(); emptyList() }
+        every { getWebApps() } returns flowOf(emptyList())
+        viewModel.deleteAllShortcuts()
+        @Suppress("MagicNumber") latch.await(2000, TimeUnit.MILLISECONDS)
+        coVerify(exactly = 0) { saveWebApp(any()) }
+        verify(exactly = 0) { PwaShortcutManager.removeShortcut(any(), any()) }
     }
 
 }

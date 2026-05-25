@@ -43,6 +43,8 @@ sealed interface AppSettingsCommand {
     data class NavigateToNotificationHistory(val appId: Long) : AppSettingsCommand
     data class NavigateToNetworkLog(val appId: Long) : AppSettingsCommand
     data class ShareNetworkLog(val content: String) : AppSettingsCommand
+    // Tor: signals AppSettingsActivity to call torManager.newIdentity() (D-07)
+    data object NewTorIdentity : AppSettingsCommand
 }
 
 data class AppSettingsUiState(
@@ -165,8 +167,34 @@ class AppSettingsViewModel(
     fun toggleTranslate() = update { it.copy(translateEnabled = !it.translateEnabled) }
     fun toggleControlCenter() = update { it.copy(showControlCenter = !it.showControlCenter) }
     fun toggleSwipeToRefresh() = update { it.copy(swipeToRefreshEnabled = !it.swipeToRefreshEnabled) }
+
+    // ── Privacy ───────────────────────────────────────────────────────────────
+
+    fun toggleAlwaysIncognito() = update { it.copy(alwaysIncognito = !it.alwaysIncognito) }
+    fun toggleTrackerBlocking() = update { it.copy(trackerBlockingEnabled = !it.trackerBlockingEnabled) }
     fun setTranslateTarget(lang: TranslateLanguage) =
         update { it.copy(translateTarget = lang) }
+
+    // ── Tor ───────────────────────────────────────────────────────────────────
+
+    /** Enables or disables routing this app's traffic through the Tor daemon. */
+    fun toggleUseTor() = update { it.copy(useTor = !it.useTor) }
+
+    /**
+     * Enables or disables preserving the Tor circuit identity across sessions.
+     * Only meaningful when [WebApp.useTor] is true.
+     */
+    fun togglePreserveTorIdentity() = update { it.copy(preserveTorIdentity = !it.preserveTorIdentity) }
+
+    /**
+     * Emits [AppSettingsCommand.NewTorIdentity] so the NavHost caller can invoke
+     * `torManager.newIdentity()`. The NavHost and Activities own the daemon lifecycle
+     * (CLAUDE.md §Known gap — Activities may access core:* infrastructure directly).
+     * tryEmit is non-suspending; no coroutine wrapper needed.
+     */
+    fun onNewTorIdentity() {
+        _commands.tryEmit(AppSettingsCommand.NewTorIdentity)
+    }
 
     fun setLockType(v: LockType) = update { it.copy(lockType = v) }
 
@@ -217,8 +245,15 @@ class AppSettingsViewModel(
 
     fun toggleNotificationPermission() {
         val app = _state.value.app ?: return
-        if (app.notificationPermission == NotificationPermission.NOT_ASKED) return
-        update { it.copy(notificationPermission = NotificationPermission.NOT_ASKED) }
+        // Toggle between GRANTED (enabled) and NOT_ASKED (disabled). Setting GRANTED here
+        // pre-grants permission so the engine auto-approves the site's next JS request
+        // without showing a dialog — the user explicitly chose to allow from settings.
+        val newPermission = if (app.notificationPermission == NotificationPermission.GRANTED) {
+            NotificationPermission.NOT_ASKED
+        } else {
+            NotificationPermission.GRANTED
+        }
+        update { it.copy(notificationPermission = newPermission) }
     }
 
     fun setDndStartHour(hour: Int) = update { it.copy(dndStartHour = hour) }

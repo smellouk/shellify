@@ -38,8 +38,10 @@ import androidx.compose.foundation.lazy.staggeredgrid.items as staggeredItems
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.VpnLock
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.MusicNote
@@ -133,6 +135,7 @@ import io.shellify.app.presentation.theme.TagDnd
 import io.shellify.app.presentation.theme.TagFullscreen
 import io.shellify.app.presentation.theme.TagLockPassword
 import io.shellify.app.presentation.theme.TagLockSystem
+import io.shellify.app.presentation.theme.TagTor
 import io.shellify.app.presentation.theme.TagTranslate
 import io.shellify.app.presentation.share.AppShareSheet
 import io.shellify.app.presentation.webview.WebViewActivity
@@ -155,6 +158,7 @@ fun HomeScreen(
     var isGridView by remember { mutableStateOf(true) }
     var searchFocused by remember { mutableStateOf(false) }
     var showLanguagePicker by remember { mutableStateOf(false) }
+    var showDeleteAllAppsDialog by remember { mutableStateOf(false) }
 
     val showDetailsCd = stringResource(R.string.home_show_details_cd)
     val hideDetailsCd = stringResource(R.string.home_hide_details_cd)
@@ -190,6 +194,15 @@ fun HomeScreen(
                     }
                 },
                 actions = {
+                    if (state.hasAnyApps) {
+                        IconButton(onClick = { showDeleteAllAppsDialog = true }) {
+                            Icon(
+                                Icons.Default.DeleteSweep,
+                                contentDescription = stringResource(R.string.home_delete_all_apps_cd),
+                                tint = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                    }
                     IconButton(onClick = { showLanguagePicker = true }) {
                         Icon(Icons.Default.Language, contentDescription = languageChangeCd)
                     }
@@ -296,11 +309,11 @@ fun HomeScreen(
                     },
                 )
                 if (state.apps.isNotEmpty() && !searchFocused) {
-                    Spacer(Modifier.width(4.dp))
+                    Spacer(Modifier.width(Dimens.spaceXxs))
                     CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
                         IconButton(
                             onClick = { hideDetails = !hideDetails },
-                            modifier = Modifier.size(32.dp),
+                            modifier = Modifier.size(Dimens.size4xl),
                         ) {
                             Icon(
                                 if (hideDetails) Icons.Default.Visibility else Icons.Default.VisibilityOff,
@@ -309,7 +322,7 @@ fun HomeScreen(
                         }
                         IconButton(
                             onClick = { isGridView = !isGridView },
-                            modifier = Modifier.size(32.dp),
+                            modifier = Modifier.size(Dimens.size4xl),
                         ) {
                             Icon(
                                 if (isGridView) Icons.AutoMirrored.Filled.ViewList else Icons.Default.GridView,
@@ -451,6 +464,18 @@ fun HomeScreen(
             }
         }
 
+    }
+
+    if (showDeleteAllAppsDialog) {
+        ConfirmDialog(
+            title = stringResource(R.string.home_delete_all_apps_confirm_title),
+            body = stringResource(R.string.home_delete_all_apps_confirm_body),
+            confirmLabel = stringResource(R.string.common_delete_all),
+            onConfirm = { showDeleteAllAppsDialog = false; viewModel.deleteAllApps() },
+            onDismiss = { showDeleteAllAppsDialog = false },
+            icon = Icons.Default.DeleteSweep,
+            isDestructive = true,
+        )
     }
 
 }
@@ -619,7 +644,7 @@ private fun EmptyState(
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
         )
-        Spacer(Modifier.height(2.dp))
+        Spacer(Modifier.height(Dimens.spaceXxxs))
         Text(
             stringResource(R.string.home_empty_subtitle),
             fontSize = Dimens.textSizeBody,
@@ -648,7 +673,7 @@ private fun EmptyState(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
-                .widthIn(max = 300.dp)
+                .widthIn(max = Dimens.widthSuggestionsMax)
                 .fillMaxWidth(),
         ) {
             Text(
@@ -718,7 +743,7 @@ private fun EmptyState(
                         when {
                             isLoading -> CircularProgressIndicator(
                                 modifier = Modifier.size(Dimens.sizeXs),
-                                strokeWidth = 2.dp,
+                                strokeWidth = Dimens.strokeMd,
                                 color = p40,
                             )
 
@@ -759,6 +784,7 @@ private fun AppCard(
     onDelete: () -> Unit,
 ) {
     val engineMissing = app.engineType == EngineType.GECKOVIEW && !geckoInstalled
+    val context = LocalContext.current
     var showMenu by remember { mutableStateOf(false) }
     var showCategoryPicker by remember { mutableStateOf(false) }
     var showClearDataDialog by remember { mutableStateOf(false) }
@@ -987,6 +1013,7 @@ private fun FeatureTags(app: WebApp) {
     val tags = buildList {
         if (app.isFullscreen) add(Tag(Icons.Default.Fullscreen, "Fullscreen", TagFullscreen))
         if (app.adBlockEnabled) add(Tag(Icons.Default.Shield, "Ad block", TagAdBlock))
+        if (app.useTor) add(Tag(Icons.Default.VpnLock, "Tor", TagTor))
         if (app.translateEnabled) add(Tag(Icons.Default.GTranslate, "Translate", TagTranslate))
         if (app.dndStartHour != -1) add(Tag(Icons.Default.DoNotDisturb, "DND", TagDnd))
         when (app.lockType) {

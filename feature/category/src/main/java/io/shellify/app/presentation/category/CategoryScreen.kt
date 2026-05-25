@@ -30,6 +30,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.CalendarToday
@@ -80,6 +81,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -98,6 +102,7 @@ import io.shellify.app.presentation.theme.CategoryReadingFg
 import io.shellify.app.presentation.theme.CategoryReadingBg
 import io.shellify.app.presentation.theme.CategoryToolsFg
 import io.shellify.app.presentation.theme.CategoryToolsBg
+import io.shellify.app.presentation.components.ConfirmDialog
 import io.shellify.app.presentation.components.EmptyStateIllustration
 import io.shellify.app.presentation.theme.Dimens
 
@@ -152,6 +157,7 @@ fun CategoryScreen(
 ) {
     val categories by viewModel.categories.collectAsState()
     val state by viewModel.uiState.collectAsState()
+    var showDeleteAllDialog by remember { mutableStateOf(false) }
 
     val screenBg = MaterialTheme.colorScheme.primary.copy(alpha = 0.04f)
     Scaffold(
@@ -160,6 +166,18 @@ fun CategoryScreen(
             TopAppBar(
                 title = { Text(stringResource(R.string.categories_title)) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface),
+                actions = {
+                    val cats = categories
+                    if (!cats.isNullOrEmpty()) {
+                        IconButton(onClick = { showDeleteAllDialog = true }) {
+                            Icon(
+                                Icons.Default.DeleteSweep,
+                                contentDescription = stringResource(R.string.categories_delete_all_cd),
+                                tint = MaterialTheme.colorScheme.error,
+                            )
+                        }
+                    }
+                },
             )
         },
         floatingActionButton = {
@@ -211,7 +229,7 @@ fun CategoryScreen(
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
                 )
-                Spacer(Modifier.height(2.dp))
+                Spacer(Modifier.height(Dimens.spaceXxxs))
                 Text(
                     stringResource(R.string.categories_empty_subtitle),
                     fontSize = Dimens.textSizeBody,
@@ -283,7 +301,7 @@ fun CategoryScreen(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
-                    modifier = Modifier.widthIn(max = 280.dp),
+                    modifier = Modifier.widthIn(max = Dimens.widthChipsMax),
                 ) {
                     chipData.chunked(2).forEach { rowChips ->
                         Row(horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs)) {
@@ -425,6 +443,18 @@ fun CategoryScreen(
                 }
             }
         } // end else
+    }
+
+    if (showDeleteAllDialog) {
+        ConfirmDialog(
+            title = stringResource(R.string.categories_delete_all_confirm_title),
+            body = stringResource(R.string.categories_delete_all_confirm_body),
+            confirmLabel = stringResource(R.string.common_delete_all),
+            onConfirm = { showDeleteAllDialog = false; viewModel.deleteAllCategories() },
+            onDismiss = { showDeleteAllDialog = false },
+            icon = Icons.Default.DeleteSweep,
+            isDestructive = true,
+        )
     }
 
     if (state.showAddDialog) {

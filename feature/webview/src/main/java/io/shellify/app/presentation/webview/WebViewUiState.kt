@@ -1,5 +1,6 @@
 package io.shellify.app.presentation.webview
 
+import io.shellify.app.core.engine.TorState
 import io.shellify.app.domain.model.WebApp
 
 data class WebViewUiState(
@@ -8,6 +9,8 @@ data class WebViewUiState(
     val isRetrying: Boolean = false,
     val authState: AuthState = AuthState.Loading,
     val isPageLoaded: Boolean = false,
+    val showPanicConfirm: Boolean = false,
+    val torState: TorState = TorState.Stopped,
 )
 
 sealed interface AuthState {
@@ -26,4 +29,6 @@ sealed interface WebViewCommand {
     data object Reload : WebViewCommand
     data object Finish : WebViewCommand
     data object PageFinished : WebViewCommand
+    data object NavigateHome : WebViewCommand
+    data object NewTorIdentityRequested : WebViewCommand
 }

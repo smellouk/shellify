@@ -113,3 +113,23 @@ stateDiagram-v2
 - **Icon loading**: Coil is configured app-wide in `ShellifyApplication` with an SVG decoder (`coil-svg`). No per-module Coil config is needed.
 - **Grid columns**: responsive — `GridCells.Adaptive(minSize = 96.dp)` so the grid adapts to screen width automatically.
 - **Category filter persistence**: the selected category chip is ephemeral (held in ViewModel `StateFlow`); it resets on process death. Category data itself is persisted in `core:database`.
+
+## Phase 2 Privacy Additions
+
+### "Open incognito" long-press context menu item
+
+`AppCardContextMenu` was extended with a new `onOpenIncognito: () -> Unit` parameter (defaults to `{}`). A new `DropdownMenuItem` with `Icons.Default.VisibilityOff` and label `R.string.home_open_incognito` was inserted before the Delete item.
+
+The callback is wired at the `AppCard` call site in `HomeScreen`:
+```kotlin
+onOpenIncognito = {
+    showMenu = false
+    context.startActivity(WebViewActivity.incognitoIntent(context, app.url))
+}
+```
+
+`WebViewActivity.incognitoIntent()` is the companion-object function that launches an ephemeral session. `feature:home` uses `WebViewActivity` directly here — this is an existing Konsist `knownViolations` exemption; no new import category is introduced.
+
+### Incognito session badge
+
+When an incognito session is active (`WebViewUiState.isIncognitoSession == true`), the `feature:webview` toolbar overlay shows a `VisibilityOff` badge icon. This flag is set by the Activity after `WebViewViewModel` is created whenever `EXTRA_INCOGNITO = true` or `alwaysIncognito = true`. The `feature:home` incognito context menu item is the primary entry point for ad-hoc incognito sessions; the `alwaysIncognito` flag on `WebApp` is the persistent-session variant.

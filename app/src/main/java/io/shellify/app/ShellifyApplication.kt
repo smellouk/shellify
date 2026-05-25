@@ -8,6 +8,7 @@ import io.shellify.app.core.backup.BackupSettings
 import io.shellify.app.core.crypto.CryptoManager
 import io.shellify.app.core.engine.GeckoEngineManager
 import io.shellify.app.core.engine.GeckoNativeLoader
+import io.shellify.app.core.engine.TorManager
 import io.shellify.app.core.iconpack.SimpleIconsManager
 import io.shellify.app.core.isolation.IsolationManager
 import io.shellify.app.core.navigation.WebViewIntentFactory
@@ -72,10 +73,10 @@ class ShellifyApplication : Application(), WebViewServiceProvider, LinkDispatche
     val webAppRepository by lazy { WebAppRepositoryImpl(database.webAppDao()) }
     val categoryRepository by lazy { CategoryRepositoryImpl(database.categoryDao()) }
 
-    val getWebApps by lazy { GetWebAppsUseCase(webAppRepository) }
+    override val getWebApps by lazy { GetWebAppsUseCase(webAppRepository) }
     override val saveWebApp by lazy { SaveWebAppUseCase(webAppRepository) }
     val deleteWebApp by lazy { DeleteWebAppUseCase(webAppRepository) }
-    val deleteAllApps by lazy { DeleteAllAppsUseCase(webAppRepository) }
+    override val deleteAllApps by lazy { DeleteAllAppsUseCase(webAppRepository) }
     override val getWebAppById by lazy { GetWebAppByIdUseCase(webAppRepository) }
     val getWebAppByName by lazy { GetWebAppByNameUseCase(webAppRepository) }
     override val findAppsForUrl by lazy { FindAppsForUrlUseCase(webAppRepository) }
@@ -104,9 +105,23 @@ class ShellifyApplication : Application(), WebViewServiceProvider, LinkDispatche
     override val geckoEngineManager by lazy { GeckoEngineManager(this) }
     val pwaAnalyzer by lazy { PwaAnalyzer.create() }
     val faviconFetcher by lazy { FaviconFetcher(this, themeManager) }
-    override val adBlocker by lazy { AdBlocker() }
+    override val adBlocker by lazy {
+        AdBlocker().also { blocker ->
+            runCatching {
+                applicationContext.assets.open("easyprivacy_domains.txt")
+                    .bufferedReader()
+                    .lineSequence()
+                    .let { blocker.cache.loadTrackerRules(it) }
+            }.onFailure { e ->
+                android.util.Log.w("ShellifyApplication", "Failed to load tracker rules from easyprivacy_domains.txt", e)
+            }
+        }
+    }
     val simpleIconsManager by lazy { SimpleIconsManager(this) }
     override val isolationManager by lazy { IsolationManager(this, cryptoManager, geckoEngineManager) }
+
+    // Tor daemon manager — on-demand lifecycle per D-03. Exposed via WebViewServiceProvider.
+    override val torManager by lazy { TorManager(this) }
 
     val notificationRepository by lazy { NotificationRepositoryImpl(database.notificationDao()) }
     override val saveNotification by lazy { SaveNotificationUseCase(notificationRepository) }

@@ -33,6 +33,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Shortcut
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeleteSweep
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.animation.core.LinearEasing
@@ -116,6 +117,7 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
     }
 
     var isGridView by remember { mutableStateOf(true) }
+    var showDeleteAllDialog by remember { mutableStateOf(false) }
     var iconPickItem by remember { mutableStateOf<ShortcutItem?>(null) }
     var pendingGalleryLaunch by remember { mutableStateOf(false) }
     val pickImage = rememberLauncherForActivityResult(PickVisualMedia()) { uri ->
@@ -142,11 +144,18 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                     if (state.items.isNotEmpty()) {
                         IconButton(
                             onClick = { isGridView = !isGridView },
-                            modifier = Modifier.size(32.dp),
+                            modifier = Modifier.size(Dimens.size4xl),
                         ) {
                             Icon(
                                 if (isGridView) Icons.AutoMirrored.Filled.ViewList else Icons.Default.GridView,
                                 contentDescription = null,
+                            )
+                        }
+                        IconButton(onClick = { showDeleteAllDialog = true }) {
+                            Icon(
+                                Icons.Default.DeleteSweep,
+                                contentDescription = stringResource(R.string.shortcuts_delete_all_cd),
+                                tint = MaterialTheme.colorScheme.error,
                             )
                         }
                     }
@@ -232,6 +241,18 @@ fun ShortcutsScreen(viewModel: ShortcutsViewModel) {
                 }
             }
         }
+    }
+
+    if (showDeleteAllDialog) {
+        ConfirmDialog(
+            title = stringResource(R.string.shortcuts_delete_all_confirm_title),
+            body = stringResource(R.string.shortcuts_delete_all_confirm_body),
+            confirmLabel = stringResource(R.string.common_delete_all),
+            onConfirm = { showDeleteAllDialog = false; viewModel.deleteAllShortcuts() },
+            onDismiss = { showDeleteAllDialog = false },
+            icon = Icons.Default.DeleteSweep,
+            isDestructive = true,
+        )
     }
 
     if (state.showAddSheet) {
@@ -573,7 +594,7 @@ private fun EmptyState(onAddShortcut: (() -> Unit)?, modifier: Modifier = Modifi
             color = MaterialTheme.colorScheme.onSurface,
             textAlign = TextAlign.Center,
         )
-        Spacer(Modifier.height(2.dp))
+        Spacer(Modifier.height(Dimens.spaceXxxs))
         Text(
             stringResource(R.string.shortcuts_empty_desc),
             fontSize = Dimens.textSizeBody,

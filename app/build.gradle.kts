@@ -189,6 +189,7 @@ dependencies {
     androidTestImplementation(composeBom)
     androidTestImplementation(libs.compose.ui.test.junit4)
     androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.uiautomator)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.androidx.test.runner)
     androidTestImplementation(libs.androidx.test.rules)
@@ -201,6 +202,12 @@ dependencies {
 
 // espresso-core:3.7.0 requires concurrent-futures:1.2.0, but the Compose BOM strictly pins 1.1.0.
 // Force 1.2.0 only for androidTest so the InputManager.getInstance fix works on API 35+.
+aboutLibraries {
+    // Ensures the plugin re-collects when Gradle inputs change, preventing stale empty JSON.
+    configPath = "config/aboutlibraries"
+    offlineMode = false
+}
+
 roborazzi {
     outputDir.set(file("src/test/snapshots/images"))
 }

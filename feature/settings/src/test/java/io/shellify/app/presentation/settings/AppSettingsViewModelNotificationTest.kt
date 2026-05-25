@@ -103,15 +103,16 @@ class AppSettingsViewModelNotificationTest {
     }
 
     @Test
-    fun `toggleNotificationPermission fromNotAsked isNoOp`() = runTest {
+    fun `toggleNotificationPermission fromNotAsked setsGranted`() = runTest {
+        // User can pre-grant notifications from settings without visiting the site first.
         advanceUntilIdle()
         assertEquals(NotificationPermission.NOT_ASKED, viewModel.uiState.value.app?.notificationPermission)
 
         viewModel.toggleNotificationPermission()
         advanceUntilIdle()
 
-        assertEquals(NotificationPermission.NOT_ASKED, viewModel.uiState.value.app?.notificationPermission)
-        coVerify(exactly = 0) { saveWebApp(any()) }
+        assertEquals(NotificationPermission.GRANTED, viewModel.uiState.value.app?.notificationPermission)
+        coVerify(exactly = 1) { saveWebApp(match { it.notificationPermission == NotificationPermission.GRANTED }) }
     }
 
     @Test
@@ -143,7 +144,8 @@ class AppSettingsViewModelNotificationTest {
     }
 
     @Test
-    fun `toggleNotificationPermission fromDenied setsNotAsked`() = runTest {
+    fun `toggleNotificationPermission fromDenied setsGranted`() = runTest {
+        // Toggling from DENIED re-grants — user explicitly enables from settings.
         val deniedApp = testApp.copy(notificationPermission = NotificationPermission.DENIED)
         coEvery { getWebAppById(42L) } returns deniedApp
         viewModel = AppSettingsViewModel(
@@ -166,8 +168,8 @@ class AppSettingsViewModelNotificationTest {
         viewModel.toggleNotificationPermission()
         advanceUntilIdle()
 
-        assertEquals(NotificationPermission.NOT_ASKED, viewModel.uiState.value.app?.notificationPermission)
-        coVerify(exactly = 1) { saveWebApp(match { it.notificationPermission == NotificationPermission.NOT_ASKED }) }
+        assertEquals(NotificationPermission.GRANTED, viewModel.uiState.value.app?.notificationPermission)
+        coVerify(exactly = 1) { saveWebApp(match { it.notificationPermission == NotificationPermission.GRANTED }) }
     }
 
     @Test

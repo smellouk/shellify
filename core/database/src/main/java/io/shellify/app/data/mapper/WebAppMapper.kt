@@ -45,6 +45,12 @@ fun WebAppEntity.toDomain(): WebApp = WebApp(
     dndEndHour = dndEndHour,
     backgroundNotificationsEnabled = backgroundNotificationsEnabled,
     swipeToRefreshEnabled = swipeToRefreshEnabled,
+    stealthMode = stealthMode,
+    cookieAutoWipe = cookieAutoWipe,
+    alwaysIncognito = alwaysIncognito,
+    trackerBlockingEnabled = trackerBlockingEnabled,
+    useTor = useTor,
+    preserveTorIdentity = preserveTorIdentity,
 )
 
 fun WebApp.toEntity(): WebAppEntity = WebAppEntity(
@@ -81,4 +87,10 @@ fun WebApp.toEntity(): WebAppEntity = WebAppEntity(
     dndEndHour = dndEndHour,
     backgroundNotificationsEnabled = backgroundNotificationsEnabled,
     swipeToRefreshEnabled = swipeToRefreshEnabled,
+    stealthMode = stealthMode,
+    cookieAutoWipe = cookieAutoWipe,
+    alwaysIncognito = alwaysIncognito,
+    trackerBlockingEnabled = trackerBlockingEnabled,
+    useTor = useTor,
+    preserveTorIdentity = preserveTorIdentity,
 )

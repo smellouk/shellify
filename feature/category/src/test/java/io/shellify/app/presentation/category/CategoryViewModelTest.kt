@@ -4,6 +4,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import io.shellify.app.domain.model.Category
+import io.shellify.app.domain.usecase.DeleteAllCategoriesUseCase
 import io.shellify.app.domain.usecase.DeleteCategoryUseCase
 import io.shellify.app.domain.usecase.GetCategoriesUseCase
 import io.shellify.app.domain.usecase.SaveCategoryUseCase
@@ -29,13 +30,14 @@ class CategoryViewModelTest {
     private val getCategories = mockk<GetCategoriesUseCase>()
     private val saveCategory = mockk<SaveCategoryUseCase>()
     private val deleteCategory = mockk<DeleteCategoryUseCase>()
+    private val deleteAllCategories = mockk<DeleteAllCategoriesUseCase>(relaxed = true)
     private lateinit var viewModel: CategoryViewModel
 
     @Before
     fun setUp() {
         Dispatchers.setMain(dispatcher)
         coEvery { getCategories() } returns flowOf(emptyList())
-        viewModel = CategoryViewModel(getCategories, saveCategory, deleteCategory)
+        viewModel = CategoryViewModel(getCategories, saveCategory, deleteCategory, deleteAllCategories)
     }
 
     @After

@@ -18,6 +18,9 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven { url = uri("https://maven.mozilla.org/maven2/") }
+        // Guardian Project Maven — provides info.guardianproject:tor-android only.
+        // jtorctl resolves from mavenCentral() above.
+        maven { url = uri("https://raw.githubusercontent.com/guardianproject/gpmaven/master") }
     }
 }
 

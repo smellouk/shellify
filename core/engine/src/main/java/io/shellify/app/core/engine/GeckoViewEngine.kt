@@ -66,7 +66,15 @@ class GeckoViewEngine(
 
     companion object {
         private const val TAG = "GeckoViewEngine"
+        // Tor SOCKS5 proxy address. TorService binds on localhost:9050 by default.
+        internal const val TOR_PROXY_HOST = "127.0.0.1"
+        @Suppress("MagicNumber")
+        internal const val TOR_PROXY_PORT = 9050
     }
+
+    /** Returns the ProxyConfig to use when opening a GeckoRuntime for [app]. */
+    internal fun proxyConfigFor(app: WebApp): ProxyConfig =
+        if (app.useTor) ProxyConfig.Socks5(TOR_PROXY_HOST, TOR_PROXY_PORT) else ProxyConfig.None
 
     override val engineType = EngineType.GECKOVIEW
 
@@ -87,7 +95,8 @@ class GeckoViewEngine(
     @androidx.annotation.MainThread
     fun reattachNotificationDelegate() {
         val cb = callback ?: return
-        engineManager.getRuntime().setWebNotificationDelegate(object : WebNotificationDelegate {
+        val proxyConfig = lastApp?.let { proxyConfigFor(it) } ?: ProxyConfig.None
+        engineManager.getRuntime(proxyConfig).setWebNotificationDelegate(object : WebNotificationDelegate {
             override fun onShowNotification(notification: WebNotification) {
                 dispatchNotification(notification, cb)
             }
@@ -117,7 +126,8 @@ class GeckoViewEngine(
 
         // WebNotificationDelegate is runtime-scoped (GeckoView 140 API) — one delegate for all sessions.
         // Overwrite on each createView so the active callback is always current.
-        engineManager.getRuntime().setWebNotificationDelegate(object : WebNotificationDelegate {
+        // Request a proxy-aware runtime: Tor apps get Socks5("127.0.0.1", 9050); others use ProxyConfig.None.
+        engineManager.getRuntime(proxyConfigFor(app)).setWebNotificationDelegate(object : WebNotificationDelegate {
             override fun onShowNotification(notification: WebNotification) {
                 dispatchNotification(notification, callback)
             }
@@ -148,7 +158,8 @@ class GeckoViewEngine(
         val s = GeckoSession(settings)
         uaOverride?.let { s.settings.userAgentOverride = it }
 
-        s.open(engineManager.getRuntime())
+        // Use the proxy-aware runtime so sessions for Tor apps route through SOCKS5.
+        s.open(engineManager.getRuntime(lastApp?.let { proxyConfigFor(it) } ?: ProxyConfig.None))
 
         s.contentDelegate = object : GeckoSession.ContentDelegate {
             override fun onTitleChange(session: GeckoSession, title: String?) {
@@ -265,8 +276,13 @@ class GeckoViewEngine(
         // and BackgroundNotificationService (background) share the same delegate logic.
         // Persist the grant via StorageController so Notification.permission === 'granted'
         // survives page reloads — GeckoView's VALUE_ALLOW is per-request only without this.
+        // Use the same proxy-aware runtime that this session is opened on so that the
+        // StorageController.setPermission call targets the correct runtime instance.
+        // Calling getRuntime() without args defaults to ProxyConfig.None and would store the
+        // permission in the wrong runtime for Tor sessions, reverting to "default" on reload (CR-06).
         NotificationDelegateFactory.attach(s, cb) { perm ->
-            engineManager.getRuntime().storageController.setPermission(
+            val proxyConfig = lastApp?.let { proxyConfigFor(it) } ?: ProxyConfig.None
+            engineManager.getRuntime(proxyConfig).storageController.setPermission(
                 perm,
                 GeckoSession.PermissionDelegate.ContentPermission.VALUE_ALLOW,
             )
@@ -352,10 +368,11 @@ class GeckoViewEngine(
     override fun clearCache(includeDiskFiles: Boolean) {
         try {
             val ctx = contextId
+            val proxyConfig = lastApp?.let { proxyConfigFor(it) } ?: ProxyConfig.None
             if (ctx != null) {
-                engineManager.getRuntime().storageController.clearDataForSessionContext(ctx)
+                engineManager.getRuntime(proxyConfig).storageController.clearDataForSessionContext(ctx)
             } else {
-                engineManager.getRuntime().storageController.clearData(StorageController.ClearFlags.ALL)
+                engineManager.getRuntime(proxyConfig).storageController.clearData(StorageController.ClearFlags.ALL)
             }
         } catch (e: Exception) {
             Log.e(TAG, "clearCache failed", e)

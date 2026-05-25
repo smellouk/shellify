@@ -166,6 +166,7 @@ fun AppNavigation(
                     viewModel = remember {
                         HomeViewModel(
                             app.getWebApps,
+                            app.deleteAllApps,
                             app.deleteWebApp,
                             app.getCategories,
                             app.saveWebApp,
@@ -268,6 +269,9 @@ fun AppNavigation(
                         ).apply { action = BackgroundNotificationService.ACTION_STOP }
                         context.startService(intent)
                     },
+                    // TorManager lives in ShellifyApplication (core:engine owner). Activities and
+                    // NavHost may access core:* infrastructure directly per CLAUDE.md §Known gap.
+                    onNewTorIdentity = { app.torManager.newIdentity() },
                 )
             }
 
@@ -278,6 +282,7 @@ fun AppNavigation(
                             app.getCategories,
                             app.saveCategory,
                             app.deleteCategory,
+                            app.deleteAllCategories,
                         )
                     },
                 )
@@ -304,7 +309,6 @@ fun AppNavigation(
                         GlobalSettingsViewModel(
                             app.themeManager, app.isolationManager,
                             app.getWebApps, app.saveWebApp,
-                            app.deleteAllApps, app.deleteAllCategories,
                             app.passwordManager, app.backupSettings, app.backupManager, app,
                             app.geckoEngineManager, app.simpleIconsManager,
                             onGeckoInstalled = { app.injectAndLoadGeckoView() },

@@ -168,6 +168,14 @@ class ThemeManager(private val context: Context) {
         }
     }
 
+    /**
+     * Clears all DataStore preferences. Used by the panic wipe to remove all theme and
+     * user preference data as part of the atomic wipe sequence (per D-02 / T-02-13).
+     */
+    suspend fun clearAll() {
+        context.themeStore.edit { it.clear() }
+    }
+
     companion object {
         const val CURRENT_CONSENT_VERSION = 3
     }

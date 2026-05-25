@@ -253,4 +253,12 @@ class ShortcutsViewModel(
         _state.update { it.copy(showAddSheet = false) }
         load()
     }
+
+    fun deleteAllShortcuts() = viewModelScope.launch(Dispatchers.IO) {
+        getWebApps().first().forEach { app ->
+            PwaShortcutManager.removeShortcut(context, app)
+            saveWebApp(app.copy(hasLauncherShortcut = false))
+        }
+        load()
+    }
 }

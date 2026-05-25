@@ -3,6 +3,7 @@ package io.shellify.app.presentation.category
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.shellify.app.domain.model.Category
+import io.shellify.app.domain.usecase.DeleteAllCategoriesUseCase
 import io.shellify.app.domain.usecase.DeleteCategoryUseCase
 import io.shellify.app.domain.usecase.GetCategoriesUseCase
 import io.shellify.app.domain.usecase.SaveCategoryUseCase
@@ -24,6 +25,7 @@ class CategoryViewModel(
     getCategories: GetCategoriesUseCase,
     private val saveCategory: SaveCategoryUseCase,
     private val deleteCategory: DeleteCategoryUseCase,
+    private val deleteAllCategories: DeleteAllCategoriesUseCase,
 ) : ViewModel() {
 
     val categories: kotlinx.coroutines.flow.StateFlow<List<Category>?> = getCategories()
@@ -80,4 +82,6 @@ class CategoryViewModel(
     }
 
     fun delete(category: Category) = viewModelScope.launch { deleteCategory(category) }
+
+    fun deleteAllCategories() = viewModelScope.launch { deleteAllCategories.invoke() }
 }

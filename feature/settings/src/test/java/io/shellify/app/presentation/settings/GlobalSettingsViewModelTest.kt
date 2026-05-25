@@ -18,8 +18,6 @@ import io.shellify.app.core.theme.ThemeMode
 import io.shellify.app.domain.model.EngineType
 import io.shellify.app.domain.model.UserAgentMode
 import io.shellify.app.domain.model.WebApp
-import io.shellify.app.domain.usecase.DeleteAllAppsUseCase
-import io.shellify.app.domain.usecase.DeleteAllCategoriesUseCase
 import io.shellify.app.domain.usecase.GetWebAppsUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
 import io.shellify.core.ui.R as CoreUiR
@@ -48,8 +46,6 @@ class GlobalSettingsViewModelTest {
     private val isolationManager = mockk<IsolationManager>(relaxed = true)
     private val getWebApps = mockk<GetWebAppsUseCase>()
     private val saveWebApp = mockk<SaveWebAppUseCase>()
-    private val deleteAllAppsUseCase = mockk<DeleteAllAppsUseCase>(relaxed = true)
-    private val deleteAllCategoriesUseCase = mockk<DeleteAllCategoriesUseCase>(relaxed = true)
     private val passwordManager = mockk<PasswordManager>(relaxed = true)
     private val backupSettings = mockk<BackupSettings>(relaxed = true)
     private val backupManager = mockk<BackupManager>(relaxed = true)
@@ -98,8 +94,6 @@ class GlobalSettingsViewModelTest {
             isolationManager = isolationManager,
             getWebApps = getWebApps,
             saveWebApp = saveWebApp,
-            deleteAllAppsUseCase = deleteAllAppsUseCase,
-            deleteAllCategoriesUseCase = deleteAllCategoriesUseCase,
             passwordManager = passwordManager,
             backupSettings = backupSettings,
             backupManager = backupManager,
@@ -163,42 +157,6 @@ class GlobalSettingsViewModelTest {
     }
 
     @Test
-    fun `showClearAllDialog and dismissClearAllDialog toggle flag`() {
-        viewModel.showClearAllDialog()
-        assertTrue(viewModel.uiState.value.showClearAllDialog)
-        viewModel.dismissClearAllDialog()
-        assertFalse(viewModel.uiState.value.showClearAllDialog)
-    }
-
-    @Test
-    fun `clearAll calls isolationManager for each app and closes dialog`() = runTest {
-        val app = WebApp(id = 1L, name = "App", url = "https://x.com", isolationId = "iso-1")
-        every { getWebApps() } returns flowOf(listOf(app))
-        viewModel.showClearAllDialog()
-        viewModel.clearAll()
-        advanceUntilIdle()
-        coVerify(exactly = 1) { isolationManager.clearData("iso-1") }
-        assertFalse(viewModel.uiState.value.showClearAllDialog)
-    }
-
-    @Test
-    fun `showDeleteAllAppsDialog and dismiss toggle flag`() {
-        viewModel.showDeleteAllAppsDialog()
-        assertTrue(viewModel.uiState.value.showDeleteAllAppsDialog)
-        viewModel.dismissDeleteAllAppsDialog()
-        assertFalse(viewModel.uiState.value.showDeleteAllAppsDialog)
-    }
-
-    @Test
-    fun `deleteAllCategories calls use case and closes dialog`() = runTest {
-        viewModel.showDeleteAllCategoriesDialog()
-        viewModel.deleteAllCategories()
-        advanceUntilIdle()
-        coVerify(exactly = 1) { deleteAllCategoriesUseCase() }
-        assertFalse(viewModel.uiState.value.showDeleteAllCategoriesDialog)
-    }
-
-    @Test
     fun `setThemeMode delegates to themeManager`() = runTest {
         viewModel.setThemeMode(ThemeMode.DARK)
         advanceUntilIdle()
@@ -246,8 +204,6 @@ class GlobalSettingsViewModelTest {
             isolationManager = isolationManager,
             getWebApps = getWebApps,
             saveWebApp = saveWebApp,
-            deleteAllAppsUseCase = deleteAllAppsUseCase,
-            deleteAllCategoriesUseCase = deleteAllCategoriesUseCase,
             passwordManager = passwordManager,
             backupSettings = backupSettings,
             backupManager = backupManager,
@@ -271,8 +227,6 @@ class GlobalSettingsViewModelTest {
             isolationManager = isolationManager,
             getWebApps = getWebApps,
             saveWebApp = saveWebApp,
-            deleteAllAppsUseCase = deleteAllAppsUseCase,
-            deleteAllCategoriesUseCase = deleteAllCategoriesUseCase,
             passwordManager = passwordManager,
             backupSettings = backupSettings,
             backupManager = backupManager,
@@ -308,8 +262,6 @@ class GlobalSettingsViewModelTest {
             isolationManager = isolationManager,
             getWebApps = getWebApps,
             saveWebApp = saveWebApp,
-            deleteAllAppsUseCase = deleteAllAppsUseCase,
-            deleteAllCategoriesUseCase = deleteAllCategoriesUseCase,
             passwordManager = passwordManager,
             backupSettings = backupSettings,
             backupManager = backupManager,
@@ -334,8 +286,6 @@ class GlobalSettingsViewModelTest {
             isolationManager = isolationManager,
             getWebApps = getWebApps,
             saveWebApp = saveWebApp,
-            deleteAllAppsUseCase = deleteAllAppsUseCase,
-            deleteAllCategoriesUseCase = deleteAllCategoriesUseCase,
             passwordManager = passwordManager,
             backupSettings = backupSettings,
             backupManager = backupManager,

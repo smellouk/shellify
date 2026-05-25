@@ -12,6 +12,7 @@ import android.view.View
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import io.shellify.app.core.engine.BrowserEngineCallback
+import io.shellify.app.core.engine.ProxyConfig
 import io.shellify.app.core.engine.NotificationDelegateFactory
 import io.shellify.app.domain.model.NotificationPermission
 import io.shellify.app.domain.model.WebApp
@@ -105,7 +106,9 @@ class BackgroundNotificationService : Service() {
             }
 
             val cb = buildCallback(webApp, dispatcher)
-            val runtime = provider.geckoEngineManager.getRuntime()
+            // Apply the correct proxy config so system properties are set before session.open().
+            val proxyConfig = if (webApp.useTor) ProxyConfig.Socks5("127.0.0.1", 9050) else ProxyConfig.None
+            val runtime = provider.geckoEngineManager.getRuntime(proxyConfig)
 
             runtime.setWebNotificationDelegate(object : WebNotificationDelegate {
                 override fun onShowNotification(notification: WebNotification) {

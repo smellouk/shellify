@@ -1,0 +1,250 @@
+# EasyPrivacy Tracker Domain List
+# Source: https://easylist.to/easylist/easyprivacy.txt
+# License: Creative Commons Attribution-ShareAlike 3.0 Unported (CC BY-SA 3.0)
+# Attribution: EasyList authors (https://easylist.to)
+# Curated static subset of high-impact tracking domains for Shellify per-app tracker blocking.
+# Format: one domain per line, lowercase, no protocol, no path, no leading www.
+# Lines starting with # are comments and are ignored by loadTrackerRules().
+
+# Google Analytics and Advertising
+google-analytics.com
+googletagmanager.com
+googletagservices.com
+googlesyndication.com
+doubleclick.net
+adservice.google.com
+googleadservices.com
+google-analytics.com
+analytics.google.com
+stats.g.doubleclick.net
+pagead2.googlesyndication.com
+adwords.google.com
+
+# Facebook Tracking
+connect.facebook.net
+facebook.com
+facebook.net
+fbcdn.net
+pixel.facebook.com
+graph.facebook.com
+analytics.facebook.com
+
+# Twitter/X Analytics
+t.co
+analytics.twitter.com
+ads.twitter.com
+static.ads-twitter.com
+syndication.twitter.com
+
+# Microsoft/Bing
+bat.bing.com
+c.clarity.ms
+clarity.ms
+ads.microsoft.com
+bingads.microsoft.com
+
+# Amazon Advertising
+amazon-adsystem.com
+assoc-amazon.com
+media-amazon.com
+fls-na.amazon.com
+
+# Scorecard Research / comScore
+scorecardresearch.com
+comscore.com
+sb.scorecardresearch.com
+
+# Adobe Analytics
+omtrdc.net
+demdex.net
+adobedtm.com
+2o7.net
+everesttech.net
+
+# Hotjar
+hotjar.com
+static.hotjar.com
+insights.hotjar.com
+vc.hotjar.io
+
+# Mixpanel
+mixpanel.com
+api.mixpanel.com
+cdn.mxpnl.com
+
+# Segment
+segment.com
+segment.io
+cdn.segment.com
+api.segment.io
+
+# Amplitude
+amplitude.com
+api.amplitude.com
+cdn.amplitude.com
+
+# Criteo
+criteo.com
+criteo.net
+widget.criteo.com
+
+# Outbrain
+outbrain.com
+outbrainimg.com
+
+# Taboola
+taboola.com
+trc.taboola.com
+cdn.taboola.com
+
+# AppNexus / Xandr
+adnxs.com
+appnexus.com
+
+# Rubicon Project / Magnite
+rubiconproject.com
+magnite.com
+
+# OpenX
+openx.net
+openx.com
+
+# PubMatic
+pubmatic.com
+ads.pubmatic.com
+
+# Yandex Metrics
+mc.yandex.ru
+metrika.yandex.ru
+yandex-team.ru
+
+# Quantcast
+quantserve.com
+quantcast.com
+
+# Moat Analytics
+moatads.com
+moat.com
+z.moatads.com
+
+# FullStory
+fullstory.com
+rs.fullstory.com
+
+# Mouseflow
+mouseflow.com
+cdn.mouseflow.com
+
+# Chartbeat
+chartbeat.com
+static.chartbeat.com
+ping.chartbeat.net
+
+# Parse.ly
+parsely.com
+pixel.parsely.com
+analytics.parsely.com
+
+# New Relic
+newrelic.com
+nr-data.net
+js-agent.newrelic.com
+insights-collector.newrelic.com
+
+# Sentry (telemetry)
+sentry.io
+browser.sentry-cdn.com
+
+# Intercom
+intercom.io
+widget.intercom.io
+js.intercom.io
+
+# Zendesk Analytics
+zopim.com
+ekr.zdassets.com
+
+# HubSpot
+hs-analytics.net
+hubspot.com
+hubspotlinks.com
+tracking.hubspot.com
+
+# Matomo/Piwik
+piwik.pro
+cdn.piwik.pro
+
+# Statcounter
+statcounter.com
+c.statcounter.com
+
+# Woopra
+woopra.com
+static.woopra.com
+
+# Lucky Orange
+luckyorange.com
+luckyorange.net
+cdn.luckyorange.com
+
+# Heap Analytics
+heapanalytics.com
+cdn.heapanalytics.com
+
+# Kissmetrics
+kissmetrics.com
+kissmetricshq.com
+
+# InMobi
+inmobi.com
+cf.inmobi.com
+
+# AdRoll
+adroll.com
+d.adroll.com
+
+# DoubleVerify
+doubleverify.com
+cdn.doubleverify.com
+
+# Integral Ad Science
+adsafeprotected.com
+iasds01.com
+
+# Index Exchange
+indexexchange.com
+casalemedia.com
+
+# The Trade Desk
+adsrvr.org
+thetradedesk.com
+
+# Verizon Media / Oath
+oath.com
+adtech.com
+yieldmanager.com
+
+# Teads
+teads.tv
+t.teads.tv
+
+# Sharethrough
+sharethrough.com
+native.sharethrough.com
+
+# LiveRamp
+liveramp.com
+rlcdn.com
+pippio.com
+
+# Neustar
+neustar.biz
+agkn.com
+
+# Bluekai
+bluekai.com
+bkrtx.com
+
+# Nielsen
+imrworldwide.com
+nielsen.com

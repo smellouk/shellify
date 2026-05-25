@@ -20,8 +20,6 @@ import io.shellify.app.core.theme.ThemeManager
 import io.shellify.app.core.theme.ThemeMode
 import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.UserAgentMode
-import io.shellify.app.domain.usecase.DeleteAllAppsUseCase
-import io.shellify.app.domain.usecase.DeleteAllCategoriesUseCase
 import io.shellify.app.domain.usecase.GetWebAppsUseCase
 import io.shellify.app.domain.usecase.SaveWebAppUseCase
 import io.shellify.core.ui.R as CoreUiR
@@ -50,11 +48,6 @@ data class GlobalSettingsUiState(
     val screenshotProtection: Boolean = false,
     val showPasswordDialog: Boolean = false,
     val passwordDialogMode: PasswordDialogMode = PasswordDialogMode.SET,
-    // Data
-    val showClearAllDialog: Boolean = false,
-    val showDeleteAllAppsDialog: Boolean = false,
-    val showDeleteAllCategoriesDialog: Boolean = false,
-    val showDeleteAllShortcutsDialog: Boolean = false,
     // Remove password warning
     val showRemovePasswordWarning: Boolean = false,
     // Backup
@@ -77,8 +70,6 @@ class GlobalSettingsViewModel(
     private val isolationManager: IsolationManager,
     private val getWebApps: GetWebAppsUseCase,
     private val saveWebApp: SaveWebAppUseCase,
-    private val deleteAllAppsUseCase: DeleteAllAppsUseCase,
-    private val deleteAllCategoriesUseCase: DeleteAllCategoriesUseCase,
     private val passwordManager: PasswordManager,
     private val backupSettings: BackupSettings,
     private val backupManager: BackupManager,
@@ -271,53 +262,6 @@ class GlobalSettingsViewModel(
                 _state.update { it.copy(showPasswordDialog = false) }
             } else onWrongPassword()
         }
-
-    // ── Data ──────────────────────────────────────────────────────────────────
-
-    fun showClearAllDialog() = _state.update { it.copy(showClearAllDialog = true) }
-    fun dismissClearAllDialog() = _state.update { it.copy(showClearAllDialog = false) }
-
-    fun clearAll() = viewModelScope.launch {
-        getWebApps().first().forEach { app -> isolationManager.clearData(app.isolationId) }
-        _state.update { it.copy(showClearAllDialog = false) }
-    }
-
-    fun showDeleteAllAppsDialog() = _state.update { it.copy(showDeleteAllAppsDialog = true) }
-    fun dismissDeleteAllAppsDialog() = _state.update { it.copy(showDeleteAllAppsDialog = false) }
-    fun deleteAllApps() = viewModelScope.launch {
-        val apps = getWebApps().first()
-        apps.forEach { app ->
-            isolationManager.clearData(app.isolationId)
-            PwaShortcutManager.removeShortcut(context, app)
-        }
-        deleteAllAppsUseCase()
-        _state.update { it.copy(showDeleteAllAppsDialog = false) }
-    }
-
-    fun showDeleteAllCategoriesDialog() =
-        _state.update { it.copy(showDeleteAllCategoriesDialog = true) }
-
-    fun dismissDeleteAllCategoriesDialog() =
-        _state.update { it.copy(showDeleteAllCategoriesDialog = false) }
-
-    fun deleteAllCategories() = viewModelScope.launch {
-        deleteAllCategoriesUseCase()
-        _state.update { it.copy(showDeleteAllCategoriesDialog = false) }
-    }
-
-    fun showDeleteAllShortcutsDialog() =
-        _state.update { it.copy(showDeleteAllShortcutsDialog = true) }
-
-    fun dismissDeleteAllShortcutsDialog() =
-        _state.update { it.copy(showDeleteAllShortcutsDialog = false) }
-
-    fun deleteAllShortcuts() = viewModelScope.launch {
-        getWebApps().first().forEach { app ->
-            PwaShortcutManager.removeShortcut(context, app)
-            saveWebApp(app.copy(hasLauncherShortcut = false))
-        }
-        _state.update { it.copy(showDeleteAllShortcutsDialog = false) }
-    }
 
     fun repinShortcutsAfterRestore() = viewModelScope.launch {
         getWebApps().first()
