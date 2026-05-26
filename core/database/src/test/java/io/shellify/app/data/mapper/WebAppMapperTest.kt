@@ -4,6 +4,7 @@ import io.shellify.app.data.local.entity.WebAppEntity
 import io.shellify.app.domain.model.EngineType
 import io.shellify.app.domain.model.IconSource
 import io.shellify.app.domain.model.LockType
+import io.shellify.app.domain.model.ProxyType
 import io.shellify.app.domain.model.TranslateLanguage
 import io.shellify.app.domain.model.UserAgentMode
 import io.shellify.app.domain.model.WebApp
@@ -332,5 +333,114 @@ class WebAppMapperTest {
         assertEquals(false, roundTripped.trackerBlockingEnabled)
         assertEquals(false, roundTripped.useTor)
         assertEquals(false, roundTripped.preserveTorIdentity)
+    }
+
+    // ── Custom proxy fields (Phase 18) ────────────────────────────────────────
+
+    @Test
+    fun `WebApp constructed with defaults has all proxy fields at safe defaults`() {
+        val app = baseApp()
+        assertEquals(ProxyType.NONE, app.customProxyType)
+        assertEquals(null, app.customProxyHost)
+        assertEquals(0, app.customProxyPort)
+        assertEquals(null, app.customProxyUsername)
+        assertEquals(null, app.customProxyPassword)
+    }
+
+    @Test
+    fun `toDomain maps default proxy fields to safe defaults`() {
+        val domain = baseEntity().toDomain()
+        assertEquals(ProxyType.NONE, domain.customProxyType)
+        assertEquals(null, domain.customProxyHost)
+        assertEquals(0, domain.customProxyPort)
+        assertEquals(null, domain.customProxyUsername)
+        assertEquals(null, domain.customProxyPassword)
+    }
+
+    @Test
+    fun `toDomain maps fully populated SOCKS5 proxy fields`() {
+        val entity = baseEntity().copy(
+            customProxyType = "SOCKS5",
+            customProxyHost = "10.0.0.1",
+            customProxyPort = 1080,
+            customProxyUsername = "alice",
+            customProxyPassword = "secret",
+        )
+        val domain = entity.toDomain()
+        assertEquals(ProxyType.SOCKS5, domain.customProxyType)
+        assertEquals("10.0.0.1", domain.customProxyHost)
+        assertEquals(1080, domain.customProxyPort)
+        assertEquals("alice", domain.customProxyUsername)
+        assertEquals("secret", domain.customProxyPassword)
+    }
+
+    @Test
+    fun `toDomain falls back to ProxyType NONE for unknown customProxyType string`() {
+        val entity = baseEntity().copy(customProxyType = "GARBAGE")
+        assertEquals(ProxyType.NONE, entity.toDomain().customProxyType)
+    }
+
+    @Test
+    fun `toEntity stores SOCKS5 proxy fields correctly`() {
+        val app = baseApp().copy(
+            customProxyType = ProxyType.SOCKS5,
+            customProxyHost = "10.0.0.1",
+            customProxyPort = 1080,
+            customProxyUsername = "alice",
+            customProxyPassword = "secret",
+        )
+        val entity = app.toEntity()
+        assertEquals("SOCKS5", entity.customProxyType)
+        assertEquals("10.0.0.1", entity.customProxyHost)
+        assertEquals(1080, entity.customProxyPort)
+        assertEquals("alice", entity.customProxyUsername)
+        assertEquals("secret", entity.customProxyPassword)
+    }
+
+    @Test
+    fun `toEntity stores NONE proxy type as NONE string`() {
+        val app = baseApp().copy(customProxyType = ProxyType.NONE)
+        assertEquals("NONE", app.toEntity().customProxyType)
+    }
+
+    @Test
+    fun `round-trip preserves default proxy fields`() {
+        val app = baseApp()
+        val roundTripped = app.toEntity().toDomain()
+        assertEquals(ProxyType.NONE, roundTripped.customProxyType)
+        assertEquals(null, roundTripped.customProxyHost)
+        assertEquals(0, roundTripped.customProxyPort)
+        assertEquals(null, roundTripped.customProxyUsername)
+        assertEquals(null, roundTripped.customProxyPassword)
+    }
+
+    @Test
+    fun `round-trip preserves fully populated SOCKS5 proxy fields`() {
+        val app = baseApp().copy(
+            customProxyType = ProxyType.SOCKS5,
+            customProxyHost = "10.0.0.1",
+            customProxyPort = 1080,
+            customProxyUsername = "alice",
+            customProxyPassword = "secret",
+        )
+        val roundTripped = app.toEntity().toDomain()
+        assertEquals(ProxyType.SOCKS5, roundTripped.customProxyType)
+        assertEquals("10.0.0.1", roundTripped.customProxyHost)
+        assertEquals(1080, roundTripped.customProxyPort)
+        assertEquals("alice", roundTripped.customProxyUsername)
+        assertEquals("secret", roundTripped.customProxyPassword)
+    }
+
+    @Test
+    fun `round-trip preserves HTTP proxy fields`() {
+        val app = baseApp().copy(
+            customProxyType = ProxyType.HTTP,
+            customProxyHost = "proxy.example.com",
+            customProxyPort = 8080,
+        )
+        val roundTripped = app.toEntity().toDomain()
+        assertEquals(ProxyType.HTTP, roundTripped.customProxyType)
+        assertEquals("proxy.example.com", roundTripped.customProxyHost)
+        assertEquals(8080, roundTripped.customProxyPort)
     }
 }

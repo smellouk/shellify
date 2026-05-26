@@ -52,6 +52,12 @@ data class WebApp(
     // Tor
     val useTor: Boolean = false,
     val preserveTorIdentity: Boolean = false,
+    // Custom proxy
+    val customProxyType: ProxyType = ProxyType.NONE,
+    val customProxyHost: String? = null,
+    val customProxyPort: Int = 0,
+    val customProxyUsername: String? = null,
+    val customProxyPassword: String? = null,
 ) {
     /** On-disk path: Path → path, SvgIcon → renderedPath, else null. */
     val iconPath: String?

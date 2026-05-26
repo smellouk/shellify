@@ -5,6 +5,7 @@ import io.shellify.app.domain.model.EngineType
 import io.shellify.app.domain.model.IconSource
 import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.NotificationPermission
+import io.shellify.app.domain.model.ProxyType
 import io.shellify.app.domain.model.TranslateLanguage
 import io.shellify.app.domain.model.UserAgentMode
 import io.shellify.app.domain.model.WebApp
@@ -51,6 +52,11 @@ fun WebAppEntity.toDomain(): WebApp = WebApp(
     trackerBlockingEnabled = trackerBlockingEnabled,
     useTor = useTor,
     preserveTorIdentity = preserveTorIdentity,
+    customProxyType = runCatching { ProxyType.valueOf(customProxyType) }.getOrDefault(ProxyType.NONE),
+    customProxyHost = customProxyHost,
+    customProxyPort = customProxyPort,
+    customProxyUsername = customProxyUsername,
+    customProxyPassword = customProxyPassword,
 )
 
 fun WebApp.toEntity(): WebAppEntity = WebAppEntity(
@@ -93,4 +99,9 @@ fun WebApp.toEntity(): WebAppEntity = WebAppEntity(
     trackerBlockingEnabled = trackerBlockingEnabled,
     useTor = useTor,
     preserveTorIdentity = preserveTorIdentity,
+    customProxyType = customProxyType.name,
+    customProxyHost = customProxyHost,
+    customProxyPort = customProxyPort,
+    customProxyUsername = customProxyUsername,
+    customProxyPassword = customProxyPassword,
 )
