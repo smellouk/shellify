@@ -4,6 +4,16 @@ package io.shellify.app.core.engine
 // ProxyConfig.None is a singleton (object); Socks5 and Http are value types (data class).
 sealed class ProxyConfig {
     data object None : ProxyConfig()
-    data class Socks5(val host: String, val port: Int) : ProxyConfig()
-    data class Http(val host: String, val port: Int) : ProxyConfig()
+    data class Socks5(
+        val host: String,
+        val port: Int,
+        val username: String? = null,
+        val password: String? = null,
+    ) : ProxyConfig()
+    data class Http(
+        val host: String,
+        val port: Int,
+        val username: String? = null,
+        val password: String? = null,
+    ) : ProxyConfig()
 }
