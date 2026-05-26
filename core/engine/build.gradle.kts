@@ -5,6 +5,13 @@ plugins {
 android {
     namespace = "io.shellify.core.engine"
 
+    testOptions {
+        unitTests {
+            // Prevents android.util.Log.* from throwing "not mocked" in JVM unit tests.
+            isReturnDefaultValues = true
+        }
+    }
+
     packaging {
         jniLibs {
             excludes += "**/libxul.so"

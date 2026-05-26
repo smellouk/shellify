@@ -1,6 +1,8 @@
 package io.shellify.app.core.engine
 
 import android.content.ComponentName
+import android.content.Context
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -91,5 +93,22 @@ class TorManagerTest {
 
         val state = manager.torState.value
         assertTrue("Expected TorState.Error but got $state", state is TorState.Error)
+    }
+
+    @Test
+    fun `T6 - ensureStarted emits TorState Error when startService throws`() = testScope.runTest {
+        // Arrange: context.startService throws (e.g. IllegalStateException from background start).
+        val context = mockk<Context>(relaxed = true) {
+            every { startService(any()) } throws IllegalStateException("Not allowed in background")
+        }
+        val manager = TorManager(context = context, testScope = testScope)
+
+        // Act
+        manager.ensureStarted(appId = 1L, preserveIdentity = false)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Assert: error is surfaced so the UI can show Retry instead of freezing on Connecting.
+        val state = manager.torState.value
+        assertTrue("Expected TorState.Error after startService failure but got $state", state is TorState.Error)
     }
 }

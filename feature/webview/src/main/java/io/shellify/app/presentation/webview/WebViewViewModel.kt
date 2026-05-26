@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 class WebViewViewModel(
     private val initialApp: WebApp,
@@ -221,7 +222,12 @@ class WebViewViewModel(
                 // This is the critical gate that prevents DNS and traffic leaks (T-02-23).
                 // Also handles TorState.Error so the coroutine is not suspended indefinitely
                 // when TorService fails to start (CR-02).
-                val state = tm.torState.filter { it is TorState.Ready || it is TorState.Error }.first()
+                // withTimeoutOrNull guards against TorService hanging silently (e.g. native
+                // binary crash with no onServiceDisconnected, or registerReceiver failure) —
+                // without it the overlay freezes the UI forever (CR-07).
+                val state = withTimeoutOrNull(TOR_STARTUP_TIMEOUT_MS) {
+                    tm.torState.filter { it is TorState.Ready || it is TorState.Error }.first()
+                } ?: TorState.Error("Tor startup timed out after ${TOR_STARTUP_TIMEOUT_MS / 1_000}s")
                 if (state is TorState.Error) {
                     _uiState.update { it.copy(error = WebLoadError.from(-1, state.message)) }
                     return@launch
@@ -366,6 +372,15 @@ class WebViewViewModel(
     }
 
     private fun currentApp(): WebApp = _uiState.value.app ?: initialApp
+
+    companion object {
+        /**
+         * Maximum time to wait for [TorState.Ready] or [TorState.Error] before aborting.
+         * Prevents the Tor connecting overlay from freezing the UI indefinitely when
+         * TorService hangs or crashes without emitting a status broadcast (CR-07).
+         */
+        internal const val TOR_STARTUP_TIMEOUT_MS = 90_000L
+    }
 
     class Factory(
         private val app: WebApp,

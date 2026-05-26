@@ -20,13 +20,16 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 
@@ -130,20 +133,26 @@ class WebViewViewModelTorTest {
     fun `when useTor true, onAppReady gates LoadUrl on TorState Ready`() = testScope.runTest {
         torStateFlow.value = TorState.Connecting
         val vm = createViewModel(torApp)
-        advanceUntilIdle()
+        advanceUntilIdle()  // Safe: no withTimeoutOrNull in play yet during vm init.
 
         vm.onAppReady(torApp)
-        advanceUntilIdle()
+        // Use runCurrent() instead of advanceUntilIdle() here and below.
+        // advanceUntilIdle() advances virtual time through ALL pending delays, including
+        // the TOR_STARTUP_TIMEOUT_MS delay, which would fire the timeout and emit an error
+        // before TorState.Ready ever arrives — causing a false failure.
+        runCurrent()
 
         // Should NOT have emitted LoadUrl yet while Connecting
         val commands = mutableListOf<WebViewCommand>()
         val job = launch { vm.commands.collect { commands += it } }
 
         // No LoadUrl should be emitted while Connecting
-        advanceUntilIdle()
+        runCurrent()
         assertFalse("No LoadUrl while Connecting", commands.any { it is WebViewCommand.LoadUrl })
 
-        // Emit Ready — now LoadUrl should be dispatched
+        // Emit Ready — now LoadUrl should be dispatched.
+        // advanceUntilIdle() is safe here because withTimeoutOrNull cancels its internal timer
+        // the moment filter.first() returns TorState.Ready, leaving no residual delayed tasks.
         torStateFlow.value = TorState.Ready
         advanceUntilIdle()
 
@@ -218,4 +227,31 @@ class WebViewViewModelTorTest {
         advanceUntilIdle()
         assertEquals(TorState.Ready, vm.uiState.value.torState)
     }
+
+    /**
+     * Test 7: When TorService never emits Ready or Error within TOR_STARTUP_TIMEOUT_MS,
+     * onAppReady must surface a WebLoadError instead of freezing the UI forever (CR-07).
+     */
+    @Test
+    fun `when tor startup exceeds timeout, onAppReady surfaces error instead of freezing`() =
+        testScope.runTest {
+            // TorService is stuck at Connecting — no Ready/Error broadcast ever arrives.
+            torStateFlow.value = TorState.Connecting
+            val vm = createViewModel(torApp)
+            runCurrent()  // Run vm init without advancing virtual time.
+
+            vm.onAppReady(torApp)
+            runCurrent()  // Run the coroutine to its filter.first() suspension point.
+
+            // Just before the deadline: no error yet.
+            // advanceTimeBy runs all tasks that become due at the new virtual time, so
+            // no explicit runCurrent() is needed after it.
+            advanceTimeBy(WebViewViewModel.TOR_STARTUP_TIMEOUT_MS - 1_000L)
+            assertEquals(null, vm.uiState.value.error)
+
+            // Cross the deadline: timeout fires, withTimeoutOrNull returns null, error is set.
+            advanceTimeBy(2_000L)
+            val error = vm.uiState.value.error
+            assertTrue("Expected a WebLoadError after timeout but got $error", error != null)
+        }
 }

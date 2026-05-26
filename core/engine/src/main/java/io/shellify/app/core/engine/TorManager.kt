@@ -146,7 +146,11 @@ class TorManager(
                     val bound = context.bindService(intent, torServiceConnection, Context.BIND_AUTO_CREATE)
                     if (!bound) Log.w(TAG, "bindService returned false — process-death detection unavailable")
                 }
-            }.onFailure { Log.e(TAG, "Failed to start TorService", it) }
+            }.onFailure {
+                // Surface the failure so the UI can offer a retry instead of freezing on Connecting.
+                Log.e(TAG, "Failed to start TorService", it)
+                _torState.value = TorState.Error("Failed to start Tor: ${it.message}")
+            }
         }
     }
 
@@ -227,7 +231,11 @@ class TorManager(
     private fun registerStatusReceiver() {
         if (torReceiver != null) return
 
-        torReceiver = object : BroadcastReceiver() {
+        // Build the receiver locally so it is only assigned to torReceiver after successful
+        // registration. If registerReceiver() throws and we assigned torReceiver first, the
+        // null-guard at the top of this function would skip all future registration attempts,
+        // leaving _torState stuck at Connecting forever (no broadcasts would ever arrive).
+        val receiver = object : BroadcastReceiver() {
             override fun onReceive(ctx: Context, intent: Intent) {
                 val status = intent.getStringExtra(TorService.EXTRA_STATUS) ?: return
                 when (status) {
@@ -243,11 +251,17 @@ class TorManager(
         runCatching {
             ContextCompat.registerReceiver(
                 context,
-                torReceiver,
+                receiver,
                 IntentFilter(TorService.ACTION_STATUS),
                 ContextCompat.RECEIVER_NOT_EXPORTED,
             )
-        }.onFailure { Log.w(TAG, "Failed to register TorService receiver", it) }
+            // Assign only on success so a failed registration leaves torReceiver null
+            // and the next ensureStarted() call can attempt registration again.
+            torReceiver = receiver
+        }.onFailure {
+            Log.e(TAG, "Failed to register TorService receiver", it)
+            _torState.value = TorState.Error("Failed to listen for Tor status: ${it.message}")
+        }
     }
 
     private fun stop() {
