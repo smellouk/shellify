@@ -71,4 +71,10 @@ data class WebAppEntity(
     // Tor
     @ColumnInfo(name = "use_tor") val useTor: Boolean = false,
     @ColumnInfo(name = "preserve_tor_identity") val preserveTorIdentity: Boolean = false,
+    // Custom proxy
+    @ColumnInfo(name = "custom_proxy_type") val customProxyType: String = "NONE",
+    @ColumnInfo(name = "custom_proxy_host") val customProxyHost: String? = null,
+    @ColumnInfo(name = "custom_proxy_port") val customProxyPort: Int = 0,
+    @ColumnInfo(name = "custom_proxy_username") val customProxyUsername: String? = null,
+    @ColumnInfo(name = "custom_proxy_password") val customProxyPassword: String? = null,
 )

@@ -78,3 +78,13 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
         db.execSQL("ALTER TABLE web_apps ADD COLUMN preserve_tor_identity INTEGER NOT NULL DEFAULT 0")
     }
 }
+
+val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE web_apps ADD COLUMN custom_proxy_type TEXT NOT NULL DEFAULT 'NONE'")
+        db.execSQL("ALTER TABLE web_apps ADD COLUMN custom_proxy_host TEXT")
+        db.execSQL("ALTER TABLE web_apps ADD COLUMN custom_proxy_port INTEGER NOT NULL DEFAULT 0")
+        db.execSQL("ALTER TABLE web_apps ADD COLUMN custom_proxy_username TEXT")
+        db.execSQL("ALTER TABLE web_apps ADD COLUMN custom_proxy_password TEXT")
+    }
+}
