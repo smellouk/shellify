@@ -179,10 +179,52 @@ class GeckoEngineManager(private val context: Context) {
             is ProxyConfig.Socks5 -> {
                 System.setProperty("socksProxyHost", proxyConfig.host)
                 System.setProperty("socksProxyPort", proxyConfig.port.toString())
+                // java.net.socks.username / java.net.socks.password are JVM-standard property names
+                // (Oracle Networking Properties docs). They affect the JVM socket layer only.
+                // NOTE: GeckoView's Gecko C++ network layer does not honor these JVM properties
+                // for browser-level page traffic — credentials apply only to JVM-layer sockets
+                // (e.g. OkHttpClient). This is a known platform limitation; see Research pitfall 2.
+                if (proxyConfig.username != null) {
+                    System.setProperty("java.net.socks.username", proxyConfig.username)
+                    System.setProperty("java.net.socks.password", proxyConfig.password ?: "")
+                } else {
+                    System.clearProperty("java.net.socks.username")
+                    System.clearProperty("java.net.socks.password")
+                }
+                // Clear HTTP proxy properties to prevent bleed-through on SOCKS5 <-> HTTP switches.
+                System.clearProperty("http.proxyHost")
+                System.clearProperty("http.proxyPort")
+                System.clearProperty("http.proxyUser")
+                System.clearProperty("http.proxyPassword")
+            }
+            is ProxyConfig.Http -> {
+                // http.proxyHost / http.proxyPort affect JVM socket layer only.
+                // NOTE: GeckoView's Necko network stack handles browser connections independently
+                // of these JVM properties; HTTP proxy may not route page traffic. See Research pitfall 1.
+                System.setProperty("http.proxyHost", proxyConfig.host)
+                System.setProperty("http.proxyPort", proxyConfig.port.toString())
+                if (proxyConfig.username != null) {
+                    System.setProperty("http.proxyUser", proxyConfig.username)
+                    System.setProperty("http.proxyPassword", proxyConfig.password ?: "")
+                } else {
+                    System.clearProperty("http.proxyUser")
+                    System.clearProperty("http.proxyPassword")
+                }
+                // Clear SOCKS properties to prevent bleed-through.
+                System.clearProperty("socksProxyHost")
+                System.clearProperty("socksProxyPort")
+                System.clearProperty("java.net.socks.username")
+                System.clearProperty("java.net.socks.password")
             }
             else -> {
                 System.clearProperty("socksProxyHost")
                 System.clearProperty("socksProxyPort")
+                System.clearProperty("java.net.socks.username")
+                System.clearProperty("java.net.socks.password")
+                System.clearProperty("http.proxyHost")
+                System.clearProperty("http.proxyPort")
+                System.clearProperty("http.proxyUser")
+                System.clearProperty("http.proxyPassword")
             }
         }
     }
