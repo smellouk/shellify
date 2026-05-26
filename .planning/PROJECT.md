@@ -24,26 +24,34 @@ Each PWA runs in its own isolated, locked, privacy-hardened container — users 
 - ✓ QR code and `shellify://add` deep link for sharing PWA configs — existing
 - ✓ Material You dynamic theming — existing
 - ✓ First-run onboarding flow — existing
+- ✓ Web integration: "Open with" Shellify from any app, domain-matched PWA routing — Phase 1
+- ✓ `shellify://open` deep link and HTTPS App Links verification — Phase 1
+- ✓ Privacy hardening: stealth mode, cookie auto-wipe, incognito sessions, panic button, tracker blocking — Phase 2
+- ✓ Tor / .onion routing via GeckoView SOCKS5 proxy per app — Phase 2
+- ✓ PWA notification handling (Web Push via GeckoView, per-app DND, history) — Phase 6
+- ✓ Background audio playback for media PWAs — Phase 7
+- ✓ Swipe-to-refresh with per-app toggle and PWA theme tint — Phase 8
+- ✓ Reading mode via Readability.js injection (distraction-free article view) — Phase 17
+- ✓ Network request log (per-session domain list, 30-day history, blocked-domain highlighting) — Phase 22
 
 ### Active
 
-- [ ] Web integration: "Open with" Shellify from any app, domain-matched PWA routing
-- [ ] `shellify://open` deep link and HTTPS App Links verification
-- [ ] Privacy hardening: stealth mode, cookie auto-wipe, incognito sessions, panic button, tracker blocking
-- [ ] Tor / .onion routing via GeckoView SOCKS5 proxy per app
 - [ ] Productivity layer: per-app custom JS/CSS injection, download manager, force dark mode, font size
 - [ ] On-device analytics: session tracking, usage insights, ads-blocked stats
 - [ ] Launcher mode: Shellify as Android home screen with native app drawer
 - [ ] Home screen widget (4×2 PWA icon grid)
 - [ ] PWA directory: browse and one-tap install curated web apps
-- [ ] Web Push notifications via GeckoView service worker bridge
+- [ ] Per-app custom proxy (SOCKS5/HTTP beyond global Tor option)
+- [ ] Usage limits per app with soft block screen
+- [ ] Find in page: in-page text search from control center
+- [ ] App shortcuts: Android long-press shortcuts per PWA
+- [ ] Browser fingerprint ghosting: per-app UA/canvas/WebGL spoofing
 
 ### Out of Scope
 
 - Cloud-side analytics / telemetry — privacy principle: all data stays on-device
 - Cloud backup / WebDAV sync — deferred; backup infrastructure is complete but cloud target adds server dependency
 - Tags (many-to-many labeling) — categories cover v1 needs; tags add schema complexity without proportional value
-- Reader mode — nice-to-have, lower leverage than other productivity features in v1
 - Password manager (autofill) — high security complexity; deferred post-Tor/privacy hardening
 
 ## Context
@@ -74,6 +82,9 @@ Each PWA runs in its own isolated, locked, privacy-hardened container — users 
 | GeckoView arm64-only | Avoids multi-ABI APK size explosion | — Pending |
 | YOLO mode for GSD | Project is well-understood; fast iteration preferred over checkpoints | — Pending |
 | Coarse phase granularity | 4 broad phases cover the full feature backlog without over-slicing | — Pending |
+| Reading mode as transient UiState only | No DB migration, no WebApp field — activation lives in ViewModel only and resets on navigation | ✓ Good |
+| Readability.js bundled as build-time asset | Never fetched at runtime — keeps reading mode fully offline and avoids network latency on activation | ✓ Good |
+| WebViewControlCenterSheet must be self-contained (Column wrapper) | Composable emits items directly; without a Column it relies on the caller's layout scope — making it fragile and wrong in Roborazzi tests | ✓ Fixed in Phase 17 |
 
 ## Evolution
 
@@ -93,4 +104,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-15 after initialization*
+*Last updated: 2026-05-27 after Phase 17 (Reading Mode)*

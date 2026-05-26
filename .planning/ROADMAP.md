@@ -27,7 +27,7 @@
 | 14 | Notification Badges | Show unread count on PWA home screen icons | TBD | TBD |
 | 15 | Find in Page | In-page text search triggered from the control center | TBD | TBD |
 | 16 | Shareable App Configs | Export a PWA's full config as a shellify:// link or QR code for community sharing | TBD | TBD |
-| 17 | Reading Mode | 2/2 | Complete   | 2026-05-26 |
+| 17 | Reading Mode | 2/2 | Complete    | 2026-05-26 |
 | 18 | Per-App Custom Proxy | Set a custom SOCKS5/HTTP proxy per PWA beyond the global Tor option | TBD | TBD |
 | 19 | Usage Limits Per App | Daily time cap with a soft block screen, integrated with analytics data | TBD | TBD |
 | 20 | Import Bookmarks from Chrome/Firefox as Apps | One-tap migration of browser bookmarks into Shellify PWAs | TBD | TBD |
@@ -452,15 +452,42 @@ Plans:
 
 **Goal:** Allow users to configure a custom SOCKS5 or HTTP proxy for each PWA individually, enabling corporate VPN routing, regional access, and granular network control beyond the global Tor option.
 
-**Requirements:** TBD — run `/gsd-plan-phase 18` to define
+**Requirements:** PRX-01, PRX-02, PRX-03, PRX-04, PRX-05, PRX-06, PRX-07, PRX-08, PRX-09, PRX-10, PRX-11, PRX-12, PRX-13, PRX-14, PRX-15, PRX-16
 
-**Depends on:** Phase 2 (Privacy & Tor) — builds on per-app network routing foundations
+**Depends on:** Phase 2 (Privacy & Tor) — extends `ProxyConfig`, `GeckoEngineManager.applyProxySystemProperties`, and the per-app Tor settings pattern
 
-**Plans:**
-- TBD
+**Plans:** 3 plans across 3 waves
+
+Plans:
+
+**Wave 1** *(foundation)*
+- [ ] 18-01-PLAN.md — Domain + DB foundation: ProxyType enum (NONE/SOCKS5/HTTP), 5 new WebApp fields (customProxyType/Host/Port/Username/Password), 5 WebAppEntity columns, MIGRATION_6_7 (6->7), AppDatabase v7 bump, WebAppMapper round-trip, 7.json schema, ProxyTypeTest + Migration6To7Test + WebAppMapperTest extensions
+
+**Wave 2** *(engine integration — depends on Wave 1)*
+- [ ] 18-02-PLAN.md — Engine layer: ProxyConfig.Socks5/Http gain optional username/password (null defaults preserve Tor call site), GeckoEngineManager.applyProxySystemProperties full state machine over {Socks5, Http, None} with bleed-through prevention + Necko caveat comments, GeckoViewEngine.proxyConfigFor expanded to 4-branch when with port>0 + non-blank host guards, ProxyConfigTest/GeckoEngineManagerProxyTest/GeckoViewEngineProxyConfigTest extensions
+
+**Wave 3** *(UI + integration — depends on Waves 1 and 2; autonomous=false)*
+- [ ] 18-03-PLAN.md — UI + WebView wiring: ~20 string resources EN/FR/AR (settings_proxy_*, webview_proxy_*); AppSettingsViewModel mutual exclusion (setCustomProxyType + updated toggleUseTor + 2 toast commands); AppSettingsScreen CustomProxySection (SegmentedButton + 4 OutlinedTextFields + password eye toggle + GeckoView guard); WebViewUiState CustomProxyState sealed interface + DisableCustomProxy/RetryCustomProxy commands; WebViewActivity engine selection branch + command handling; WebViewControlCenter proxy card (parallel to Tor card); AppSettingsViewModelProxyTest + 4 Roborazzi goldens; end-of-phase human verification
+
+**Cross-cutting constraints:**
+- DB migration 6->7 requires explicit MIGRATION_6_7 object + committed 7.json schema (exportSchema = true)
+- ProxyConfig.Socks5/Http default-null credentials preserve existing Tor call site `ProxyConfig.Socks5(TOR_PROXY_HOST, TOR_PROXY_PORT)`
+- GeckoEngineManager.applyProxySystemProperties MUST clear all inactive-type properties on every transition (Pitfall 6)
+- proxyConfigFor MUST guard `port > 0` and `!host.isNullOrBlank()` before returning a custom Socks5/Http (Pitfall 7)
+- Custom proxy is GeckoView-only per D-01 — SystemWebView is greyed out with "Requires GeckoView engine" hint, identical to Tor
+- Tor ↔ Custom Proxy mutual exclusion is bidirectional with Toast confirmation, never a dialog
+- Credentials are stored as plain SQLCipher-encrypted columns per D-04; never logged via Log.d
+- All ~20 new string resources added to EN/FR/AR locale files simultaneously
+- GeckoView Necko stack does not honor JVM `http.proxyHost` or `java.net.socks.username` for browser traffic — limitation documented in code comments (Research Pitfalls 1, 2)
 
 **Success Criteria:**
-1. TBD
+1. App Settings shows a Custom Proxy section below Tor with proxy type selector (SOCKS5/HTTP/None), host, port, username, password fields, and a password show/hide eye toggle
+2. Enabling SOCKS5 or HTTP while Tor is active auto-disables Tor and shows a Toast "Custom proxy enabled — Tor routing disabled for this app." Enabling Tor while proxy is active clears the proxy with Toast "Tor enabled — custom proxy cleared for this app."
+3. Custom Proxy section greyed out with "Requires GeckoView engine" hint when engineType=SYSTEM_WEBVIEW
+4. Opening a GeckoView app with a configured SOCKS5 proxy routes traffic through that proxy; the displayed external IP matches the proxy exit node
+5. WebViewControlCenter shows a proxy card (parallel to Tor card) when customProxyType != NONE, with disable (session) and retry (when unreachable) icons
+6. DB migration 6->7 preserves existing data; AppDatabase opens cleanly after upgrade
+
 
 ---
 
