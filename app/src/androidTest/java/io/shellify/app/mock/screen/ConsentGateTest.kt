@@ -51,6 +51,7 @@ class ConsentGateTest {
                     val startDestination = resolveStartDestination(
                         consentVersion = 0,
                         onboardingDone = false,
+                        whatsNewVersion = 0,
                     )
                     NavHost(navController = navController, startDestination = startDestination) {
                         composable(Screen.Consent.route) { ConsentScreen(onAccepted = {}) }
@@ -76,6 +77,7 @@ class ConsentGateTest {
                     val startDestination = resolveStartDestination(
                         consentVersion = 1,
                         onboardingDone = true,
+                        whatsNewVersion = 0,
                     )
                     NavHost(navController = navController, startDestination = startDestination) {
                         composable(Screen.Consent.route) { ConsentScreen(onAccepted = {}) }
@@ -101,6 +103,7 @@ class ConsentGateTest {
                     val startDestination = resolveStartDestination(
                         consentVersion = ThemeManager.CURRENT_CONSENT_VERSION,
                         onboardingDone = false,
+                        whatsNewVersion = 0,
                     )
                     NavHost(navController = navController, startDestination = startDestination) {
                         composable(Screen.Consent.route) { ConsentScreen(onAccepted = {}) }

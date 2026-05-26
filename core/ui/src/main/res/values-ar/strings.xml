@@ -449,6 +449,21 @@
     <string name="webview_error_timeout_body">استغرق الخادم وقتاً طويلاً للاستجابة. أعد المحاولة لاحقاً.</string>
     <string name="webview_error_generic_title">فشل تحميل الصفحة</string>
     <string name="webview_error_generic_body">حدث خطأ ما. أعد المحاولة.</string>
+    <!-- What's New screen -->
+    <string name="whats_new_title">الجديد في Shellify</string>
+    <string name="whats_new_subtitle">إليك ما أضفناه منذ آخر تحديث لك.</string>
+    <string name="whats_new_got_it">فهمت</string>
+    <string name="whats_new_privacy_title">ضوابط الخصوصية</string>
+    <string name="whats_new_privacy_body">وضع التصفح الخفي الدائم وحظر المتتبعين والمسح التلقائي للكوكيز لكل تطبيق</string>
+    <string name="whats_new_tor_title">دعم Tor</string>
+    <string name="whats_new_tor_body">توجيه التطبيقات الفردية عبر Tor لتعزيز الخصوصية (يتطلب GeckoView)</string>
+    <string name="whats_new_panic_title">زر الذعر</string>
+    <string name="whats_new_panic_body">مسح طارئ للجلسة من مركز التحكم</string>
+    <string name="whats_new_https_title">تطبيق HTTPS</string>
+    <string name="whats_new_https_body">إجبار الاتصالات الآمنة لكل تطبيق</string>
+    <string name="whats_new_refresh_title">اسحب للتحديث</string>
+    <string name="whats_new_refresh_body">تحديث بالسحب مع خيار لكل تطبيق في الإعدادات</string>
+
     <string name="consent_update_title">حدّثنا الشروط</string>
     <string name="consent_update_subtitle">تحديث بسيط لشروط الخدمة وسياسة الخصوصية. يرجى مراجعة التغييرات والموافقة لمتابعة استخدام Shellify.</string>
     <string name="consent_update_changes_title">ما الجديد</string>

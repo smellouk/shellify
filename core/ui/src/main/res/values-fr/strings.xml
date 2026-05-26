@@ -449,6 +449,21 @@
     <string name="webview_error_timeout_body">Le serveur a mis trop de temps à répondre. Réessayez plus tard.</string>
     <string name="webview_error_generic_title">Échec du chargement</string>
     <string name="webview_error_generic_body">Une erreur s\'est produite. Réessayez.</string>
+    <!-- What's New screen -->
+    <string name="whats_new_title">Quoi de neuf dans Shellify</string>
+    <string name="whats_new_subtitle">Voici ce que nous avons livré depuis votre dernière mise à jour.</string>
+    <string name="whats_new_got_it">Compris</string>
+    <string name="whats_new_privacy_title">Contrôles de confidentialité</string>
+    <string name="whats_new_privacy_body">Mode toujours incognito, blocage des traceurs et effacement automatique des cookies par application</string>
+    <string name="whats_new_tor_title">Support Tor</string>
+    <string name="whats_new_tor_body">Routez des applications via Tor pour un anonymat renforcé (nécessite GeckoView)</string>
+    <string name="whats_new_panic_title">Bouton panique</string>
+    <string name="whats_new_panic_body">Effacement d\'urgence de session depuis le centre de contrôle</string>
+    <string name="whats_new_https_title">Application HTTPS</string>
+    <string name="whats_new_https_body">Forcez les connexions sécurisées par application</string>
+    <string name="whats_new_refresh_title">Glisser pour rafraîchir</string>
+    <string name="whats_new_refresh_body">Actualisation par glissement avec un interrupteur par application</string>
+
     <string name="consent_update_title">Nous avons mis à jour nos conditions</string>
     <string name="consent_update_subtitle">Une légère mise à jour de nos Conditions d\'utilisation et de notre Politique de confidentialité. Veuillez examiner les changements et accepter pour continuer à utiliser Shellify.</string>
     <string name="consent_update_changes_title">Nouveautés</string>

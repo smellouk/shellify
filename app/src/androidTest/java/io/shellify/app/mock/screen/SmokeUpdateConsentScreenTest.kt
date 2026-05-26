@@ -132,6 +132,7 @@ class SmokeUpdateConsentScreenTest {
                     val startDestination = resolveStartDestination(
                         consentVersion = 1,
                         onboardingDone = true,
+                        whatsNewVersion = 0,
                     )
                     NavHost(navController = navController, startDestination = startDestination) {
                         composable(Screen.Consent.route) { Text("Consent") }
@@ -159,6 +160,7 @@ class SmokeUpdateConsentScreenTest {
                     val startDestination = resolveStartDestination(
                         consentVersion = ThemeManager.CURRENT_CONSENT_VERSION,
                         onboardingDone = true,
+                        whatsNewVersion = ThemeManager.CURRENT_WHATS_NEW_VERSION,
                     )
                     NavHost(navController = navController, startDestination = startDestination) {
                         composable(Screen.Consent.route) { Text("Consent") }

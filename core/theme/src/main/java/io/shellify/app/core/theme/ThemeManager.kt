@@ -113,12 +113,26 @@ class ThemeManager(private val context: Context) {
     private val keyOnboardingPage = intPreferencesKey("onboarding_page")
     private val keyConsentGiven = booleanPreferencesKey("consent_given")
     private val keyConsentVersion = intPreferencesKey("consent_version")
+    private val keyWhatsNewVersion = intPreferencesKey("whats_new_version")
 
     val onboardingDone: Flow<Boolean> =
         context.themeStore.data.map { it[keyOnboardingDone] ?: false }
     val onboardingPage: Flow<Int> = context.themeStore.data.map { it[keyOnboardingPage] ?: 0 }
     val consentGiven: Flow<Boolean> =
         context.themeStore.data.map { it[keyConsentGiven] ?: false }
+
+    /**
+     * The version of the "What's New" content the user has last acknowledged.
+     * 0 = never seen (default for existing users — triggers the screen on first launch after update).
+     * Fresh installs stamp this to CURRENT_WHATS_NEW_VERSION during onboarding completion
+     * so they never see the "What's New" gate.
+     */
+    val whatsNewVersion: Flow<Int> =
+        context.themeStore.data.map { it[keyWhatsNewVersion] ?: 0 }
+
+    suspend fun setWhatsNewVersion(version: Int) {
+        context.themeStore.edit { it[keyWhatsNewVersion] = version }
+    }
 
     /**
      * The version of the terms the user last accepted.
@@ -178,6 +192,12 @@ class ThemeManager(private val context: Context) {
 
     companion object {
         const val CURRENT_CONSENT_VERSION = 3
+
+        /**
+         * Bump this when a new batch of features ships.
+         * Existing users whose stored version is lower will see the "What's New" screen once.
+         */
+        const val CURRENT_WHATS_NEW_VERSION = 1
     }
 
     /** Reads a restored DataStore file and applies its contents to the live DataStore instance. */

@@ -174,6 +174,8 @@ class OnboardingViewModel(
     fun finish() {
         viewModelScope.launch {
             themeManager.setOnboardingDone()
+            // Fresh installs skip "What's New" — they just went through onboarding.
+            themeManager.setWhatsNewVersion(ThemeManager.CURRENT_WHATS_NEW_VERSION)
             onFinished()
         }
     }

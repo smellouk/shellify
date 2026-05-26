@@ -333,6 +333,21 @@
     <string name="consent_checkbox_label">I have read and agree to the Terms and Privacy Policy</string>
     <string name="consent_agree_button">I Agree &amp; Continue</string>
     <string name="consent_decline_button">Decline</string>
+    <!-- What's New screen -->
+    <string name="whats_new_title">What\'s new in Shellify</string>
+    <string name="whats_new_subtitle">Here\'s what we shipped since your last update.</string>
+    <string name="whats_new_got_it">Got it</string>
+    <string name="whats_new_privacy_title">Privacy Controls</string>
+    <string name="whats_new_privacy_body">Always Incognito mode, tracker blocking, and cookie auto-wipe per app</string>
+    <string name="whats_new_tor_title">Tor Support</string>
+    <string name="whats_new_tor_body">Route individual apps through Tor for enhanced anonymity (requires GeckoView)</string>
+    <string name="whats_new_panic_title">Panic Button</string>
+    <string name="whats_new_panic_body">Emergency session wipe accessible from the control center</string>
+    <string name="whats_new_https_title">HTTPS Enforcement</string>
+    <string name="whats_new_https_body">Force secure connections per app</string>
+    <string name="whats_new_refresh_title">Swipe to Refresh</string>
+    <string name="whats_new_refresh_body">Pull-to-refresh with a per-app toggle in settings</string>
+
     <string name="consent_update_title">We\'ve updated our terms</string>
     <string name="consent_update_subtitle">A small update to our Terms of Service and Privacy Policy. Please review the changes and accept to continue using Shellify.</string>
     <string name="consent_update_changes_title">What\'s new</string>

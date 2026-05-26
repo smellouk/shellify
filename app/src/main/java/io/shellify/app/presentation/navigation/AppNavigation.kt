@@ -69,6 +69,7 @@ import io.shellify.app.presentation.onboarding.ConsentScreen
 import io.shellify.app.presentation.onboarding.OnboardingScreen
 import io.shellify.app.presentation.onboarding.OnboardingViewModel
 import io.shellify.app.presentation.onboarding.UpdateConsentScreen
+import io.shellify.app.presentation.onboarding.WhatsNewScreen
 import io.shellify.app.presentation.settings.AppSettingsScreen
 import io.shellify.app.presentation.settings.AppSettingsViewModel
 import io.shellify.app.presentation.settings.GlobalSettingsScreen
@@ -112,9 +113,10 @@ fun AppNavigation(
 
     val consentVersion by app.themeManager.consentVersion.collectAsState(initial = null)
     val onboardingDone by app.themeManager.onboardingDone.collectAsState(initial = null)
-    if (consentVersion == null || onboardingDone == null) return
+    val whatsNewVersion by app.themeManager.whatsNewVersion.collectAsState(initial = null)
+    if (consentVersion == null || onboardingDone == null || whatsNewVersion == null) return
 
-    val startDestination = resolveStartDestination(consentVersion!!, onboardingDone == true)
+    val startDestination = resolveStartDestination(consentVersion!!, onboardingDone == true, whatsNewVersion!!)
 
     var pendingDeepLinkUrl by remember { mutableStateOf<String?>(null) }
     var pendingDeepLinkName by remember { mutableStateOf<String?>(null) }
@@ -386,6 +388,19 @@ fun AppNavigation(
                 )
             }
 
+            composable(Screen.WhatsNew.route) {
+                WhatsNewScreen(
+                    onDismissed = {
+                        coroutineScope.launch {
+                            app.themeManager.setWhatsNewVersion(ThemeManager.CURRENT_WHATS_NEW_VERSION)
+                        }
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.WhatsNew.route) { inclusive = true }
+                        }
+                    },
+                )
+            }
+
             composable(Screen.Onboarding.route) {
                 OnboardingScreen(
                     viewModel = remember {
@@ -441,13 +456,17 @@ internal fun DeepLinkConfirmDialog(url: String, onConfirm: () -> Unit, onDismiss
     )
 }
 
-internal fun resolveStartDestination(consentVersion: Int, onboardingDone: Boolean): String =
-    when {
-        consentVersion == 0 -> Screen.Consent.route
-        consentVersion < ThemeManager.CURRENT_CONSENT_VERSION -> Screen.UpdateConsent.route
-        !onboardingDone -> Screen.Onboarding.route
-        else -> Screen.Home.route
-    }
+internal fun resolveStartDestination(
+    consentVersion: Int,
+    onboardingDone: Boolean,
+    whatsNewVersion: Int,
+): String = when {
+    consentVersion == 0 -> Screen.Consent.route
+    consentVersion < ThemeManager.CURRENT_CONSENT_VERSION -> Screen.UpdateConsent.route
+    !onboardingDone -> Screen.Onboarding.route
+    whatsNewVersion < ThemeManager.CURRENT_WHATS_NEW_VERSION -> Screen.WhatsNew.route
+    else -> Screen.Home.route
+}
 
 private data class NavItem(val route: String, val icon: ImageVector, val label: String)
 
