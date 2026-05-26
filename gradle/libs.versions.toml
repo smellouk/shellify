@@ -36,7 +36,7 @@ uiautomator = "2.3.0"
 json = "20240303"
 konsist = "0.16.1"
 aboutlibraries = "14.2.1"
-roborazzi = "1.60.0"
+roborazzi = "1.63.0"
 robolectric = "4.16.1"
 testlogger = "4.0.0"
 
