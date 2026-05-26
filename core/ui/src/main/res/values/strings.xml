@@ -337,16 +337,12 @@
     <string name="whats_new_title">What\'s new in Shellify</string>
     <string name="whats_new_subtitle">Here\'s what we shipped since your last update.</string>
     <string name="whats_new_got_it">Got it</string>
-    <string name="whats_new_privacy_title">Privacy Controls</string>
-    <string name="whats_new_privacy_body">Always Incognito mode, tracker blocking, and cookie auto-wipe per app</string>
-    <string name="whats_new_tor_title">Tor Support</string>
-    <string name="whats_new_tor_body">Route individual apps through Tor for enhanced anonymity (requires GeckoView)</string>
-    <string name="whats_new_panic_title">Panic Button</string>
-    <string name="whats_new_panic_body">Emergency session wipe accessible from the control center</string>
-    <string name="whats_new_https_title">HTTPS Enforcement</string>
-    <string name="whats_new_https_body">Force secure connections per app</string>
-    <string name="whats_new_refresh_title">Swipe to Refresh</string>
-    <string name="whats_new_refresh_body">Pull-to-refresh with a per-app toggle in settings</string>
+    <string name="whats_new_reading_mode_title">Reading Mode</string>
+    <string name="whats_new_reading_mode_body">Tap the control center in any app to strip a page down to article text — no ads, no nav bars, just the content.</string>
+    <string name="whats_new_reader_security_title">Secure Reader</string>
+    <string name="whats_new_reader_security_body">The reader view sanitizes injected content, removing event handlers and unsafe links before display.</string>
+    <string name="whats_new_tor_reliability_title">Tor Reliability</string>
+    <string name="whats_new_tor_reliability_body">Tor now reports connection errors and enforces a 90-second startup timeout — no more silent hangs.</string>
 
     <string name="consent_update_title">We\'ve updated our terms</string>
     <string name="consent_update_subtitle">A small update to our Terms of Service and Privacy Policy. Please review the changes and accept to continue using Shellify.</string>
@@ -565,6 +561,9 @@
 
     <!-- Network Request Log -->
     <string name="webview_control_network_log">Network log</string>
+    <string name="webview_control_reading_mode">Reading mode</string>
+    <string name="webview_control_reading_mode_exit">Exit reading mode</string>
+    <string name="webview_reader_no_content">No article content found on this page.</string>
     <string name="network_log_sheet_title">Network requests</string>
     <string name="network_log_empty_title">No requests yet</string>
     <string name="network_log_empty_body">Domains contacted during this session will appear here.</string>

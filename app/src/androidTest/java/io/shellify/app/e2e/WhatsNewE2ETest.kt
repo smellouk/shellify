@@ -20,7 +20,7 @@ import org.junit.runner.RunWith
  *
  * Covered scenarios:
  *  - Title is displayed
- *  - All 5 feature rows are reachable and displayed
+ *  - All 3 feature rows are reachable and displayed
  *  - "Got it" button calls onDismissed
  */
 @RunWith(AndroidJUnit4::class)
@@ -56,46 +56,28 @@ class WhatsNewE2ETest {
     }
 
     @Test
-    fun privacyRow_isDisplayed() {
+    fun readingModeRow_isDisplayed() {
         setScreen()
         composeRule
-            .onNodeWithText(context.getString(CoreUiR.string.whats_new_privacy_title))
+            .onNodeWithText(context.getString(CoreUiR.string.whats_new_reading_mode_title))
             .performScrollTo()
             .assertIsDisplayed()
     }
 
     @Test
-    fun torRow_isDisplayed() {
+    fun readerSecurityRow_isDisplayed() {
         setScreen()
         composeRule
-            .onNodeWithText(context.getString(CoreUiR.string.whats_new_tor_title))
+            .onNodeWithText(context.getString(CoreUiR.string.whats_new_reader_security_title))
             .performScrollTo()
             .assertIsDisplayed()
     }
 
     @Test
-    fun panicRow_isDisplayed() {
+    fun torReliabilityRow_isDisplayed() {
         setScreen()
         composeRule
-            .onNodeWithText(context.getString(CoreUiR.string.whats_new_panic_title))
-            .performScrollTo()
-            .assertIsDisplayed()
-    }
-
-    @Test
-    fun httpsRow_isDisplayed() {
-        setScreen()
-        composeRule
-            .onNodeWithText(context.getString(CoreUiR.string.whats_new_https_title))
-            .performScrollTo()
-            .assertIsDisplayed()
-    }
-
-    @Test
-    fun refreshRow_isDisplayed() {
-        setScreen()
-        composeRule
-            .onNodeWithText(context.getString(CoreUiR.string.whats_new_refresh_title))
+            .onNodeWithText(context.getString(CoreUiR.string.whats_new_tor_reliability_title))
             .performScrollTo()
             .assertIsDisplayed()
     }

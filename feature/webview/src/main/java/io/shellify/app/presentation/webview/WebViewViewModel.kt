@@ -107,6 +107,7 @@ class WebViewViewModel(
         if (url?.startsWith("about:") == true) return
         loadFailed = false
         url?.let { visitedUrls += it }
+        _uiState.update { it.copy(isReadingModeActive = false, isPageLoaded = false) }
     }
 
     fun onPageFinished(url: String?) {
@@ -136,6 +137,18 @@ class WebViewViewModel(
     fun onRetry() {
         _uiState.update { it.copy(isRetrying = true) }
         viewModelScope.launch { _commands.emit(WebViewCommand.Reload) }
+    }
+
+    fun toggleReadingMode() {
+        val nowActive = !_uiState.value.isReadingModeActive
+        _uiState.update { it.copy(isReadingModeActive = nowActive) }
+        viewModelScope.launch {
+            if (nowActive) {
+                _commands.emit(WebViewCommand.LoadReadingMode)
+            } else {
+                _commands.emit(WebViewCommand.Reload)
+            }
+        }
     }
 
     fun onAdBlockChanged(on: Boolean) {

@@ -76,6 +76,7 @@ import io.shellify.app.core.security.verifyPassword
 import io.shellify.app.core.theme.ThemeMode
 import androidx.core.app.NotificationManagerCompat
 import io.shellify.app.core.webbridge.NotificationBridge
+import io.shellify.app.core.webbridge.ReadingModeBridge
 import io.shellify.app.core.webbridge.ShellifyBridge
 import io.shellify.app.core.webbridge.TranslateBridge
 import io.shellify.app.domain.model.EngineType
@@ -168,6 +169,10 @@ class WebViewActivity : FragmentActivity() {
     // Controls NetworkLogSheet visibility from outside the Compose tree.
     private val showNetworkLog = MutableStateFlow(false)
 
+    // Readability.js asset is loaded once at first reading-mode activation and reused for all
+    // subsequent toggles — avoids repeated asset I/O on every tap (RESEARCH Pitfall 2).
+    private val readabilityJs: String by lazy { assets.open("readability.min.js").bufferedReader().readText() }
+
     // Registered in onCreate — must be registered before the Activity reaches STARTED.
     private val postNotificationsLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -243,9 +248,11 @@ class WebViewActivity : FragmentActivity() {
         effectiveThemeColorHex = effectiveThemeColor
 
         lifecycleScope.launch {
-            app.passwordManager.screenshotProtection.collect { on ->
-                if (on) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-                else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                app.passwordManager.screenshotProtection.collect { on ->
+                    if (on) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    else window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                }
             }
         }
 
@@ -382,8 +389,10 @@ class WebViewActivity : FragmentActivity() {
         setContentView(swipeRefreshLayout)
 
         lifecycleScope.launch {
-            viewModel.uiState.collect { uiState ->
-                swipeRefreshLayout.isEnabled = uiState.app?.swipeToRefreshEnabled ?: false
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { uiState ->
+                    swipeRefreshLayout.isEnabled = uiState.app?.swipeToRefreshEnabled ?: false
+                }
             }
         }
 
@@ -480,11 +489,13 @@ class WebViewActivity : FragmentActivity() {
     private fun observeState(app: WebViewServiceProvider, pwaApp: WebApp) {
         lifecycleScope.launch {
             var previousAuthState: AuthState? = null
-            viewModel.uiState.collect { state ->
-                val authState = state.authState
-                if (authState != previousAuthState) {
-                    previousAuthState = authState
-                    handleAuthState(app, pwaApp, authState)
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    val authState = state.authState
+                    if (authState != previousAuthState) {
+                        previousAuthState = authState
+                        handleAuthState(app, pwaApp, authState)
+                    }
                 }
             }
         }
@@ -616,20 +627,28 @@ class WebViewActivity : FragmentActivity() {
 
     private fun collectCommands() {
         lifecycleScope.launch {
-            viewModel.commands.collect { command ->
-                when (command) {
-                    is WebViewCommand.LoadUrl -> engine.loadUrl(command.url)
-                    WebViewCommand.Reload -> engine.reload()
-                    WebViewCommand.Finish -> finish()
-                    WebViewCommand.PageFinished -> pageFinishedCallback?.invoke()
-                    // Panic wipe complete: finish this Activity and return to HomeScreen.
-                    // The back stack already has HomeScreen; finishing here surfaces it
-                    // with an empty app list (per D-02 wipe sequence).
-                    WebViewCommand.NavigateHome -> finish()
-                    // NewTorIdentityRequested: torState transitions Ready->Connecting->Ready
-                    // automatically via TorManager BroadcastReceiver. The bootstrap chip
-                    // will reappear on its own — no explicit UI action needed here.
-                    WebViewCommand.NewTorIdentityRequested -> Unit
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.commands.collect { command ->
+                    when (command) {
+                        is WebViewCommand.LoadUrl -> engine.loadUrl(command.url)
+                        WebViewCommand.Reload -> engine.reload()
+                        WebViewCommand.Finish -> finish()
+                        WebViewCommand.PageFinished -> pageFinishedCallback?.invoke()
+                        // Panic wipe complete: finish this Activity and return to HomeScreen.
+                        // The back stack already has HomeScreen; finishing here surfaces it
+                        // with an empty app list (per D-02 wipe sequence).
+                        WebViewCommand.NavigateHome -> finish()
+                        // NewTorIdentityRequested: torState transitions Ready->Connecting->Ready
+                        // automatically via TorManager BroadcastReceiver. The bootstrap chip
+                        // will reappear on its own — no explicit UI action needed here.
+                        WebViewCommand.NewTorIdentityRequested -> Unit
+                        WebViewCommand.LoadReadingMode -> {
+                            runCatching {
+                                val noContent = getString(R.string.webview_reader_no_content)
+                                engine.evaluateJavascript(ReadingModeBridge.buildScript(readabilityJs, noContent), null)
+                            }.onFailure { e -> Log.e("WebViewActivity", "Failed to inject reading mode script", e) }
+                        }
+                    }
                 }
             }
         }
@@ -794,6 +813,8 @@ class WebViewActivity : FragmentActivity() {
                         onNetworkLogClick = { showNetworkLog.value = true },
                         onNewTorIdentity = { viewModel.onNewTorIdentity() },
                         onPanic = { viewModel.executePanicWipe() },
+                        isReadingModeActive = state.isReadingModeActive,
+                        onReadingModeToggled = { viewModel.toggleReadingMode() },
                     )
                 }
             }

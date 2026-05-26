@@ -197,7 +197,7 @@ class ThemeManager(private val context: Context) {
          * Bump this when a new batch of features ships.
          * Existing users whose stored version is lower will see the "What's New" screen once.
          */
-        const val CURRENT_WHATS_NEW_VERSION = 1
+        const val CURRENT_WHATS_NEW_VERSION = 2
     }
 
     /** Reads a restored DataStore file and applies its contents to the live DataStore instance. */

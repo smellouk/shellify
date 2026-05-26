@@ -15,11 +15,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
-import androidx.compose.material.icons.rounded.Cookie
-import androidx.compose.material.icons.rounded.Lock
-import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material.icons.rounded.Security
-import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material.icons.rounded.MenuBook
+import androidx.compose.material.icons.rounded.VerifiedUser
+import androidx.compose.material.icons.rounded.VpnLock
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -82,30 +80,19 @@ fun WhatsNewScreen(onDismissed: () -> Unit) {
                     verticalArrangement = Arrangement.spacedBy(Dimens.spaceMd),
                 ) {
                     FeatureRow(
-                        icon = Icons.Rounded.Security,
-                        title = stringResource(R.string.whats_new_privacy_title),
-                        body = stringResource(R.string.whats_new_privacy_body),
+                        icon = Icons.Rounded.MenuBook,
+                        title = stringResource(R.string.whats_new_reading_mode_title),
+                        body = stringResource(R.string.whats_new_reading_mode_body),
                     )
                     FeatureRow(
-                        // Tor — no dedicated icon; use a shield-like alternative
-                        icon = Icons.Rounded.Warning,
-                        title = stringResource(R.string.whats_new_tor_title),
-                        body = stringResource(R.string.whats_new_tor_body),
+                        icon = Icons.Rounded.VerifiedUser,
+                        title = stringResource(R.string.whats_new_reader_security_title),
+                        body = stringResource(R.string.whats_new_reader_security_body),
                     )
                     FeatureRow(
-                        icon = Icons.Rounded.Cookie,
-                        title = stringResource(R.string.whats_new_panic_title),
-                        body = stringResource(R.string.whats_new_panic_body),
-                    )
-                    FeatureRow(
-                        icon = Icons.Rounded.Lock,
-                        title = stringResource(R.string.whats_new_https_title),
-                        body = stringResource(R.string.whats_new_https_body),
-                    )
-                    FeatureRow(
-                        icon = Icons.Rounded.Refresh,
-                        title = stringResource(R.string.whats_new_refresh_title),
-                        body = stringResource(R.string.whats_new_refresh_body),
+                        icon = Icons.Rounded.VpnLock,
+                        title = stringResource(R.string.whats_new_tor_reliability_title),
+                        body = stringResource(R.string.whats_new_tor_reliability_body),
                     )
                 }
             }

@@ -11,6 +11,7 @@ data class WebViewUiState(
     val isPageLoaded: Boolean = false,
     val showPanicConfirm: Boolean = false,
     val torState: TorState = TorState.Stopped,
+    val isReadingModeActive: Boolean = false,
 )
 
 sealed interface AuthState {
@@ -31,4 +32,5 @@ sealed interface WebViewCommand {
     data object PageFinished : WebViewCommand
     data object NavigateHome : WebViewCommand
     data object NewTorIdentityRequested : WebViewCommand
+    data object LoadReadingMode : WebViewCommand
 }

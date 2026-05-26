@@ -453,16 +453,12 @@
     <string name="whats_new_title">الجديد في Shellify</string>
     <string name="whats_new_subtitle">إليك ما أضفناه منذ آخر تحديث لك.</string>
     <string name="whats_new_got_it">فهمت</string>
-    <string name="whats_new_privacy_title">ضوابط الخصوصية</string>
-    <string name="whats_new_privacy_body">وضع التصفح الخفي الدائم وحظر المتتبعين والمسح التلقائي للكوكيز لكل تطبيق</string>
-    <string name="whats_new_tor_title">دعم Tor</string>
-    <string name="whats_new_tor_body">توجيه التطبيقات الفردية عبر Tor لتعزيز الخصوصية (يتطلب GeckoView)</string>
-    <string name="whats_new_panic_title">زر الذعر</string>
-    <string name="whats_new_panic_body">مسح طارئ للجلسة من مركز التحكم</string>
-    <string name="whats_new_https_title">تطبيق HTTPS</string>
-    <string name="whats_new_https_body">إجبار الاتصالات الآمنة لكل تطبيق</string>
-    <string name="whats_new_refresh_title">اسحب للتحديث</string>
-    <string name="whats_new_refresh_body">تحديث بالسحب مع خيار لكل تطبيق في الإعدادات</string>
+    <string name="whats_new_reading_mode_title">وضع القراءة</string>
+    <string name="whats_new_reading_mode_body">اضغط على مركز التحكم في أي تطبيق لعرض الصفحة في وضع القراءة — بدون إعلانات أو أشرطة تنقل.</string>
+    <string name="whats_new_reader_security_title">قارئ آمن</string>
+    <string name="whats_new_reader_security_body">تُعقّم طريقة عرض القارئ المحتوى المُحقن بإزالة معالجات الأحداث والروابط غير الآمنة قبل العرض.</string>
+    <string name="whats_new_tor_reliability_title">موثوقية Tor</string>
+    <string name="whats_new_tor_reliability_body">يُظهر Tor الآن أخطاء الاتصال ويفرض مهلة بدء تشغيل مدتها 90 ثانية — لا مزيد من التوقفات الصامتة.</string>
 
     <string name="consent_update_title">حدّثنا الشروط</string>
     <string name="consent_update_subtitle">تحديث بسيط لشروط الخدمة وسياسة الخصوصية. يرجى مراجعة التغييرات والموافقة لمتابعة استخدام Shellify.</string>
@@ -515,6 +511,9 @@
     <string name="test_app_name">Test App</string>
     <string name="test_url_example">https://example.com</string>
     <string name="webview_control_network_log">سجل الشبكة</string>
+    <string name="webview_control_reading_mode">وضع القراءة</string>
+    <string name="webview_control_reading_mode_exit">الخروج من وضع القراءة</string>
+    <string name="webview_reader_no_content">لم يتم العثور على محتوى مقال في هذه الصفحة.</string>
     <string name="network_log_sheet_title">طلبات الشبكة</string>
     <string name="network_log_empty_title">لا توجد طلبات</string>
     <string name="network_log_empty_body">ستظهر هنا النطاقات التي تم الاتصال بها خلال هذه الجلسة.</string>

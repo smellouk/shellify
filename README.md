@@ -47,11 +47,16 @@ SHA-1: 75:F2:73:AF:01:93:EF:08:F3:F2:2F:8C:B2:EA:FE:8B:BC:A0:27:73
 
 - **PWA launcher** — Add any HTTPS website as a standalone home-screen app with its own icon, name, and theme color
 - **Per-app isolation** — Each app gets its own cookie jar, local storage, and (Android 13+) dedicated WebView profile
-- **Ad blocking** — Built-in content blocker with per-app custom rules
+- **Ad blocking** — Built-in content blocker with per-app custom rules and tracker blocking
+- **Tor routing** — Route individual apps through Tor for anonymous browsing; requires GeckoView
+- **Reading mode** — Strip any page down to article text via the control center; powered by Mozilla Readability.js
 - **Translation** — In-page translation via Google Translate; configurable per app
 - **App lock** — Optional password or biometric lock per app or globally
+- **Privacy controls** — Always-incognito mode, cookie auto-wipe on exit, stealth recents, HTTPS enforcement per app
+- **Panic button** — Long-press wipe in the control center: clears all sessions and deletes all apps
 - **Two browser engines** — Android System WebView (default) or Mozilla GeckoView (optional download)
 - **User-agent switching** — Chrome, Firefox, Safari, Edge, or custom user-agent per app
+- **Swipe to refresh** — Pull-to-refresh with a per-app toggle
 - **Encrypted backup** — AES-256-GCM backup files protected with a user-chosen password (Argon2id key derivation); manual or scheduled
 - **Home-screen shortcuts** — Android launcher shortcuts for individual web apps
 - **Icon packs** — Simple Icons integration for brand logos; custom icon selection
@@ -77,7 +82,7 @@ SHA-1: 75:F2:73:AF:01:93:EF:08:F3:F2:2F:8C:B2:EA:FE:8B:BC:A0:27:73
 | Tool | Version |
 |---|---|
 | Android Studio | Ladybug or newer |
-| JDK | 17 |
+| JDK | 21 |
 | Gradle | wrapper included |
 | Android SDK | Compile SDK 36, Min SDK 26 |
 
@@ -148,7 +153,10 @@ Dependency direction: `feature → core:domain`, `core:* → core:domain`. Featu
 | In-page translation | Google Translate JS injection — configurable source/target language per app |
 | User-agent override | Chrome, Firefox, Safari, Edge, or fully custom string per app |
 | Fullscreen mode | Hides system bars for immersive web apps |
-| Control center | Floating toolbar for quick access to reload, translate, and settings |
+| Reading mode | Strip any article to clean text via the control center; Readability.js powered, sanitized before injection |
+| HTTPS enforcement | Force secure connections per app; rejects mixed-content upgrades |
+| Swipe to refresh | Pull-to-refresh with a per-app enable/disable toggle |
+| Control center | Floating toolbar: reload, translate, reading mode, ad blocking, Tor identity, panic wipe, and settings |
 
 ### Browser Engines
 | Engine | Notes |
@@ -176,6 +184,13 @@ Dependency direction: `feature → core:domain`, `core:* → core:domain`. Featu
 | Encrypted backup | `.pwab` archive — Argon2id key derivation + AES-256-GCM cipher |
 | Screenshot protection | Optional `FLAG_SECURE` to block screen capture |
 | Incognito sessions | Ephemeral WebView session that wipes cookies and profile on exit |
+| Always-incognito mode | Force every session into incognito — no persistent cookies or storage |
+| Cookie auto-wipe | Automatically clear cookies when the app goes to background |
+| Tracker blocking | EasyPrivacy domain list blocks trackers on top of ad blocking |
+| Stealth recents | Masks app content in the Android recents screen |
+| HTTPS enforcement | Rejects HTTP loads and upgrades mixed content per app |
+| Tor routing | Per-app anonymous routing via Guardian Project `tor-android`; circuit rotatable on demand |
+| Panic button | Long-press wipe from the control center — deletes all apps and clears all sessions atomically |
 
 ### Backup & Restore
 | Feature | Detail |
@@ -205,9 +220,10 @@ Navigation uses **Jetpack Compose Navigation**. All routes are defined in `Scree
 **Start destination logic:**
 
 ```
-consent not given  →  ConsentScreen
-onboarding not done  →  OnboardingScreen
-otherwise  →  HomeScreen
+consent not given           →  ConsentScreen
+onboarding not done         →  OnboardingScreen
+whatsNewVersion outdated    →  WhatsNewScreen
+otherwise                   →  HomeScreen
 ```
 
 Bottom navigation (Home, Categories, Shortcuts, Settings) is only visible on top-level routes.
@@ -331,6 +347,7 @@ Then open `http://localhost:8080/tools.html` as a Shellify web app. Available ta
 | Networking | OkHttp |
 | Image loading | Coil (+ SVG) |
 | Browser engine | System WebView + GeckoView (optional) |
+| Tor | Guardian Project `tor-android` + `jtorctl` |
 | QR codes | ZXing Core |
 | Biometrics | AndroidX Biometric |
 | Background work | WorkManager |

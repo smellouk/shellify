@@ -27,7 +27,7 @@
 | 14 | Notification Badges | Show unread count on PWA home screen icons | TBD | TBD |
 | 15 | Find in Page | In-page text search triggered from the control center | TBD | TBD |
 | 16 | Shareable App Configs | Export a PWA's full config as a shellify:// link or QR code for community sharing | TBD | TBD |
-| 17 | Reading Mode | Strip page chrome to article text and images, à la Firefox Reader View | TBD | TBD |
+| 17 | Reading Mode | 2/2 | Complete   | 2026-05-26 |
 | 18 | Per-App Custom Proxy | Set a custom SOCKS5/HTTP proxy per PWA beyond the global Tor option | TBD | TBD |
 | 19 | Usage Limits Per App | Daily time cap with a soft block screen, integrated with analytics data | TBD | TBD |
 | 20 | Import Bookmarks from Chrome/Firefox as Apps | One-tap migration of browser bookmarks into Shellify PWAs | TBD | TBD |
@@ -418,15 +418,33 @@ Plans:
 
 **Goal:** Strip page chrome down to article text and images, à la Firefox Reader View, for distraction-free reading in any PWA.
 
-**Requirements:** TBD — run `/gsd-plan-phase 17` to define
+**Requirements:** BRWS-01-a, BRWS-01-b, BRWS-01-c, BRWS-01-d, BRWS-01-e, BRWS-01-f, BRWS-01-g, BRWS-01-h
 
 **Depends on:** None
 
-**Plans:**
-- TBD
+**Plans:** 2/2 plans complete
+
+Plans:
+
+**Wave 1** *(foundation — no dependencies)*
+- [x] 17-01-PLAN.md — core:webbridge foundation: download @mozilla/readability 0.6.0 minified asset, implement context-free ReadingModeBridge.buildScript with SPA-safe load guard + null-check + escapeHtml on title/byline + prefers-color-scheme CSS, ship ReadingModeBridgeTest (BRWS-01-a/b/c)
+
+**Wave 2** *(feature wiring — depends on Plan 01)*
+- [x] 17-02-PLAN.md — feature:webview wiring: WebViewUiState.isReadingModeActive + WebViewCommand.LoadReadingMode, WebViewViewModel.toggleReadingMode + onPageStarted reset, WebViewActivity lazy readabilityJs field + LoadReadingMode branch, WebViewControlCenter clickable Reading Mode row with state-driven label, 2 strings × 3 locales (EN/FR/AR), ViewModel tests + Roborazzi screenshot tests (BRWS-01-d/e/f/g/h)
+
+**Cross-cutting constraints:**
+- Readability.js is bundled as a build-time asset at `core/webbridge/src/main/assets/readability.min.js` — never fetched at runtime
+- Activation is transient ViewModel UiState only — no DB migration, no `WebApp` field, no new screen
+- `escapeHtml()` MUST wrap `article.title` and `article.byline` before DOM insertion (V5 XSS mitigation)
+- Reading-mode injection happens ONLY on the `LoadReadingMode` command, NOT in `onPageFinished`
+- All new string resources added to EN, FR, and AR locale files simultaneously
 
 **Success Criteria:**
-1. TBD
+1. Tapping the Reading Mode row in the WebView control center strips the live page to article title + byline + body via injected Readability.js, with system-theme-aware CSS
+2. The same row label switches between "Reading mode" and "Exit reading mode" based on `isReadingModeActive`; tapping it while active calls `engine.reload()` to restore the native page
+3. `isReadingModeActive` resets to false on every full page navigation (`onPageStarted`)
+4. `assets.open("readability.min.js")` is read exactly once per WebViewActivity instance via a lazy field
+5. Full local check suite (detekt, lintDebug, testDebugUnitTest including Konsist, verifyRoborazziDebug) is green; Roborazzi goldens for `sheet_readingModeInactive` and `sheet_readingModeActive` exist and verify
 
 ---
 

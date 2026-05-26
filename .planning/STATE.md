@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2
 milestone_name: milestone
 status: executing
-last_updated: "2026-05-25T17:12:15.517Z"
-last_activity: 2026-05-24
+last_updated: "2026-05-26T19:26:07.210Z"
+last_activity: 2026-05-26
 progress:
-  total_phases: 24
+  total_phases: 21
   completed_phases: 6
-  total_plans: 31
+  total_plans: 33
   completed_plans: 31
-  percent: 25
+  percent: 29
 ---
 
 # Project State: Shellify
@@ -20,14 +20,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-05-15)
 
 **Core value:** Each PWA runs in its own isolated, locked, privacy-hardened container — native-app convenience without sacrificing control over data or identity.
-**Current focus:** Phase 02 — privacy-and-tor
+**Current focus:** Phase 17 — reading-mode
 
 ## Current Phase
 
 **Phase:** 23
-**Status:** Executing Phase 02
+**Status:** Executing Phase 17
 **Plans:** 6 plans in 4 waves
-**Last Activity:** 2026-05-24
+**Last Activity:** 2026-05-26
 **Next action:** `/gsd-execute-phase 22`
 
 ## Phase History

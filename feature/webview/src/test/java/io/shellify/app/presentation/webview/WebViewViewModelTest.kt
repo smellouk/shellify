@@ -84,11 +84,12 @@ class WebViewViewModelTest {
     }
 
     @Test
-    fun `isPageLoaded stays true after subsequent onPageStarted`() {
+    fun `onPageStarted resets isPageLoaded to false after a finished load`() {
         val vm = newVm()
         vm.onPageFinished("https://test.com")
-        vm.onPageStarted("https://test.com/page2")
         assertTrue(vm.uiState.value.isPageLoaded)
+        vm.onPageStarted("https://test.com/page2")
+        assertFalse(vm.uiState.value.isPageLoaded)
     }
 
     // ── onPageFinished side-effects ───────────────────────────────────────────
@@ -166,6 +167,38 @@ class WebViewViewModelTest {
         val vm = newVm()
         vm.onLockChanged(false)
         assertEquals(LockType.NONE, vm.uiState.value.app?.lockType)
+    }
+
+    // ── reading mode ──────────────────────────────────────────────────────────
+
+    @Test
+    fun `toggleReadingMode activates reading mode and emits LoadReadingMode command`() = runTest {
+        val vm = newVm()
+        vm.toggleReadingMode()
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.isReadingModeActive)
+        assertEquals(WebViewCommand.LoadReadingMode, vm.commands.replayCache.last())
+    }
+
+    @Test
+    fun `toggleReadingMode deactivates reading mode and emits Reload command`() = runTest {
+        val vm = newVm()
+        vm.toggleReadingMode()
+        advanceUntilIdle()
+        vm.toggleReadingMode()
+        advanceUntilIdle()
+        assertFalse(vm.uiState.value.isReadingModeActive)
+        assertEquals(WebViewCommand.Reload, vm.commands.replayCache.last())
+    }
+
+    @Test
+    fun `onPageStarted resets isReadingModeActive to false`() = runTest {
+        val vm = newVm()
+        vm.toggleReadingMode()
+        advanceUntilIdle()
+        assertTrue(vm.uiState.value.isReadingModeActive)
+        vm.onPageStarted("https://example.com")
+        assertFalse(vm.uiState.value.isReadingModeActive)
     }
 
     // ── auth ──────────────────────────────────────────────────────────────────

@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteForever
@@ -77,6 +79,8 @@ fun WebViewControlCenter(
     onNetworkLogClick: () -> Unit,
     onNewTorIdentity: () -> Unit = {},
     onPanic: () -> Unit = {},
+    isReadingModeActive: Boolean = false,
+    onReadingModeToggled: () -> Unit = {},
 ) {
     var showSheet by remember { mutableStateOf(false) }
 
@@ -113,6 +117,8 @@ fun WebViewControlCenter(
                 onNetworkLogClick = { showSheet = false; onNetworkLogClick() },
                 onNewTorIdentity = { showSheet = false; onNewTorIdentity() },
                 onPanic = { showSheet = false; onPanic() },
+                isReadingModeActive = isReadingModeActive,
+                onReadingModeToggled = { onReadingModeToggled(); showSheet = false },
             )
         }
     }
@@ -131,10 +137,13 @@ fun WebViewControlCenterSheet(
     onNetworkLogClick: () -> Unit,
     onNewTorIdentity: () -> Unit = {},
     onPanic: () -> Unit = {},
+    isReadingModeActive: Boolean = false,
+    onReadingModeToggled: () -> Unit = {},
 ) {
     var showClearDataDialog by remember { mutableStateOf(false) }
     var showPanicDialog by remember { mutableStateOf(false) }
 
+    Column(modifier = Modifier.fillMaxWidth()) {
     // Header: sheet title on the left; Tor state icons on the right (only for Tor apps).
     Row(
         modifier = Modifier
@@ -285,6 +294,20 @@ fun WebViewControlCenterSheet(
     HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
     ListItem(
         colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        leadingContent = { Icon(Icons.AutoMirrored.Outlined.MenuBook, null) },
+        headlineContent = {
+            Text(
+                stringResource(
+                    if (isReadingModeActive) R.string.webview_control_reading_mode_exit
+                    else R.string.webview_control_reading_mode
+                )
+            )
+        },
+        modifier = Modifier.clickable { onReadingModeToggled() },
+    )
+    HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
+    ListItem(
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
         leadingContent = { Icon(Icons.Default.Delete, null, tint = MaterialTheme.colorScheme.error) },
         headlineContent = {
             Text(stringResource(R.string.webview_control_clear_data), color = MaterialTheme.colorScheme.error)
@@ -303,6 +326,7 @@ fun WebViewControlCenterSheet(
         modifier = Modifier.clickable { showPanicDialog = true },
     )
     Spacer(Modifier.navigationBarsPadding())
+    } // Column
 
     if (showClearDataDialog) {
         ConfirmDialog(

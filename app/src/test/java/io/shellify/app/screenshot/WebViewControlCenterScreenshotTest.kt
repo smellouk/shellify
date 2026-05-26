@@ -57,6 +57,8 @@ class WebViewControlCenterScreenshotTest {
                     onLockChanged = {},
                     onClearData = {},
                     onNetworkLogClick = {},
+                    isReadingModeActive = false,
+                    onReadingModeToggled = {},
                 )
             }
         }
@@ -76,6 +78,8 @@ class WebViewControlCenterScreenshotTest {
                     onLockChanged = {},
                     onClearData = {},
                     onNetworkLogClick = {},
+                    isReadingModeActive = false,
+                    onReadingModeToggled = {},
                 )
             }
         }
@@ -96,6 +100,8 @@ class WebViewControlCenterScreenshotTest {
                         onLockChanged = {},
                         onClearData = {},
                         onNetworkLogClick = {},
+                        isReadingModeActive = false,
+                        onReadingModeToggled = {},
                     )
                 }
             }
@@ -117,6 +123,8 @@ class WebViewControlCenterScreenshotTest {
                         onLockChanged = {},
                         onClearData = {},
                         onNetworkLogClick = {},
+                        isReadingModeActive = false,
+                        onReadingModeToggled = {},
                     )
                 }
             }
@@ -140,6 +148,8 @@ class WebViewControlCenterScreenshotTest {
                         onClearData = {},
                         onNetworkLogClick = {},
                         onNewTorIdentity = {},
+                        isReadingModeActive = false,
+                        onReadingModeToggled = {},
                     )
                 }
             }
@@ -163,6 +173,8 @@ class WebViewControlCenterScreenshotTest {
                         onClearData = {},
                         onNetworkLogClick = {},
                         onNewTorIdentity = {},
+                        isReadingModeActive = false,
+                        onReadingModeToggled = {},
                     )
                 }
             }
@@ -186,6 +198,54 @@ class WebViewControlCenterScreenshotTest {
                         onClearData = {},
                         onNetworkLogClick = {},
                         onNewTorIdentity = {},
+                        isReadingModeActive = false,
+                        onReadingModeToggled = {},
+                    )
+                }
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun sheet_readingModeInactive() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
+                    WebViewControlCenterSheet(
+                        pwaApp = pwaAppNoTheme,
+                        hasGlobalPassword = true,
+                        onAdBlockChanged = {},
+                        onTranslateChanged = {},
+                        onFullscreenChanged = {},
+                        onLockChanged = {},
+                        onClearData = {},
+                        onNetworkLogClick = {},
+                        isReadingModeActive = false,
+                        onReadingModeToggled = {},
+                    )
+                }
+            }
+        }
+        composeTestRule.onRoot().captureRoboImage(roborazziOptions = screenshotOptions)
+    }
+
+    @Test
+    fun sheet_readingModeActive() {
+        composeTestRule.setContent {
+            ShellifyTheme {
+                Surface(color = MaterialTheme.colorScheme.surfaceVariant) {
+                    WebViewControlCenterSheet(
+                        pwaApp = pwaAppNoTheme,
+                        hasGlobalPassword = true,
+                        onAdBlockChanged = {},
+                        onTranslateChanged = {},
+                        onFullscreenChanged = {},
+                        onLockChanged = {},
+                        onClearData = {},
+                        onNetworkLogClick = {},
+                        isReadingModeActive = true,
+                        onReadingModeToggled = {},
                     )
                 }
             }
