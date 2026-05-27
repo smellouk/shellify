@@ -28,6 +28,8 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Route
 import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.PublicOff
+import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material.icons.filled.VpnKeyOff
 import androidx.compose.material.icons.filled.VpnLock
 import androidx.compose.material.icons.filled.Warning
@@ -81,6 +83,9 @@ fun WebViewControlCenter(
     onPanic: () -> Unit = {},
     isReadingModeActive: Boolean = false,
     onReadingModeToggled: () -> Unit = {},
+    customProxyState: CustomProxyState = CustomProxyState.None,
+    onDisableProxy: () -> Unit = {},
+    onRetryProxy: () -> Unit = {},
 ) {
     var showSheet by remember { mutableStateOf(false) }
 
@@ -119,6 +124,9 @@ fun WebViewControlCenter(
                 onPanic = { showSheet = false; onPanic() },
                 isReadingModeActive = isReadingModeActive,
                 onReadingModeToggled = { onReadingModeToggled(); showSheet = false },
+                customProxyState = customProxyState,
+                onDisableProxy = { showSheet = false; onDisableProxy() },
+                onRetryProxy = { showSheet = false; onRetryProxy() },
             )
         }
     }
@@ -139,6 +147,9 @@ fun WebViewControlCenterSheet(
     onPanic: () -> Unit = {},
     isReadingModeActive: Boolean = false,
     onReadingModeToggled: () -> Unit = {},
+    customProxyState: CustomProxyState = CustomProxyState.None,
+    onDisableProxy: () -> Unit = {},
+    onRetryProxy: () -> Unit = {},
 ) {
     var showClearDataDialog by remember { mutableStateOf(false) }
     var showPanicDialog by remember { mutableStateOf(false) }
@@ -217,6 +228,81 @@ fun WebViewControlCenterSheet(
                                 .clickable {
                                     Toast.makeText(context, newIdentityLabel, Toast.LENGTH_SHORT).show()
                                     onNewTorIdentity()
+                                },
+                        )
+                    }
+                }
+            }
+        }
+        // Proxy card — shown when a custom proxy is active for this session (PRX-13).
+        if (customProxyState != CustomProxyState.None) {
+            val context = LocalContext.current
+            val disableLabel = stringResource(R.string.webview_proxy_disable)
+            val retryLabel = stringResource(R.string.webview_proxy_retry)
+            Card(
+                shape = RoundedCornerShape(Dimens.cornerXl),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(Dimens.borderDefault, MaterialTheme.colorScheme.outlineVariant),
+            ) {
+                Row(
+                    modifier = Modifier
+                        .height(IntrinsicSize.Min)
+                        .padding(horizontal = Dimens.spaceSm, vertical = Dimens.spaceXxs),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
+                ) {
+                    Icon(
+                        Icons.Default.VpnKey,
+                        contentDescription = null,
+                        modifier = Modifier.size(Dimens.sizeSm),
+                    )
+                    VerticalDivider(modifier = Modifier.width(Dimens.borderDefault))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.spaceXs),
+                    ) {
+                        val statusIcon = if (customProxyState is CustomProxyState.Unreachable) {
+                            Icons.Default.Warning
+                        } else {
+                            Icons.Default.CheckCircle
+                        }
+                        val statusTint = if (customProxyState is CustomProxyState.Unreachable) {
+                            MaterialTheme.colorScheme.error
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        }
+                        val statusLabel = stringResource(
+                            if (customProxyState is CustomProxyState.Unreachable) {
+                                R.string.webview_proxy_unreachable
+                            } else {
+                                R.string.webview_proxy_active
+                            }
+                        )
+                        Icon(
+                            statusIcon,
+                            contentDescription = statusLabel,
+                            tint = statusTint,
+                            modifier = Modifier
+                                .size(Dimens.sizeSm)
+                                .clickable { Toast.makeText(context, statusLabel, Toast.LENGTH_SHORT).show() },
+                        )
+                        if (customProxyState is CustomProxyState.Unreachable) {
+                            Icon(
+                                Icons.Default.Refresh,
+                                contentDescription = retryLabel,
+                                modifier = Modifier
+                                    .size(Dimens.sizeSm)
+                                    .clickable { onRetryProxy() },
+                            )
+                        }
+                        Icon(
+                            Icons.Default.PublicOff,
+                            contentDescription = disableLabel,
+                            modifier = Modifier
+                                .size(Dimens.sizeSm)
+                                .clickable {
+                                    Toast.makeText(context, disableLabel, Toast.LENGTH_SHORT).show()
+                                    onDisableProxy()
                                 },
                         )
                     }
