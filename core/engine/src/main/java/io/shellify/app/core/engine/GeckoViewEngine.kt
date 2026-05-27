@@ -6,6 +6,7 @@ import android.net.Uri
 import android.util.Log
 import android.view.View
 import io.shellify.app.domain.model.EngineType
+import io.shellify.app.domain.model.ProxyType
 import io.shellify.app.domain.model.UserAgentMode
 import io.shellify.app.domain.model.WebApp
 import org.mozilla.geckoview.AllowOrDeny
@@ -72,9 +73,34 @@ class GeckoViewEngine(
         internal const val TOR_PROXY_PORT = 9050
     }
 
-    /** Returns the ProxyConfig to use when opening a GeckoRuntime for [app]. */
-    internal fun proxyConfigFor(app: WebApp): ProxyConfig =
-        if (app.useTor) ProxyConfig.Socks5(TOR_PROXY_HOST, TOR_PROXY_PORT) else ProxyConfig.None
+    /** Returns the ProxyConfig to use when opening a GeckoRuntime for [app].
+     *
+     * Priority: custom proxy (SOCKS5/HTTP) > Tor > None.
+     * Defensive port>0 + non-blank host guards prevent silent-failure on invalid config (Pitfall 7).
+     * When both useTor and a valid custom proxy are set, custom proxy wins — mutual exclusion is
+     * enforced upstream in AppSettingsViewModel but this function is the last line of defence.
+     */
+    internal fun proxyConfigFor(app: WebApp): ProxyConfig {
+        val proxyHost = app.customProxyHost
+        return when {
+            app.customProxyType == ProxyType.SOCKS5 && !proxyHost.isNullOrBlank() && app.customProxyPort > 0 ->
+                ProxyConfig.Socks5(
+                    host = proxyHost,
+                    port = app.customProxyPort,
+                    username = app.customProxyUsername,
+                    password = app.customProxyPassword,
+                )
+            app.customProxyType == ProxyType.HTTP && !proxyHost.isNullOrBlank() && app.customProxyPort > 0 ->
+                ProxyConfig.Http(
+                    host = proxyHost,
+                    port = app.customProxyPort,
+                    username = app.customProxyUsername,
+                    password = app.customProxyPassword,
+                )
+            app.useTor -> ProxyConfig.Socks5(TOR_PROXY_HOST, TOR_PROXY_PORT)
+            else -> ProxyConfig.None
+        }
+    }
 
     override val engineType = EngineType.GECKOVIEW
 

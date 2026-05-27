@@ -92,4 +92,111 @@ class GeckoEngineManagerProxyTest {
         // No getRuntime() call — runtime is null. Must not throw.
         manager.clearDataForContext("test-isolation-id")
     }
+
+    @Test
+    fun `G9 - getRuntime(Socks5 with credentials) sets java-net-socks username and password`() {
+        try {
+            manager.getRuntime(ProxyConfig.Socks5("10.0.0.1", 1080, "alice", "secret"))
+
+            assertEquals("10.0.0.1", System.getProperty("socksProxyHost"))
+            assertEquals("1080", System.getProperty("socksProxyPort"))
+            assertEquals("alice", System.getProperty("java.net.socks.username"))
+            assertEquals("secret", System.getProperty("java.net.socks.password"))
+            // HTTP properties must be cleared
+            assertEquals(null, System.getProperty("http.proxyHost"))
+            assertEquals(null, System.getProperty("http.proxyPort"))
+        } finally {
+            System.clearProperty("socksProxyHost")
+            System.clearProperty("socksProxyPort")
+            System.clearProperty("java.net.socks.username")
+            System.clearProperty("java.net.socks.password")
+            System.clearProperty("http.proxyHost")
+            System.clearProperty("http.proxyPort")
+            System.clearProperty("http.proxyUser")
+            System.clearProperty("http.proxyPassword")
+        }
+    }
+
+    @Test
+    fun `G10 - getRuntime(Http) sets http-proxyHost and http-proxyPort and clears socks properties`() {
+        // Simulate a prior SOCKS5 session.
+        System.setProperty("socksProxyHost", "127.0.0.1")
+        System.setProperty("socksProxyPort", "9050")
+        try {
+            manager.getRuntime(ProxyConfig.Http("proxy.example.com", 8080))
+
+            assertEquals("proxy.example.com", System.getProperty("http.proxyHost"))
+            assertEquals("8080", System.getProperty("http.proxyPort"))
+            // SOCKS properties must be cleared to prevent bleed-through.
+            assertEquals(null, System.getProperty("socksProxyHost"))
+            assertEquals(null, System.getProperty("socksProxyPort"))
+        } finally {
+            System.clearProperty("socksProxyHost")
+            System.clearProperty("socksProxyPort")
+            System.clearProperty("java.net.socks.username")
+            System.clearProperty("java.net.socks.password")
+            System.clearProperty("http.proxyHost")
+            System.clearProperty("http.proxyPort")
+            System.clearProperty("http.proxyUser")
+            System.clearProperty("http.proxyPassword")
+        }
+    }
+
+    @Test
+    fun `G11 - getRuntime(Http with credentials) sets http-proxyUser and http-proxyPassword`() {
+        try {
+            manager.getRuntime(ProxyConfig.Http("h", 8080, "user1", "pass1"))
+
+            assertEquals("h", System.getProperty("http.proxyHost"))
+            assertEquals("8080", System.getProperty("http.proxyPort"))
+            assertEquals("user1", System.getProperty("http.proxyUser"))
+            assertEquals("pass1", System.getProperty("http.proxyPassword"))
+            // SOCKS properties must be cleared.
+            assertEquals(null, System.getProperty("socksProxyHost"))
+            assertEquals(null, System.getProperty("socksProxyPort"))
+        } finally {
+            System.clearProperty("socksProxyHost")
+            System.clearProperty("socksProxyPort")
+            System.clearProperty("java.net.socks.username")
+            System.clearProperty("java.net.socks.password")
+            System.clearProperty("http.proxyHost")
+            System.clearProperty("http.proxyPort")
+            System.clearProperty("http.proxyUser")
+            System.clearProperty("http.proxyPassword")
+        }
+    }
+
+    @Test
+    fun `G12 - getRuntime(None) clears all eight proxy properties`() {
+        // Pre-populate all eight properties to simulate a prior proxy session.
+        System.setProperty("socksProxyHost", "10.0.0.1")
+        System.setProperty("socksProxyPort", "1080")
+        System.setProperty("java.net.socks.username", "u")
+        System.setProperty("java.net.socks.password", "p")
+        System.setProperty("http.proxyHost", "proxy.example.com")
+        System.setProperty("http.proxyPort", "8080")
+        System.setProperty("http.proxyUser", "hu")
+        System.setProperty("http.proxyPassword", "hp")
+        try {
+            manager.getRuntime(ProxyConfig.None)
+
+            assertEquals(null, System.getProperty("socksProxyHost"))
+            assertEquals(null, System.getProperty("socksProxyPort"))
+            assertEquals(null, System.getProperty("java.net.socks.username"))
+            assertEquals(null, System.getProperty("java.net.socks.password"))
+            assertEquals(null, System.getProperty("http.proxyHost"))
+            assertEquals(null, System.getProperty("http.proxyPort"))
+            assertEquals(null, System.getProperty("http.proxyUser"))
+            assertEquals(null, System.getProperty("http.proxyPassword"))
+        } finally {
+            System.clearProperty("socksProxyHost")
+            System.clearProperty("socksProxyPort")
+            System.clearProperty("java.net.socks.username")
+            System.clearProperty("java.net.socks.password")
+            System.clearProperty("http.proxyHost")
+            System.clearProperty("http.proxyPort")
+            System.clearProperty("http.proxyUser")
+            System.clearProperty("http.proxyPassword")
+        }
+    }
 }
