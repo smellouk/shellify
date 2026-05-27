@@ -32,6 +32,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.material.icons.Icons
@@ -206,6 +207,12 @@ fun AppSettingsScreen(
                 // Tor identity rotation delegates to the caller (Activity/NavHost) which owns
                 // the TorManager instance. Activities may access core:* directly per CLAUDE.md.
                 AppSettingsCommand.NewTorIdentity -> onNewTorIdentity()
+                // Mutual exclusion toasts (PRX-13, PRX-14) — inform the user that the
+                // conflicting setting was automatically cleared when they switched.
+                AppSettingsCommand.ShowProxyEnabledTorDisabledToast ->
+                    Toast.makeText(context, R.string.settings_proxy_enabled_tor_disabled, Toast.LENGTH_SHORT).show()
+                AppSettingsCommand.ShowTorEnabledProxyDisabledToast ->
+                    Toast.makeText(context, R.string.settings_tor_enabled_proxy_cleared, Toast.LENGTH_SHORT).show()
             }
         }
     }

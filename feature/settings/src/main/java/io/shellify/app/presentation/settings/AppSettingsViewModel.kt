@@ -21,6 +21,7 @@ import io.shellify.app.domain.model.IconSource
 import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.NotificationChannelId
 import io.shellify.app.domain.model.NotificationPermission
+import io.shellify.app.domain.model.ProxyType
 import io.shellify.app.domain.model.TranslateLanguage
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.domain.usecase.DeleteWebAppUseCase
@@ -45,6 +46,9 @@ sealed interface AppSettingsCommand {
     data class ShareNetworkLog(val content: String) : AppSettingsCommand
     // Tor: signals AppSettingsActivity to call torManager.newIdentity() (D-07)
     data object NewTorIdentity : AppSettingsCommand
+    // Custom proxy mutual exclusion toasts (PRX-13, PRX-14)
+    data object ShowProxyEnabledTorDisabledToast : AppSettingsCommand
+    data object ShowTorEnabledProxyDisabledToast : AppSettingsCommand
 }
 
 data class AppSettingsUiState(
@@ -177,8 +181,20 @@ class AppSettingsViewModel(
 
     // ── Tor ───────────────────────────────────────────────────────────────────
 
-    /** Enables or disables routing this app's traffic through the Tor daemon. */
-    fun toggleUseTor() = update { it.copy(useTor = !it.useTor) }
+    /**
+     * Enables or disables routing this app's traffic through the Tor daemon.
+     * Mutual exclusion (D-03, PRX-14): enabling Tor while a custom proxy is configured
+     * clears the proxy type and emits a toast to inform the user.
+     */
+    fun toggleUseTor() = update { current ->
+        val newUseTor = !current.useTor
+        if (newUseTor && current.customProxyType != ProxyType.NONE) {
+            _commands.tryEmit(AppSettingsCommand.ShowTorEnabledProxyDisabledToast)
+            current.copy(useTor = true, customProxyType = ProxyType.NONE)
+        } else {
+            current.copy(useTor = newUseTor)
+        }
+    }
 
     /**
      * Enables or disables preserving the Tor circuit identity across sessions.
@@ -195,6 +211,30 @@ class AppSettingsViewModel(
     fun onNewTorIdentity() {
         _commands.tryEmit(AppSettingsCommand.NewTorIdentity)
     }
+
+    // ── Custom Proxy ──────────────────────────────────────────────────────────
+
+    /**
+     * Sets the custom proxy type.
+     * Mutual exclusion (D-03, PRX-13): selecting SOCKS5 or HTTP while Tor is active
+     * disables Tor and emits a toast to inform the user. Selecting NONE never touches useTor.
+     */
+    fun setCustomProxyType(type: ProxyType) = update { current ->
+        if (type != ProxyType.NONE && current.useTor) {
+            _commands.tryEmit(AppSettingsCommand.ShowProxyEnabledTorDisabledToast)
+            current.copy(customProxyType = type, useTor = false)
+        } else {
+            current.copy(customProxyType = type)
+        }
+    }
+
+    fun setCustomProxyHost(host: String) = update { it.copy(customProxyHost = host.trim().ifBlank { null }) }
+
+    fun setCustomProxyPort(port: Int) = update { it.copy(customProxyPort = port) }
+
+    fun setCustomProxyUsername(username: String) = update { it.copy(customProxyUsername = username.ifBlank { null }) }
+
+    fun setCustomProxyPassword(password: String) = update { it.copy(customProxyPassword = password.ifBlank { null }) }
 
     fun setLockType(v: LockType) = update { it.copy(lockType = v) }
 
