@@ -62,7 +62,9 @@ import androidx.compose.material.icons.filled.NotificationsOff
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material.icons.filled.VpnLock
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
@@ -86,9 +88,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -120,6 +126,7 @@ import io.shellify.app.domain.model.EngineType
 import io.shellify.app.domain.model.NotificationPermission
 import io.shellify.app.presentation.theme.GeckoWarning
 import io.shellify.app.domain.model.LockType
+import io.shellify.app.domain.model.ProxyType
 import io.shellify.app.domain.model.TranslateLanguage
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.presentation.settings.components.DndRangeRow
@@ -759,6 +766,8 @@ fun AppSettingsScreen(
                 )
             }
 
+            CustomProxySection(app = app, viewModel = viewModel)
+
             // ── Shortcut ──────────────────────────────────────────────────────
             SectionLabel(stringResource(R.string.settings_shortcut))
             SurfaceCard {
@@ -1046,6 +1055,131 @@ private fun SectionLabel(text: String) =
 @Composable
 private fun CardDivider() =
     HorizontalDivider(modifier = Modifier.padding(horizontal = Dimens.spaceLg))
+
+/**
+ * Custom Proxy settings section displayed below the Tor section in App Settings.
+ * Requires GeckoView engine (D-01). Proxy type is mutually exclusive with Tor (D-03, PRX-13, PRX-14).
+ */
+@Composable
+@Suppress("CyclomaticComplexMethod", "LongMethod")
+private fun CustomProxySection(app: WebApp, viewModel: AppSettingsViewModel) {
+    val proxyEnabled = app.engineType == EngineType.GECKOVIEW
+    val proxyTypes = listOf(ProxyType.SOCKS5, ProxyType.HTTP)
+    var showPassword by remember { mutableStateOf(false) }
+
+    SurfaceCard {
+        ToggleListItem(
+            label = stringResource(R.string.settings_proxy_enable),
+            checked = app.customProxyType != ProxyType.NONE && proxyEnabled,
+            onToggle = {
+                if (app.customProxyType == ProxyType.NONE) {
+                    viewModel.setCustomProxyType(ProxyType.SOCKS5)
+                } else {
+                    viewModel.setCustomProxyType(ProxyType.NONE)
+                }
+            },
+            icon = { Icon(Icons.Default.VpnKey, null) },
+            enabled = proxyEnabled,
+            supportingContent = if (!proxyEnabled) {
+                {
+                    Text(
+                        stringResource(R.string.settings_proxy_requires_gecko),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else {
+                null
+            },
+        )
+        if (proxyEnabled && app.customProxyType != ProxyType.NONE) {
+            CardDivider()
+            SingleChoiceSegmentedButtonRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.spaceLg),
+            ) {
+                proxyTypes.forEachIndexed { index, type ->
+                    SegmentedButton(
+                        selected = app.customProxyType == type,
+                        onClick = { viewModel.setCustomProxyType(type) },
+                        shape = SegmentedButtonDefaults.itemShape(index, proxyTypes.size),
+                    ) {
+                        Text(
+                            stringResource(
+                                if (type == ProxyType.SOCKS5) R.string.settings_proxy_type_socks5
+                                else R.string.settings_proxy_type_http
+                            )
+                        )
+                    }
+                }
+            }
+            CardDivider()
+            OutlinedTextField(
+                value = app.customProxyHost.orEmpty(),
+                onValueChange = viewModel::setCustomProxyHost,
+                label = { Text(stringResource(R.string.settings_proxy_host)) },
+                placeholder = { Text(stringResource(R.string.settings_proxy_host_hint)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+                singleLine = true,
+                isError = app.customProxyHost.isNullOrBlank(),
+                supportingText = if (app.customProxyHost.isNullOrBlank()) {
+                    { Text(stringResource(R.string.settings_proxy_host_error)) }
+                } else null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.spaceLg),
+            )
+            OutlinedTextField(
+                value = if (app.customProxyPort == 0) "" else app.customProxyPort.toString(),
+                onValueChange = { input -> viewModel.setCustomProxyPort(input.toIntOrNull() ?: 0) },
+                label = { Text(stringResource(R.string.settings_proxy_port)) },
+                placeholder = { Text(stringResource(R.string.settings_proxy_port_hint)) },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true,
+                isError = app.customProxyPort !in 1..65535,
+                supportingText = if (app.customProxyPort !in 1..65535) {
+                    { Text(stringResource(R.string.settings_proxy_port_error)) }
+                } else null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.spaceLg),
+            )
+            CardDivider()
+            OutlinedTextField(
+                value = app.customProxyUsername.orEmpty(),
+                onValueChange = viewModel::setCustomProxyUsername,
+                label = { Text(stringResource(R.string.settings_proxy_username)) },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.spaceLg),
+            )
+            OutlinedTextField(
+                value = app.customProxyPassword.orEmpty(),
+                onValueChange = viewModel::setCustomProxyPassword,
+                label = { Text(stringResource(R.string.settings_proxy_password)) },
+                visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    IconButton(onClick = { showPassword = !showPassword }) {
+                        Icon(
+                            if (showPassword) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            contentDescription = stringResource(
+                                if (showPassword) R.string.settings_proxy_hide_password
+                                else R.string.settings_proxy_show_password
+                            ),
+                        )
+                    }
+                },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = Dimens.spaceLg, vertical = Dimens.spaceXxs),
+            )
+        }
+    }
+}
 
 @Composable
 private fun ToggleListItem(
