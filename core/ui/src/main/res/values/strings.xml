@@ -615,6 +615,34 @@
     <string name="webview_tor_circuit_active">Active</string>
     <string name="webview_tor_no_circuit">No circuit</string>
 
+    <!-- Custom proxy settings (PRX-13, PRX-14, PRX-15) -->
+    <string name="settings_custom_proxy">Custom Proxy</string>
+    <string name="settings_proxy_enable">Use custom proxy</string>
+    <string name="settings_proxy_enable_desc">Route all traffic from this app through a custom proxy</string>
+    <string name="settings_proxy_requires_gecko">Requires GeckoView engine</string>
+    <string name="settings_proxy_type">Proxy type</string>
+    <string name="settings_proxy_type_socks5">SOCKS5</string>
+    <string name="settings_proxy_type_http">HTTP</string>
+    <string name="settings_proxy_host">Proxy host</string>
+    <string name="settings_proxy_host_hint">e.g. 192.168.1.100 or proxy.example.com</string>
+    <string name="settings_proxy_port">Port</string>
+    <string name="settings_proxy_port_hint">1–65535</string>
+    <string name="settings_proxy_username">Username (optional)</string>
+    <string name="settings_proxy_password">Password (optional)</string>
+    <string name="settings_proxy_show_password">Show password</string>
+    <string name="settings_proxy_hide_password">Hide password</string>
+    <string name="settings_proxy_host_error">Host cannot be empty</string>
+    <string name="settings_proxy_port_error">Port must be between 1 and 65535</string>
+    <string name="settings_proxy_enabled_tor_disabled">Custom proxy enabled — Tor routing disabled for this app.</string>
+    <string name="settings_tor_enabled_proxy_cleared">Tor enabled — custom proxy cleared for this app.</string>
+    <!-- Custom proxy control center card (PRX-13) -->
+    <string name="webview_proxy_card">Custom proxy</string>
+    <string name="webview_proxy_active">Proxy active</string>
+    <string name="webview_proxy_unreachable">Proxy unreachable</string>
+    <string name="webview_proxy_disable">Disable proxy</string>
+    <string name="webview_proxy_retry">Retry proxy connection</string>
+    <string name="webview_proxy_address">Proxy: %s</string>
+
     <!-- Panic button (PRIV-04) -->
     <string name="webview_panic_button_cd">Panic button</string>
     <string name="webview_panic_confirm_title">Wipe all data?</string>

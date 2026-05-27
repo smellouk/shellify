@@ -559,6 +559,33 @@
     <string name="webview_tor_circuit">Circuit Tor</string>
     <string name="webview_tor_circuit_active">Actif</string>
     <string name="webview_tor_no_circuit">Pas de circuit</string>
+    <!-- Custom proxy settings (PRX-13, PRX-14, PRX-15) -->
+    <string name="settings_custom_proxy">Proxy personnalisé</string>
+    <string name="settings_proxy_enable">Utiliser un proxy personnalisé</string>
+    <string name="settings_proxy_enable_desc">Acheminer tout le trafic de cette application via un proxy personnalisé</string>
+    <string name="settings_proxy_requires_gecko">Nécessite le moteur GeckoView</string>
+    <string name="settings_proxy_type">Type de proxy</string>
+    <string name="settings_proxy_type_socks5">SOCKS5</string>
+    <string name="settings_proxy_type_http">HTTP</string>
+    <string name="settings_proxy_host">Hôte du proxy</string>
+    <string name="settings_proxy_host_hint">ex. 192.168.1.100 ou proxy.exemple.com</string>
+    <string name="settings_proxy_port">Port</string>
+    <string name="settings_proxy_port_hint">1–65535</string>
+    <string name="settings_proxy_username">Nom d\'utilisateur (facultatif)</string>
+    <string name="settings_proxy_password">Mot de passe (facultatif)</string>
+    <string name="settings_proxy_show_password">Afficher le mot de passe</string>
+    <string name="settings_proxy_hide_password">Masquer le mot de passe</string>
+    <string name="settings_proxy_host_error">L\'hôte ne peut pas être vide</string>
+    <string name="settings_proxy_port_error">Le port doit être compris entre 1 et 65535</string>
+    <string name="settings_proxy_enabled_tor_disabled">Proxy personnalisé activé — routage Tor désactivé pour cette application.</string>
+    <string name="settings_tor_enabled_proxy_cleared">Tor activé — proxy personnalisé supprimé pour cette application.</string>
+    <!-- Custom proxy control center card (PRX-13) -->
+    <string name="webview_proxy_card">Proxy personnalisé</string>
+    <string name="webview_proxy_active">Proxy actif</string>
+    <string name="webview_proxy_unreachable">Proxy inaccessible</string>
+    <string name="webview_proxy_disable">Désactiver le proxy</string>
+    <string name="webview_proxy_retry">Réessayer la connexion au proxy</string>
+    <string name="webview_proxy_address">Proxy : %s</string>
     <string name="webview_panic_button_cd">Bouton panique</string>
     <string name="webview_panic_confirm_title">Supprimer toutes les données ?</string>
     <string name="webview_panic_confirm_body">Cette action supprimera définitivement toutes les applications, sessions et paramètres. Cette action est irréversible.</string>

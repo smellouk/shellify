@@ -8,8 +8,10 @@ import io.shellify.app.core.engine.TorState
 import io.shellify.app.core.isolation.IsolationManager
 import io.shellify.app.core.security.PasswordManager
 import io.shellify.app.core.theme.ThemeManager
+import io.shellify.app.domain.model.EngineType
 import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.NotificationPermission
+import io.shellify.app.domain.model.ProxyType
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.domain.usecase.DeleteAllAppsUseCase
 import io.shellify.app.domain.usecase.GetWebAppsUseCase
@@ -80,6 +82,13 @@ class WebViewViewModel(
                 }
             }
         }
+        // Prime customProxyState based on configured proxy type (PRX-13).
+        // Session-only: Active when the app has a custom proxy configured with GeckoView engine.
+        val initialProxyState = if (
+            initialApp.customProxyType != ProxyType.NONE &&
+            initialApp.engineType == EngineType.GECKOVIEW
+        ) CustomProxyState.Active else CustomProxyState.None
+        _uiState.update { it.copy(customProxyState = initialProxyState) }
     }
 
     private suspend fun resolveAuthState(): AuthState {
@@ -149,6 +158,23 @@ class WebViewViewModel(
                 _commands.emit(WebViewCommand.Reload)
             }
         }
+    }
+
+    // ── Custom Proxy (session-only, PRX-13) ───────────────────────────────────
+
+    /**
+     * Session-only disable: collapses the proxy card and reloads the page without proxy.
+     * Does NOT persist — the proxy remains configured in settings for next session.
+     */
+    fun onDisableCustomProxy() {
+        _uiState.update { it.copy(customProxyState = CustomProxyState.None) }
+        _commands.tryEmit(WebViewCommand.DisableCustomProxy)
+    }
+
+    /** Retries the proxy connection, transitioning back to Active state and reloading. */
+    fun onRetryCustomProxy() {
+        _uiState.update { it.copy(customProxyState = CustomProxyState.Active) }
+        _commands.tryEmit(WebViewCommand.RetryCustomProxy)
     }
 
     fun onAdBlockChanged(on: Boolean) {

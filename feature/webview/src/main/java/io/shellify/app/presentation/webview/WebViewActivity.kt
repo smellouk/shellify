@@ -82,6 +82,7 @@ import io.shellify.app.core.webbridge.TranslateBridge
 import io.shellify.app.domain.model.EngineType
 import io.shellify.app.domain.model.LockType
 import io.shellify.app.domain.model.NotificationPermission
+import io.shellify.app.domain.model.ProxyType
 import io.shellify.app.domain.model.WebApp
 import io.shellify.app.presentation.theme.Dimens
 import io.shellify.app.presentation.theme.IncognitoPurple
@@ -284,6 +285,13 @@ class WebViewActivity : FragmentActivity() {
                     return
                 }
                 GeckoViewEngine(this, app.geckoEngineManager)
+            }
+            pwaApp.customProxyType != ProxyType.NONE && pwaApp.engineType == EngineType.GECKOVIEW -> {
+                // Custom proxy requires GeckoView per D-01. If GeckoView is not installed,
+                // fall back gracefully to SystemWebViewEngine (proxy will not be applied)
+                // rather than failing hard — consistent with T-18-08 mitigation.
+                if (app.geckoEngineManager.isInstalled()) GeckoViewEngine(this, app.geckoEngineManager)
+                else SystemWebViewEngine(app.adBlocker)
             }
             pwaApp.engineType == EngineType.GECKOVIEW && app.geckoEngineManager.isInstalled() ->
                 GeckoViewEngine(this, app.geckoEngineManager)
@@ -648,6 +656,12 @@ class WebViewActivity : FragmentActivity() {
                                 engine.evaluateJavascript(ReadingModeBridge.buildScript(readabilityJs, noContent), null)
                             }.onFailure { e -> Log.e("WebViewActivity", "Failed to inject reading mode script", e) }
                         }
+                        // Custom proxy session commands (PRX-13): reload the page without proxy
+                        // or with proxy reconnected. The actual proxy config is owned by GeckoViewEngine
+                        // via proxyConfigFor — a page reload causes GeckoView to reopen with the
+                        // current proxy config from WebApp (which was cleared by onDisableCustomProxy).
+                        WebViewCommand.DisableCustomProxy -> engine.reload()
+                        WebViewCommand.RetryCustomProxy -> engine.reload()
                     }
                 }
             }
@@ -802,6 +816,9 @@ class WebViewActivity : FragmentActivity() {
                         pwaApp = pwaApp,
                         hasGlobalPassword = passwordHash != null,
                         torState = state.torState,
+                        customProxyState = state.customProxyState,
+                        onDisableProxy = { viewModel.onDisableCustomProxy() },
+                        onRetryProxy = { viewModel.onRetryCustomProxy() },
                         onAdBlockChanged = { viewModel.onAdBlockChanged(it) },
                         onTranslateChanged = { viewModel.onTranslateChanged(it) },
                         onFullscreenChanged = { on ->
