@@ -27,6 +27,28 @@ class ExternalSchemeTest {
     }
 
     @Test
+    fun `data url is not external`() {
+        // OAuth popups and JS-generated documents load via data: — must stay in the WebView,
+        // otherwise the popup is sent to startActivity() and its script never runs.
+        assertFalse(isExternalScheme("data:text/html;base64,PGgxPmhpPC9oMT4="))
+    }
+
+    @Test
+    fun `blob url is not external`() {
+        assertFalse(isExternalScheme("blob:https://example.com/abc-123"))
+    }
+
+    @Test
+    fun `about blank is not external`() {
+        assertFalse(isExternalScheme("about:blank"))
+    }
+
+    @Test
+    fun `javascript scheme is not external`() {
+        assertFalse(isExternalScheme("javascript:void(0)"))
+    }
+
+    @Test
     fun `tel scheme is external`() {
         assertTrue(isExternalScheme("tel:+15551234567"))
     }

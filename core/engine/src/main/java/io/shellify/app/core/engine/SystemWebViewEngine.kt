@@ -25,10 +25,17 @@ internal fun dispatchInterceptedRequest(url: String, isForMainFrame: Boolean, bl
     }
 }
 
-// Extracted for unit testing: a non-http(s) scheme (tel:, mailto:, intent:, custom OAuth schemes)
-// is handed to the host as an external link; http(s) navigations stay inside the WebView/popup.
+// Schemes that render web content inside the engine and must NEVER be handed to the OS as an
+// external link. Besides http(s) this includes data:/blob:/about:/javascript:, which OAuth popups
+// and JS-generated documents (e.g. window.open() then document.write) rely on — treating them as
+// external sends them to startActivity() instead of loading, so the popup stays blank and its
+// script never runs (no postMessage back to the opener, no window.close()).
+private val INTERNAL_SCHEMES = listOf("http://", "https://", "data:", "blob:", "about:", "javascript:")
+
+// Extracted for unit testing: only genuinely external schemes (tel:, mailto:, intent:, sms:,
+// custom app schemes) are handed to the host; web-content schemes stay inside the WebView/popup.
 internal fun isExternalScheme(url: String): Boolean =
-    !url.startsWith("http://", ignoreCase = true) && !url.startsWith("https://", ignoreCase = true)
+    INTERNAL_SCHEMES.none { url.startsWith(it, ignoreCase = true) }
 
 class SystemWebViewEngine(private val adBlocker: AdBlocker) : BrowserEngine {
 
