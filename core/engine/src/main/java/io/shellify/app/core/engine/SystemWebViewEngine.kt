@@ -2,12 +2,14 @@ package io.shellify.app.core.engine
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.Message
 import android.view.View
 import android.net.http.SslError
 import android.webkit.SslErrorHandler
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import io.shellify.app.core.adblock.AdBlocker
@@ -23,11 +25,27 @@ internal fun dispatchInterceptedRequest(url: String, isForMainFrame: Boolean, bl
     }
 }
 
+// Schemes that render web content inside the engine and must NEVER be handed to the OS as an
+// external link. Besides http(s) this includes data:/blob:/about:/javascript:, which OAuth popups
+// and JS-generated documents (e.g. window.open() then document.write) rely on — treating them as
+// external sends them to startActivity() instead of loading, so the popup stays blank and its
+// script never runs (no postMessage back to the opener, no window.close()).
+private val INTERNAL_SCHEMES = listOf("http://", "https://", "data:", "blob:", "about:", "javascript:")
+
+// Extracted for unit testing: only genuinely external schemes (tel:, mailto:, intent:, sms:,
+// custom app schemes) are handed to the host; web-content schemes stay inside the WebView/popup.
+internal fun isExternalScheme(url: String): Boolean =
+    INTERNAL_SCHEMES.none { url.startsWith(it, ignoreCase = true) }
+
 class SystemWebViewEngine(private val adBlocker: AdBlocker) : BrowserEngine {
 
     override val engineType = EngineType.SYSTEM_WEBVIEW
     private var webView: WebView? = null
     private var storedCallback: BrowserEngineCallback? = null
+
+    // Popup WebViews created for window.open() / OAuth flows. Tracked so they can be destroyed
+    // with the engine even if the page never fires onCloseWindow.
+    private val popups = mutableListOf<WebView>()
 
     override fun createView(context: Context, app: WebApp, callback: BrowserEngineCallback): View {
         storedCallback = callback
@@ -35,7 +53,7 @@ class SystemWebViewEngine(private val adBlocker: AdBlocker) : BrowserEngine {
         WebViewManager.configure(wv, app)
 
         wv.webViewClient = object : WebViewClient() {
-            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): android.webkit.WebResourceResponse? {
+            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
                 val result = if (app.adBlockEnabled) adBlocker.shouldBlock(request, app.trackerBlockingEnabled) else null
                 dispatchInterceptedRequest(
                     url = request.url.toString(),
@@ -51,7 +69,7 @@ class SystemWebViewEngine(private val adBlocker: AdBlocker) : BrowserEngine {
                 request: WebResourceRequest
             ): Boolean {
                 val url = request.url.toString()
-                if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                if (isExternalScheme(url)) {
                     callback.onExternalLink(url)
                     return true
                 }
@@ -97,11 +115,83 @@ class SystemWebViewEngine(private val adBlocker: AdBlocker) : BrowserEngine {
             override fun onHideCustomView() =
                 callback.onHideCustomView()
 
-
+            override fun onCreateWindow(
+                view: WebView,
+                isDialog: Boolean,
+                isUserGesture: Boolean,
+                resultMsg: Message,
+            ): Boolean = handleCreateWindow(view.context, app, callback, resultMsg)
         }
 
         webView = wv
         return wv
+    }
+
+    // Honour window.open() / target="_blank" (OAuth, "Sign in with Google") by spawning a real
+    // popup WebView. The host displays it as an overlay via onShowPopup; the popup self-dismisses
+    // through onCloseWindow when the flow finishes. Returns true so the link is not also opened
+    // in the parent frame.
+    private fun handleCreateWindow(
+        context: Context,
+        app: WebApp,
+        callback: BrowserEngineCallback,
+        resultMsg: Message,
+    ): Boolean {
+        val popup = createPopupWebView(context, app, callback)
+        callback.onShowPopup(popup)
+        val transport = resultMsg.obj as? WebView.WebViewTransport ?: return false
+        transport.webView = popup
+        resultMsg.sendToTarget()
+        return true
+    }
+
+    private fun createPopupWebView(context: Context, app: WebApp, callback: BrowserEngineCallback): WebView {
+        val popup = WebView(context)
+        WebViewManager.configure(popup, app)
+        popup.webViewClient = object : WebViewClient() {
+            override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
+                if (app.adBlockEnabled) adBlocker.shouldBlock(request, app.trackerBlockingEnabled) else null
+
+            override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
+                val url = request.url.toString()
+                if (isExternalScheme(url)) {
+                    callback.onExternalLink(url)
+                    return true
+                }
+                return false
+            }
+
+            override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, error: SslError) {
+                handler.cancel()
+                callback.onSslError(error.toString())
+            }
+        }
+        popup.webChromeClient = object : WebChromeClient() {
+            override fun onCreateWindow(
+                view: WebView,
+                isDialog: Boolean,
+                isUserGesture: Boolean,
+                resultMsg: Message,
+            ): Boolean = handleCreateWindow(view.context, app, callback, resultMsg)
+
+            override fun onCloseWindow(window: WebView) = closePopup(window, callback)
+        }
+        popups.add(popup)
+        return popup
+    }
+
+    private fun closePopup(popup: WebView, callback: BrowserEngineCallback) {
+        popups.remove(popup)
+        callback.onClosePopup(popup)
+        popup.stopLoading()
+        popup.destroy()
+    }
+
+    override fun closeTopPopup(): Boolean {
+        val popup = popups.lastOrNull() ?: return false
+        val callback = storedCallback ?: return false
+        closePopup(popup, callback)
+        return true
     }
 
     fun getWebView(): WebView? = webView
@@ -131,6 +221,8 @@ class SystemWebViewEngine(private val adBlocker: AdBlocker) : BrowserEngine {
     override fun getView(): View? = webView
 
     override fun destroy() {
+        popups.toList().forEach { it.stopLoading(); it.removeAllViews(); it.destroy() }
+        popups.clear()
         webView?.apply { stopLoading(); clearHistory(); removeAllViews(); destroy() }
         webView = null
     }

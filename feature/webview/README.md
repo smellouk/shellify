@@ -41,7 +41,11 @@ context.startActivity(intent)
 | `onResume` | If lock type != NONE: show lock prompt; block interaction until unlocked |
 | `onPause` | `IsolationManager.saveSession(webAppId)` |
 | `onDestroy` | Engine teardown; `IsolationManager.onSessionEnd(webAppId)` |
-| `onBackPressed` | If engine can go back: `engine.goBack()`; else: `finish()` |
+| `onBackPressed` | If a popup overlay is open: dismiss the topmost (`engine.closeTopPopup()`); else if engine can go back: `engine.goBack()`; else: `finish()` |
+
+**Popup windows (OAuth / "Sign in with Google")**
+
+When a page calls `window.open()` (e.g. the Google sign-in consent popup), the engine creates a popup view and the Activity displays it as a full-bleed overlay in `container` via `BrowserEngineCallback.onShowPopup` / `onClosePopup`, tracked in `popupOverlays`. For System WebView popups the Activity re-applies the per-app isolation profile (`isolationManager.attachProfile`) so sign-in cookies share the app's store; GeckoView popups inherit the parent `contextId` and need no extra wiring. Back-press dismisses the topmost popup before navigating the main page.
 
 **Feature toggles applied in `onCreate`**
 

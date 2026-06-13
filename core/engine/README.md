@@ -116,6 +116,15 @@ stateDiagram-v2
 
 **Consumers:** `app` (GeckoEngineManager init on startup), `feature:webview` (engine selection + Tor routing), `feature:settings` (engine toggle + Tor toggle), `feature:add` (site preview).
 
+## Popup Windows (OAuth / "Sign in with Google")
+
+OAuth and SSO flows open their consent screen in a popup via `window.open()` / `target="_blank"`. Both engines surface popups as real, interactive windows instead of dropping them:
+
+- **System WebView** — `WebViewManager` enables `setSupportMultipleWindows(true)`; `SystemWebViewEngine` overrides `WebChromeClient.onCreateWindow` to spawn a popup `WebView` and `onCloseWindow` to dismiss it. The popup must share the parent's per-app WebView profile (applied by the host in `onShowPopup`) so cookies set during sign-in reach the opener.
+- **GeckoView** — `GeckoViewEngine.onNewSession` returns a new **unopened** child `GeckoSession` built from the parent's settings (per the GeckoView contract; GeckoView opens it). The child inherits the parent `contextId`, so cookies/storage are shared automatically. `ContentDelegate.onCloseRequest` dismisses the popup.
+
+The engine creates the popup view and asks the host to display it via `BrowserEngineCallback.onShowPopup(view)` / `onClosePopup(view)`. `BrowserEngine.closeTopPopup()` lets the host (e.g. back-press) dismiss the topmost popup, tearing down its session. Popups are also destroyed with the engine. The shared `isExternalScheme(url)` guard keeps http(s) navigation (including `accounts.google.com` redirects) inside the popup and hands non-http schemes to the host.
+
 ## Tracker Blocking (Phase 2 additions)
 
 `AdBlockFilterCache` now carries a **parallel tracker rule set** alongside the existing ad-block rule set. The tracker set is loaded at application startup from the bundled `assets/easyprivacy_domains.txt` asset and is independent from the ad-block rules.

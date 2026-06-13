@@ -92,6 +92,11 @@ class GeckoViewEngine(
     private var lastApp: WebApp? = null
     private var contextId: String? = null
 
+    // Open popup windows (window.open() / OAuth). Each holds its child session and the GeckoView
+    // hosting it so both can be torn down on close or engine destroy.
+    private class PopupHandle(val session: GeckoSession, val view: GeckoView)
+    private val popups = mutableListOf<PopupHandle>()
+
     @androidx.annotation.MainThread
     fun reattachNotificationDelegate() {
         val cb = callback ?: return
@@ -226,10 +231,7 @@ class GeckoViewEngine(
             override fun onNewSession(
                 session: GeckoSession,
                 uri: String
-            ): GeckoResult<GeckoSession>? {
-                loadUrl(uri)
-                return null
-            }
+            ): GeckoResult<GeckoSession>? = GeckoResult.fromValue(openPopupSession(session))
 
             override fun onLoadError(
                 session: GeckoSession,
@@ -289,6 +291,76 @@ class GeckoViewEngine(
         }
 
         return s
+    }
+
+    // Honour window.open() / OAuth popups by returning a NEW child session (the onNewSession
+    // contract requires an unopened session — GeckoView opens it). The child inherits the parent's
+    // settings, crucially the contextId, so it shares cookies/storage with the opener and the
+    // "Sign in with Google" cookies it sets are visible to the page that requested the popup.
+    private fun openPopupSession(parent: GeckoSession): GeckoSession {
+        val cb = callback
+        val popupSession = GeckoSession(parent.settings)
+        val popupView = GeckoView(context)
+
+        popupSession.contentDelegate = object : GeckoSession.ContentDelegate {
+            override fun onCloseRequest(session: GeckoSession) = closePopup(session)
+            override fun onTitleChange(session: GeckoSession, title: String?) {
+                cb?.onTitleChanged(title)
+            }
+        }
+        popupSession.navigationDelegate = object : GeckoSession.NavigationDelegate {
+            override fun onLoadRequest(
+                session: GeckoSession,
+                request: GeckoSession.NavigationDelegate.LoadRequest,
+            ): GeckoResult<AllowOrDeny>? {
+                val uri = request.uri
+                if (uri.startsWith("tel:") || uri.startsWith("mailto:") || uri.startsWith("intent:")) {
+                    cb?.onExternalLink(uri)
+                    return GeckoResult.fromValue(AllowOrDeny.DENY)
+                }
+                return GeckoResult.fromValue(AllowOrDeny.ALLOW)
+            }
+
+            override fun onNewSession(session: GeckoSession, uri: String): GeckoResult<GeckoSession>? =
+                GeckoResult.fromValue(openPopupSession(session))
+        }
+
+        // GeckoView accepts an unopened session and renders it once GeckoView core opens the
+        // returned session (bug 1510314). Do NOT call open() here — that violates the contract.
+        popupView.setSession(popupSession)
+        popups.add(PopupHandle(popupSession, popupView))
+        cb?.onShowPopup(popupView)
+        return popupSession
+    }
+
+    private fun closePopup(session: GeckoSession) {
+        val handle = popups.firstOrNull { it.session === session } ?: return
+        popups.remove(handle)
+        callback?.onClosePopup(handle.view)
+        handle.view.releaseSession()
+        try {
+            session.close()
+        } catch (e: Exception) {
+            Log.w(TAG, "closePopup failed: ${e.message}")
+        }
+    }
+
+    override fun closeTopPopup(): Boolean {
+        val handle = popups.lastOrNull() ?: return false
+        closePopup(handle.session)
+        return true
+    }
+
+    private fun destroyPopups() {
+        popups.toList().forEach { handle ->
+            handle.view.releaseSession()
+            try {
+                handle.session.close()
+            } catch (e: Exception) {
+                Log.w(TAG, "destroyPopups: ${e.message}")
+            }
+        }
+        popups.clear()
     }
 
     private fun recoverFromCrash() {
@@ -354,6 +426,7 @@ class GeckoViewEngine(
     override fun getView(): View? = geckoView
 
     override fun destroy() {
+        destroyPopups()
         try {
             session?.close()
         } catch (e: Exception) {

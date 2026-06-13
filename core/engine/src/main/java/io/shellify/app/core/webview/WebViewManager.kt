@@ -31,6 +31,11 @@ object WebViewManager {
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
             cacheMode = WebSettings.LOAD_DEFAULT
             mediaPlaybackRequiresUserGesture = false
+            // OAuth / "Sign in with Google" opens its consent screen in a popup via window.open().
+            // Without multiple-window support the popup is silently dropped and sign-in never
+            // completes; the engine handles the popup in WebChromeClient.onCreateWindow.
+            setSupportMultipleWindows(true)
+            javaScriptCanOpenWindowsAutomatically = true
             @Suppress("DEPRECATION")
             allowFileAccessFromFileURLs = false
             @Suppress("DEPRECATION")
