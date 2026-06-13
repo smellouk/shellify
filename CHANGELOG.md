@@ -3,6 +3,22 @@
 All notable changes to Shellify are documented here.
 Entries are auto-generated from conventional commits using [git-cliff](https://git-cliff.org).
 
+## [1.4.3] - 2026-06-13
+
+### Bug Fixes
+
+- Support OAuth/Sign-in-with-Google popups on both engines (#17)
+
+### Documentation
+
+- Update planning state after Phase 17 (Reading Mode) completion
+- **tools**: Add Popups tab to developer tools
+- **tools**: Persist active tab and fix popup data-URL navigation
+
+### Features
+
+- **feature:webview**: Reading Mode via Readability.js (#12)
+
 ## [1.4.2] - 2026-05-26
 
 ### Bug Fixes
