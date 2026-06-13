@@ -145,6 +145,37 @@ class WebViewPopupE2ETest {
         }
     }
 
+    // ── Live developer-tools page (network-gated smoke test) ────────────────────
+
+    /**
+     * Smoke test against the real https://shellify.app/tools page instead of an injected fixture:
+     * invokes the page's own openSelfClosing() and asserts the popup appears and self-dismisses.
+     *
+     * Unlike the hermetic tests above this needs the network AND the deployed page to use the
+     * about:blank popup pattern (window.open() to a data: URL is blocked by Chromium). It SKIPS if
+     * the page can't be reached, so it never turns the build red on a flaky/offline runner.
+     */
+    @Test
+    fun toolsPage_selfClosingPopup_smoke() {
+        val loaded = CountDownLatch(1)
+        ActivityScenario.launch<WebViewActivity>(previewIntent("https://shellify.app/tools.html")).use { scenario ->
+            scenario.onActivity { it.pageFinishedCallback = { loaded.countDown() } }
+            assumeTrue("tools page unreachable — skipping network smoke test", loaded.await(20, TimeUnit.SECONDS))
+
+            // Drive the page's own scenario. System WebView allows window.open() without a user
+            // gesture (javaScriptCanOpenWindowsAutomatically), so a javascript: invocation suffices.
+            scenario.onActivity { it.navigateTo("javascript:openSelfClosing()") }
+
+            awaitPopupShown(scenario)
+            scenario.onActivity { assertEquals(1, it.popupOverlayCount()) }
+            assertTrue(
+                "Live /tools self-closing popup must dismiss (requires the about:blank tools.html fix deployed)",
+                awaitPopupCount(scenario, target = 0, timeoutSeconds = 10),
+            )
+            scenario.onActivity { it.pageFinishedCallback = null }
+        }
+    }
+
     // ── Helpers ─────────────────────────────────────────────────────────────────
 
     /**
