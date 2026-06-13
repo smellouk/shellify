@@ -70,6 +70,40 @@ class WebViewPopupE2ETest {
         }
     }
 
+    /**
+     * Regression for the OAuth flow: the popup must actually LOAD and run its script. The popup
+     * opens a data: URL that calls window.close() — which only fires if the data: page loaded (i.e.
+     * was not mis-routed to an external intent by the scheme guard) and window.close() is honoured.
+     */
+    @Test
+    fun systemWebView_popupSelfClose_dismissesOverlay() {
+        ActivityScenario.launch<WebViewActivity>(selfClosingPopupIntent()).use { scenario ->
+            awaitPopupShown(scenario)
+            scenario.onActivity { assertEquals(1, it.popupOverlayCount()) }
+            assertTrue(
+                "Popup must load its data: page and self-dismiss via window.close()",
+                awaitPopupCount(scenario, target = 0, timeoutSeconds = 10),
+            )
+        }
+    }
+
+    /**
+     * Regression for the OAuth opener channel: a popup must be able to postMessage back to its
+     * window.opener. The opener opens popup #1, which messages the opener; on receipt the opener
+     * opens popup #2. Reaching 2 overlays proves the message was delivered (count only grows, so
+     * the assertion is race-free).
+     */
+    @Test
+    fun systemWebView_popupOpenerPostMessage_roundTrips() {
+        ActivityScenario.launch<WebViewActivity>(openerRoundTripIntent()).use { scenario ->
+            awaitPopupShown(scenario)
+            assertTrue(
+                "Opener must receive the popup's postMessage and open a second window",
+                awaitPopupCount(scenario, target = 2, timeoutSeconds = 10),
+            )
+        }
+    }
+
     // ── Shared hosting contract (both engines) via a fake engine ────────────────
 
     @Test
@@ -158,11 +192,42 @@ class WebViewPopupE2ETest {
         instrumentation.sendPointerSync(MotionEvent.obtain(downTime, downTime + 50, MotionEvent.ACTION_UP, x, y, 0))
     }
 
+    /** Polls [WebViewActivity.popupOverlayCount] until it reaches [target] or the timeout elapses. */
+    private fun awaitPopupCount(
+        scenario: ActivityScenario<WebViewActivity>,
+        target: Int,
+        timeoutSeconds: Long,
+    ): Boolean {
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(timeoutSeconds)
+        while (System.nanoTime() < deadline) {
+            var count = -1
+            scenario.onActivity { count = it.popupOverlayCount() }
+            if (count == target) return true
+            Thread.sleep(100)
+        }
+        return false
+    }
+
     /** Preview intent whose page immediately calls window.open() on load (no network needed). */
     private fun windowOpenIntent(): Intent {
         val html = "<html><body><script>window.open('about:blank','_blank','width=200,height=200')</script></body></html>"
         val dataUrl = "data:text/html;base64," + Base64.encodeToString(html.toByteArray(), Base64.NO_WRAP)
         return previewIntent(dataUrl)
+    }
+
+    /**
+     * Preview intent whose page opens an about:blank popup and writes a script that calls
+     * window.close() shortly after — exercises the full open→load→close path. Note we cannot
+     * window.open() a data: URL: Chromium blocks navigating a popup's top frame to data:, so the
+     * page would never load. about:blank + document.write() is the offline-safe equivalent.
+     */
+    private fun selfClosingPopupIntent(): Intent {
+        val opener = "<html><body><script>" +
+            "var w=window.open('about:blank','_blank','width=200,height=200');" +
+            "if(w){w.document.write('<scr'+'ipt>setTimeout(function(){window.close()},300)<\\/scr'+'ipt>');w.document.close();}" +
+            "</script></body></html>"
+        val openerUrl = "data:text/html;base64," + Base64.encodeToString(opener.toByteArray(), Base64.NO_WRAP)
+        return previewIntent(openerUrl)
     }
 
     /** Preview intent with a full-screen button that calls window.open() on click (a user gesture). */
@@ -173,6 +238,21 @@ class WebViewPopupE2ETest {
             "</body></html>"
         val dataUrl = "data:text/html;base64," + Base64.encodeToString(html.toByteArray(), Base64.NO_WRAP)
         return previewIntent(dataUrl)
+    }
+
+    /**
+     * Opener page that opens popup #1 (which postMessages the opener) and, on receiving that
+     * message, opens popup #2 — so a second overlay only appears if window.opener works.
+     */
+    private fun openerRoundTripIntent(): Intent {
+        val opener = "<html><body><script>" +
+            "window.addEventListener('message',function(e){" +
+            "if(e.data&&e.data.shellifyOAuth){window.open('about:blank','_blank','width=100,height=100');}});" +
+            "var w=window.open('about:blank','_blank','width=200,height=200');" +
+            "if(w){w.document.write('<scr'+'ipt>setTimeout(function(){try{window.opener.postMessage({shellifyOAuth:1},\"*\")}catch(e){}},300)<\\/scr'+'ipt>');w.document.close();}" +
+            "</script></body></html>"
+        val openerUrl = "data:text/html;base64," + Base64.encodeToString(opener.toByteArray(), Base64.NO_WRAP)
+        return previewIntent(openerUrl)
     }
 
     private fun previewIntent(url: String): Intent =
