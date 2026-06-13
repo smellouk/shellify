@@ -236,7 +236,7 @@
   transition: color 0.15s;
 }
 .log-clear:hover { color: var(--text); }
-#log {
+#log, #popup-log {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -252,9 +252,9 @@
   scrollbar-width: thin;
   scrollbar-color: var(--surface-3) transparent;
 }
-#log .log-ts { color: var(--text-subtle); }
-#log .log-ok  { color: var(--secondary); }
-#log .log-err { color: #FF6B6B; }
+#log .log-ts, #popup-log .log-ts { color: var(--text-subtle); }
+#log .log-ok,  #popup-log .log-ok  { color: var(--secondary); }
+#log .log-err, #popup-log .log-err { color: #FF6B6B; }
 </style>
 </head>
 <body>
@@ -298,6 +298,12 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       </span>
       Notifications
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-popups" onclick="switchTab('popups', this)">
+      <span class="tab-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </span>
+      Popups
     </button>
   </div>
 
@@ -369,6 +375,50 @@
     </div>
 
   </div><!-- /#panel-notifications -->
+
+  <!-- ── Popups panel ─────────────────────────────────── -->
+  <div class="tab-panel" id="panel-popups" role="tabpanel">
+
+    <div class="tool-grid">
+
+      <!-- window.open() -->
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-card-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </span>
+          <h3>window.open()</h3>
+        </div>
+        <p>Opens a popup window — the same mechanism "Sign in with Google" uses. Shellify must surface it as an overlay (System WebView <code>onCreateWindow</code> / GeckoView <code>onNewSession</code>). Note: GeckoView blocks popups not triggered by a tap, so click the button rather than expecting auto-open.</p>
+        <button class="btn-tool primary"   onclick="openPopup()">Open popup → example.com</button>
+        <button class="btn-tool secondary" onclick="openSelfClosing()">Open popup that self-closes (2s)</button>
+        <a class="btn-tool accent" href="https://example.com" target="_blank" rel="noopener" style="text-decoration:none;">Open <code>target="_blank"</code> link</a>
+      </div>
+
+      <!-- OAuth round-trip -->
+      <div class="tool-card">
+        <div class="tool-card-header">
+          <span class="tool-card-icon teal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          </span>
+          <h3>OAuth round-trip</h3>
+        </div>
+        <p>Full "Sign in with Google" simulation, offline: opens a popup that messages its <code>window.opener</code> via <code>postMessage</code> and then calls <code>window.close()</code>. Verifies the opener relationship survives <em>and</em> the popup auto-dismisses — the exact flow that was broken.</p>
+        <button class="btn-tool primary" onclick="oauthRoundTrip()">Run OAuth popup round-trip</button>
+      </div>
+
+    </div><!-- /.tool-grid -->
+
+    <!-- Log console -->
+    <div class="log-section">
+      <div class="log-header">
+        <span class="log-label">Console</span>
+        <button class="log-clear" onclick="clearPopupLog()">Clear</button>
+      </div>
+      <div id="popup-log">Ready. Tap a button above to test popups.</div>
+    </div>
+
+  </div><!-- /#panel-popups -->
 
 </div><!-- /.wrap -->
 </main>
@@ -602,6 +652,60 @@ function fireBgNotification() {
     status.textContent = '✗ Error: ' + e.message;
     log('Error: ' + e.message, 'err');
   }
+}
+
+// ── Popups ─────────────────────────────────────────────
+function plog(msg, type) {
+  const el = document.getElementById('popup-log');
+  const ts = new Date().toLocaleTimeString();
+  const cls = type === 'ok' ? 'log-ok' : type === 'err' ? 'log-err' : '';
+  const line = document.createElement('div');
+  line.innerHTML = `<span class="log-ts">[${ts}]</span> <span class="${cls}">${msg}</span>`;
+  el.insertBefore(line, el.firstChild);
+}
+function clearPopupLog() {
+  document.getElementById('popup-log').innerHTML = '';
+}
+
+function openPopup() {
+  const w = window.open('https://example.com', '_blank', 'width=400,height=600');
+  plog(w ? '✓ window.open(example.com) returned a window — overlay should appear' : '✗ window.open() returned null — popup dropped', w ? 'ok' : 'err');
+}
+
+function openSelfClosing() {
+  const html = '<!doctype html><meta name=viewport content="width=device-width,initial-scale=1">'
+    + '<body style="font-family:sans-serif;padding:24px;text-align:center"><h2>Popup</h2>'
+    + '<p>Closing automatically in 2s…</p>'
+    + '<scr' + 'ipt>setTimeout(function(){window.close();},2000);</scr' + 'ipt></body>';
+  const w = window.open('data:text/html;charset=utf-8,' + encodeURIComponent(html), '_blank', 'width=360,height=480');
+  plog(w ? '✓ Self-closing popup opened — should dismiss in 2s (onCloseWindow / onCloseRequest)' : '✗ window.open() returned null — popup dropped', w ? 'ok' : 'err');
+}
+
+function oauthRoundTrip() {
+  let received = false;
+  function onMsg(e) {
+    if (e.data && e.data.shellifyOAuth) {
+      received = true;
+      window.removeEventListener('message', onMsg);
+      plog('✓ Popup messaged the opener (' + e.data.shellifyOAuth + ') — window.opener works, sign-in can complete', 'ok');
+    }
+  }
+  window.addEventListener('message', onMsg);
+
+  const html = '<!doctype html><meta name=viewport content="width=device-width,initial-scale=1">'
+    + '<body style="font-family:sans-serif;padding:24px;text-align:center"><h2>Signing in…</h2>'
+    + '<p>Messaging opener, then closing.</p>'
+    + '<scr' + 'ipt>setTimeout(function(){try{window.opener.postMessage({shellifyOAuth:"success"},"*");}catch(e){};window.close();},1500);</scr' + 'ipt></body>';
+  const w = window.open('data:text/html;charset=utf-8,' + encodeURIComponent(html), '_blank', 'width=380,height=560');
+  if (!w) {
+    window.removeEventListener('message', onMsg);
+    plog('✗ window.open() returned null — popup dropped, OAuth would fail here', 'err');
+    return;
+  }
+  plog('Popup opened — awaiting postMessage + auto-close…');
+  setTimeout(function() {
+    if (!received) plog('⚠ No message after 5s — opener channel may be broken or popup still open', 'err');
+  }, 5000);
 }
 </script>
 </body>
