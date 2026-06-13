@@ -14,7 +14,9 @@ import android.os.Looper
 import android.os.SystemClock
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
+import android.webkit.WebView
 import android.widget.FrameLayout
 import android.widget.ProgressBar
 import androidx.activity.result.contract.ActivityResultContracts
@@ -149,6 +151,9 @@ class WebViewActivity : FragmentActivity() {
     @VisibleForTesting
     lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var isolationManager: IsolationManager
+
+    // Overlay views for OAuth / window.open() popups, newest last. Back press dismisses the topmost.
+    private val popupOverlays = ArrayDeque<View>()
     private lateinit var viewModel: WebViewViewModel
     private var statusBarScrim: View? = null
 
@@ -194,6 +199,14 @@ class WebViewActivity : FragmentActivity() {
 
     @VisibleForTesting
     fun navigateTo(url: String) = engine.loadUrl(url)
+
+    /** Number of currently displayed popup overlays (OAuth / window.open). */
+    @VisibleForTesting
+    fun popupOverlayCount(): Int = popupOverlays.size
+
+    /** Invoked after a popup overlay is attached, so tests can await the asynchronous window.open. */
+    @VisibleForTesting
+    var popupShownCallback: (() -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -292,7 +305,11 @@ class WebViewActivity : FragmentActivity() {
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (engine.canGoBack()) engine.goBack() else finish()
+                when {
+                    popupOverlays.isNotEmpty() -> dismissTopPopup()
+                    engine.canGoBack() -> engine.goBack()
+                    else -> finish()
+                }
             }
         })
 
@@ -941,6 +958,28 @@ class WebViewActivity : FragmentActivity() {
                 viewModel.uiState.value.app?.let { applyWindowMode(it) }
             }
 
+            override fun onShowPopup(view: View) {
+                // System WebView popups are fresh WebViews without the per-app profile — attach the
+                // same isolation profile so OAuth cookies land in (and are read from) the app's store.
+                // GeckoView popups inherit the parent contextId, so they need no extra wiring.
+                val isolationId = viewModel.uiState.value.app?.isolationId
+                if (view is WebView && isolationId != null) isolationManager.attachProfile(view, isolationId)
+                popupOverlays.addLast(view)
+                container.addView(
+                    view,
+                    FrameLayout.LayoutParams(
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                        FrameLayout.LayoutParams.MATCH_PARENT,
+                    ),
+                )
+                popupShownCallback?.invoke()
+            }
+
+            override fun onClosePopup(view: View) {
+                popupOverlays.remove(view)
+                (view.parent as? ViewGroup)?.removeView(view)
+            }
+
             override fun onDownloadStart(
                 url: String, userAgent: String, contentDisposition: String,
                 mimeType: String, contentLength: Long,
@@ -960,6 +999,12 @@ class WebViewActivity : FragmentActivity() {
                 networkRequestLogger?.onRequestIntercepted(url, blocked)
             }
         }
+
+    // Routes back-press dismissal through the engine so the underlying popup session/WebView is
+    // torn down (not just hidden); the engine fires onClosePopup to detach the overlay.
+    private fun dismissTopPopup() {
+        engine.closeTopPopup()
+    }
 
     private fun showSplash(pwaApp: WebApp) {
         splashShownAt = SystemClock.elapsedRealtime()
