@@ -293,13 +293,13 @@
 
   <!-- Tab bar -->
   <div class="tab-bar" role="tablist">
-    <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-notifications" onclick="switchTab('notifications', this)">
+    <button class="tab-btn active" role="tab" aria-selected="true" aria-controls="panel-notifications" data-tab="notifications" onclick="switchTab('notifications')">
       <span class="tab-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       </span>
       Notifications
     </button>
-    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-popups" onclick="switchTab('popups', this)">
+    <button class="tab-btn" role="tab" aria-selected="false" aria-controls="panel-popups" data-tab="popups" onclick="switchTab('popups')">
       <span class="tab-icon">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
       </span>
@@ -460,14 +460,35 @@
   btn.addEventListener('click', () => applyTheme(root.dataset.theme === 'dark' ? 'light' : 'dark'));
 })();
 
-// ── Tab switching ─────────────────────────────────────
-function switchTab(id, btn) {
+// ── Tab switching (persists the selection across reloads / back-navigation) ──
+const TAB_KEY = 'shellify-tools-tab';
+
+function switchTab(id, persist = true) {
+  const panel = document.getElementById('panel-' + id);
+  const btn = document.querySelector('.tab-btn[data-tab="' + id + '"]');
+  if (!panel || !btn) return;
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected', 'false'); });
-  document.getElementById('panel-' + id).classList.add('active');
+  panel.classList.add('active');
   btn.classList.add('active');
   btn.setAttribute('aria-selected', 'true');
+  if (persist) {
+    try { localStorage.setItem(TAB_KEY, id); } catch (e) {}
+    // Reflect the tab in the URL hash so the browser's back/forward restores it too.
+    if (('#' + id) !== location.hash) history.replaceState(null, '', '#' + id);
+  }
 }
+
+// Restore the last-selected tab on load: URL hash wins, then the saved preference.
+(function restoreTab() {
+  const fromHash = location.hash.replace('#', '');
+  let saved = null;
+  try { saved = localStorage.getItem(TAB_KEY); } catch (e) {}
+  const id = (fromHash && document.getElementById('panel-' + fromHash)) ? fromHash
+           : (saved && document.getElementById('panel-' + saved)) ? saved
+           : null;
+  if (id) switchTab(id, false);
+})();
 
 // ── Log helpers ───────────────────────────────────────
 function log(msg, type) {
@@ -667,17 +688,31 @@ function clearPopupLog() {
   document.getElementById('popup-log').innerHTML = '';
 }
 
+// Opens an about:blank popup and writes content into it. We deliberately do NOT pass a data: URL
+// to window.open() — Chromium/WebView blocks navigating a popup's top frame to a data: URL
+// ("Not allowed to navigate top frame to data URL"), so the page would never load and its script
+// would never run. about:blank + document.write() is the offline-safe pattern that works in both
+// System WebView and GeckoView.
+function openWrittenPopup(bodyHtml, features) {
+  const w = window.open('about:blank', '_blank', features);
+  if (w) {
+    w.document.open();
+    w.document.write('<!doctype html><meta name=viewport content="width=device-width,initial-scale=1">' + bodyHtml);
+    w.document.close();
+  }
+  return w;
+}
+
 function openPopup() {
   const w = window.open('https://example.com', '_blank', 'width=400,height=600');
   plog(w ? '✓ window.open(example.com) returned a window — overlay should appear' : '✗ window.open() returned null — popup dropped', w ? 'ok' : 'err');
 }
 
 function openSelfClosing() {
-  const html = '<!doctype html><meta name=viewport content="width=device-width,initial-scale=1">'
-    + '<body style="font-family:sans-serif;padding:24px;text-align:center"><h2>Popup</h2>'
+  const body = '<body style="font-family:sans-serif;padding:24px;text-align:center"><h2>Popup</h2>'
     + '<p>Closing automatically in 2s…</p>'
-    + '<scr' + 'ipt>setTimeout(function(){window.close();},2000);</scr' + 'ipt></body>';
-  const w = window.open('data:text/html;charset=utf-8,' + encodeURIComponent(html), '_blank', 'width=360,height=480');
+    + '<scr' + 'ipt>setTimeout(function(){window.close();},2000);<\/scr' + 'ipt></body>';
+  const w = openWrittenPopup(body, 'width=360,height=480');
   plog(w ? '✓ Self-closing popup opened — should dismiss in 2s (onCloseWindow / onCloseRequest)' : '✗ window.open() returned null — popup dropped', w ? 'ok' : 'err');
 }
 
@@ -692,11 +727,10 @@ function oauthRoundTrip() {
   }
   window.addEventListener('message', onMsg);
 
-  const html = '<!doctype html><meta name=viewport content="width=device-width,initial-scale=1">'
-    + '<body style="font-family:sans-serif;padding:24px;text-align:center"><h2>Signing in…</h2>'
+  const body = '<body style="font-family:sans-serif;padding:24px;text-align:center"><h2>Signing in…</h2>'
     + '<p>Messaging opener, then closing.</p>'
-    + '<scr' + 'ipt>setTimeout(function(){try{window.opener.postMessage({shellifyOAuth:"success"},"*");}catch(e){};window.close();},1500);</scr' + 'ipt></body>';
-  const w = window.open('data:text/html;charset=utf-8,' + encodeURIComponent(html), '_blank', 'width=380,height=560');
+    + '<scr' + 'ipt>setTimeout(function(){try{window.opener.postMessage({shellifyOAuth:"success"},"*");}catch(e){};window.close();},1500);<\/scr' + 'ipt></body>';
+  const w = openWrittenPopup(body, 'width=380,height=560');
   if (!w) {
     window.removeEventListener('message', onMsg);
     plog('✗ window.open() returned null — popup dropped, OAuth would fail here', 'err');
