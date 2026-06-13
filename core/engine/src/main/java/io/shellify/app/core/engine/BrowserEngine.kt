@@ -18,4 +18,11 @@ interface BrowserEngine {
     fun getView(): View?
     fun destroy()
     fun clearCache(includeDiskFiles: Boolean = true)
+
+    /**
+     * Closes the most recently opened popup window (window.open() / OAuth), tearing down its
+     * session and firing [BrowserEngineCallback.onClosePopup] so the host detaches the overlay.
+     * Returns true if a popup was closed, false if none were open. Default: no popup support.
+     */
+    fun closeTopPopup(): Boolean = false
 }
