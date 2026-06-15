@@ -216,7 +216,7 @@ roborazzi {
 
 configurations.configureEach {
     if (name.contains("AndroidTest", ignoreCase = true)) {
-        resolutionStrategy.force("androidx.concurrent:concurrent-futures:1.2.0")
+        resolutionStrategy.force("androidx.concurrent:concurrent-futures:1.3.0")
     }
 }
 
