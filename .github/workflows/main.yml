@@ -17,7 +17,7 @@ jobs:
     timeout-minutes: 30
     if: github.event.head_commit.author.name != 'github-actions[bot]'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-android
       - uses: ./.github/actions/setup-keystore
         with:
@@ -48,7 +48,7 @@ jobs:
     needs: [build]
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-android
 
       - uses: actions/download-artifact@v8
@@ -79,7 +79,7 @@ jobs:
       contents: read
       checks: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-android
       - uses: ./.github/actions/run-unit-tests
         with:
@@ -91,7 +91,7 @@ jobs:
     timeout-minutes: 30
     if: github.event.head_commit.author.name != 'github-actions[bot]'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-android
       - uses: ./.github/actions/run-screenshot-tests
         with:
@@ -106,7 +106,7 @@ jobs:
       contents: read
       checks: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-android
       - uses: ./.github/actions/run-instrumentation-tests
         with:
